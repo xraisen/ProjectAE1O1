@@ -4,386 +4,498 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Planet Beauty AI Chatbot</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body {
-      font-family: 'Poppins', sans-serif;
-      background-color: #fefefe;
+      font-family: 'Arial', sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       min-height: 100vh;
     }
-    .chat-container {
-      height: 70vh;
+    #chat-container {
+      width: 100%;
+      max-width: 600px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 80vh;
+    }
+    #api-section {
+      padding: 12px;
+      background: #f9fafb;
+      border-bottom: 1px solid #e5e7eb;
+      transition: opacity 0.5s ease;
+    }
+    #chat-header {
+      padding: 12px;
+      background: #6b46c1;
+      color: white;
+      text-align: center;
+      font-size: 1.125rem;
+      font-weight: bold;
+    }
+    #chat-body {
+      flex: 1;
       overflow-y: auto;
-      scroll-behavior: smooth;
-      background-color: #fff;
+      padding: 12px;
+      background: #fff;
+    }
+    #chat-footer {
+      padding: 12px;
+      background: #f9fafb;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      gap: 6px;
+    }
+    #user-input {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      outline: none;
+      font-size: 0.8125rem;
+    }
+    #user-input:disabled {
+      background: #e5e7eb;
+      cursor: not-allowed;
+    }
+    #send-button {
+      padding: 8px 12px;
+      background: #6b46c1;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8125rem;
+    }
+    #send-button:disabled {
+      background: #d1d5db;
+      cursor: not-allowed;
+    }
+    .message {
+      margin-bottom: 10px;
+      padding: 10px;
       border-radius: 10px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      max-width: 80%;
+      font-size: 0.8125rem;
+      line-height: 1.4;
     }
-    .chat-message {
-      animation: fadeIn 0.5s ease-in-out;
+    .user-message {
+      background: #6b46c1;
+      color: white;
+      margin-left: auto;
     }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+    .bot-message {
+      background: #e5e7eb;
+      color: #1f2937;
+      margin-right: auto;
     }
     .product-card {
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 10px;
+      margin: 6px 0;
+      font-size: 0.8125rem;
+      display: flex;
+      align-items: center;
+      transition: transform 0.2s, box-shadow 0.2s;
     }
     .product-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
-    .message-user {
-      background-color: #e9f5ff;
-      border-radius: 18px 18px 0 18px;
+    .product-card img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 4px;
+      margin-right: 10px;
     }
-    .message-bot {
-      background-color: #f9f9f9;
-      border-radius: 18px 18px 18px 0;
+    .product-card h3 {
+      margin: 0 0 6px;
+      font-size: 0.875rem;
+      color: #1f2937;
+    }
+    .product-card p {
+      margin: 0;
+      color: #4b5563;
+    }
+    .product-card a {
+      text-decoration: none;
+      color: inherit;
+      display: block;
     }
     .typing-indicator {
-      display: inline-flex;
-      align-items: center;
+      display: none;
+      font-size: 0.8125rem;
+      color: #6b7280;
+      margin-bottom: 10px;
     }
-    .typing-indicator span {
-      height: 8px;
-      width: 8px;
-      margin: 0 1px;
-      background-color: #e91e63;
+    .typing-indicator.active {
+      display: block;
+    }
+    #validation-status {
+      margin-top: 6px;
+      font-size: 0.6875rem;
+    }
+    .spinner {
+      display: none;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #6b46c1;
+      border-top: 2px solid transparent;
       border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-left: 8px;
+    }
+    .spinner.active {
       display: inline-block;
-      animation: bounce 1s infinite alternate;
     }
-    .typing-indicator span:nth-child(2) {
-      animation-delay: 0.2s;
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
-    .typing-indicator span:nth-child(3) {
-      animation-delay: 0.4s;
-    }
-    @keyframes bounce {
-      from { transform: translateY(0px); }
-      to { transform: translateY(-5px); }
-    }
-    .planet-beauty-pink {
-      color: #e91e63;
-    }
-    .planet-beauty-bg {
-      background-color: #e91e63;
-    }
-    .custom-shadow {
-      box-shadow: 0 4px 15px rgba(233, 30, 99, 0.2);
-    }
-    @media print {
-      body {
-        width: 100%;
-        margin: 0;
-        padding: 0;
-        background-color: white;
+    @media (max-width: 640px) {
+      #chat-container {
+        height: 100vh;
+        border-radius: 0;
       }
-      .chat-container {
-        height: auto;
-        overflow: visible;
-        box-shadow: none;
+      #chat-footer {
+        padding: 10px;
       }
-      .no-print {
-        display: none;
+      .product-card img {
+        width: 60px;
+        height: 60px;
       }
-      .page-break {
-        page-break-before: avoid;
+      .product-card h3 {
+        font-size: 0.8125rem;
+      }
+      .product-card p {
+        font-size: 0.75rem;
       }
     }
   </style>
 </head>
-<body class="flex flex-col items-center justify-between min-h-screen p-4 md:p-6">
-  <header class="w-full max-w-4xl mb-4 text-center">
-    <h1 class="text-3xl font-bold planet-beauty-pink">Planet Beauty</h1>
-    <h2 class="text-lg text-gray-600">AI Beauty Assistant</h2>
-  </header>
-
-  <main class="w-full max-w-4xl flex-grow">
-    <div class="rounded-lg overflow-hidden custom-shadow mb-6">
-      <div id="chat-container" class="chat-container p-4 md:p-6"></div>
-      <div class="p-4 bg-white border-t border-gray-200">
-        <div id="api-key-section" class="mb-4 p-4 bg-gray-50 rounded-lg">
-          <div class="flex flex-col md:flex-row md:items-center gap-2">
-            <!-- Replace YOUR_GEMINI_API_KEY with your actual API key if desired -->
-            <input type="password" id="api-key-input" class="flex-grow p-2 border rounded" value="YOUR_GEMINI_API_KEY" placeholder="Enter Gemini API Key">
-            <!-- Use your deployed Apps Script URL here -->
-            <input type="text" id="proxy-url-input" class="flex-grow p-2 border rounded" value="https://script.google.com/macros/s/AKfycbxmP2JwjpT_Gtk47xABTgilwasOlCPUrraFKIuFGdP7eBn48vJpPLuSwUjy3aROAYJYEQ/exec" placeholder="Enter Google Apps Script URL">
-            <button id="validate-button" class="p-2 planet-beauty-bg text-white rounded hover:bg-opacity-90">Validate</button>
-          </div>
-          <div id="api-validation-status" class="mt-2 text-sm"></div>
-        </div>
-        <div class="flex items-center">
-          <input type="text" id="user-input" class="flex-grow p-3 border rounded-l focus:outline-none focus:ring-2 focus:ring-pink-300" placeholder="Ask about skincare, haircare, or makeup...">
-          <button id="send-button" class="p-3 planet-beauty-bg text-white rounded-r hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed">
-            <i class="fas fa-paper-plane"></i>
-          </button>
-        </div>
-      </div>
+<body>
+  <div id="chat-container">
+    <div id="api-section">
+      <label for="api-key" class="block text-sm font-medium text-gray-700">Gemini API Key</label>
+      <input type="text" id="api-key" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm" value="AIzaSyB_ensLGXP4AwT9XAUFUaRjbP8HIYRYQUw" readonly>
+      <button id="validate-button" class="mt-2 w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
+        Validate Connection
+        <span id="validate-spinner" class="spinner"></span>
+      </button>
+      <div id="validation-status" class="text-sm"></div>
     </div>
-  </main>
-
-  <footer class="w-full max-w-4xl mt-8 text-center text-sm text-gray-500">
-    <p>Developed by Jose Espinosa from AE1O1 | Owned by Ahmed Elhadi © 2024</p>
-  </footer>
+    <div id="chat-header">Planet Beauty AI Chatbot</div>
+    <div id="chat-body"></div>
+    <div id="chat-footer">
+      <input type="text" id="user-input" placeholder="Type your message..." disabled>
+      <button id="send-button" disabled>Send</button>
+    </div>
+  </div>
 
   <script>
-    const apiKeyInput = document.getElementById('api-key-input');
-    const proxyUrlInput = document.getElementById('proxy-url-input');
-    const validateButton = document.getElementById('validate-button');
-    const apiValidationStatus = document.getElementById('api-validation-status');
-    const chatContainer = document.getElementById('chat-container');
-    const userInput = document.getElementById('user-input');
-    const sendButton = document.getElementById('send-button');
-    
-    let apiKeyValidated = false;
+    // WARNING: Hard-coding the API key exposes it to users. For production, restrict it in Google Cloud Console
+    // (https://console.cloud.google.com/apis/credentials) to your domain (e.g., https://your-site.netlify.app)
+    // and consider a backend proxy to hide the key.
+    const API_KEY = 'AIzaSyB_ensLGXP4AwT9XAUFUaRjbP8HIYRYQUw';
+    const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+    const FALLBACK_IMAGE = 'https://www.planetbeauty.com/cdn/shop/files/placeholder.jpg';
+    let isValidated = false;
     let conversationHistory = [];
-    let userProfile = { skinType: null, skinTone: null, concerns: [] };
+    let userProfile = { skinType: null, concerns: [], preferences: [] };
 
-    const products = [
-      { id: 'p1', name: 'Dermalogica Daily Microfoliant', description: 'Rice-based enzyme powder that microfoliates dulling debris for a smoother, brighter complexion.', price: '$59.00', image: 'https://www.planetbeauty.com/cdn/shop/files/884926_fd33021e-3e94-437e-ae29-3feff71c5d89_large.jpg?v=1686764326', url: 'https://www.planetbeauty.com/products/dermalogica-daily-microfoliant-2-6-oz', categories: ['exfoliant', 'brightening', 'skincare'], skinTypes: ['all', 'normal', 'combination', 'oily'], concerns: ['dullness', 'uneven texture', 'dark spots'] },
-      { id: 'p2', name: 'Olaplex No. 4 Bond Maintenance Shampoo', description: 'Repairs and maintains bonds within the hair while gently cleansing.', price: '$30.00', image: 'https://www.planetbeauty.com/cdn/shop/products/olaplex-no-4-bond-maintenance-shampoo-8-5-oz_large.jpg?v=1673474648', url: 'https://www.planetbeauty.com/products/olaplex-no-4-bond-maintenance-shampoo-8-5-oz', categories: ['shampoo', 'haircare', 'damaged hair'], hairTypes: ['all', 'damaged', 'colored', 'fine'], concerns: ['breakage', 'damage', 'dryness'] },
-      // ... additional products as needed.
+    // Simulated product database from planetbeauty.com (replace with real catalog in production)
+    const planetBeautyProducts = [
+      {
+        name: 'Paul Mitchell Lavender Mint Moisturizing Shampoo',
+        category: 'Haircare',
+        description: 'Hydrates and soothes dry hair with lavender and mint.',
+        imageUrl: 'https://www.planetbeauty.com/cdn/shop/files/Paul_Mitchell_Lavender_Mint_Moisturizing_Shampoo_33oz_126e4368-75df-4308-8559-6e1a608c562b_x2000.jpg?v=1717791662',
+        productUrl: 'https://www.planetbeauty.com/products/paul-mitchell-lavender-mint-moisturizing-shampoo'
+      },
+      {
+        name: 'Dermalogica Daily Microfoliant',
+        category: 'Skincare',
+        description: 'Gentle exfoliating powder for smoother, brighter skin.',
+        imageUrl: 'https://www.planetbeauty.com/cdn/shop/files/Dermalogica_Daily_Microfoliant_2.6oz_x2000.jpg',
+        productUrl: 'https://www.planetbeauty.com/products/dermalogica-daily-microfoliant'
+      },
+      {
+        name: 'Oribe Dry Texturizing Spray',
+        category: 'Haircare',
+        description: 'Adds volume and texture with a lightweight finish.',
+        imageUrl: 'https://www.planetbeauty.com/cdn/shop/files/Oribe_Dry_Texturizing_Spray_8.5oz_x2000.jpg',
+        productUrl: 'https://www.planetbeauty.com/products/oribe-dry-texturizing-spray'
+      },
+      {
+        name: 'Glo Skin Beauty Phyto-Calm Aloe Hydrator',
+        category: 'Skincare',
+        description: 'Soothes sensitive skin with aloe and antioxidants.',
+        imageUrl: 'https://www.planetbeauty.com/cdn/shop/files/Glo_Skin_Beauty_Phyto_Calm_Aloe_Hydrator_1.7oz_x2000.jpg',
+        productUrl: 'https://www.planetbeauty.com/products/glo-skin-beauty-phyto-calm-aloe-hydrator'
+      }
     ];
 
-    document.addEventListener('DOMContentLoaded', function() {
-      sendButton.disabled = true;
-      userInput.disabled = true;
-      
-      addBotMessage(`
-        <div class="mb-4">
-          <p class="font-medium">Welcome to your Planet Beauty Virtual Assistant! ✨</p>
-          <p class="mt-2">I'm here to help you find the perfect beauty products.</p>
-          <p class="mt-2">To get started, tell me:</p>
-          <ul class="list-disc pl-5 mt-2">
-            <li>Your skin type (dry, oily, combination, normal, sensitive)</li>
-            <li>Any specific beauty concerns or goals</li>
-            <li>What you're looking for today</li>
-          </ul>
-          <p class="mt-2">Please validate your API connection first!</p>
-        </div>
-      `);
+    const apiSection = document.getElementById('api-section');
+    const validateButton = document.getElementById('validate-button');
+    const validateSpinner = document.getElementById('validate-spinner');
+    const validationStatus = document.getElementById('validation-status');
+    const userInput = document.getElementById('user-input');
+    const sendButton = document.getElementById('send-button');
+    const chatBody = document.getElementById('chat-body');
 
-      validateButton.addEventListener('click', validateAPIKey);
-      sendButton.addEventListener('click', handleUserMessage);
-      userInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') handleUserMessage();
-      });
+    validateButton.addEventListener('click', validateAPI);
+    sendButton.addEventListener('click', sendMessage);
+    userInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && !userInput.disabled) {
+        sendMessage();
+      }
     });
 
-    async function validateAPIKey() {
-      const apiKey = apiKeyInput.value.trim();
-      const proxyUrl = proxyUrlInput.value.trim();
-      
-      if (!apiKey || !proxyUrl) {
-        apiValidationStatus.innerHTML = '<span class="text-red-500">Enter both API key and proxy URL.</span>';
-        return;
-      }
+    function validateAPI() {
+      validateSpinner.classList.add('active');
+      validationStatus.textContent = 'Validating API connection...';
+      validationStatus.className = 'text-sm text-blue-500';
 
-      apiValidationStatus.innerHTML = '<span class="text-blue-500">Validating...</span>';
-      
-      try {
-        const response = await fetch(proxyUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            apiKey: apiKey,
-            prompt: "Test connection"
-          })
+      const testPrompt = "Hello, this is a test prompt to validate API connection. Please respond with 'Connected!' if you receive this message.";
+      callGeminiAPI(testPrompt, true)
+        .then(data => {
+          if (data.text.trim() === 'Connected!') {
+            validationStatus.textContent = 'Connected! Ready to chat.';
+            validationStatus.className = 'text-sm text-green-500';
+            isValidated = true;
+            userInput.disabled = false;
+            sendButton.disabled = false;
+            userInput.focus();
+            setTimeout(() => {
+              apiSection.style.opacity = '0';
+              setTimeout(() => {
+                apiSection.style.display = 'none';
+              }, 500);
+            }, 1500);
+            addBotMessage("Hi there! Welcome to Planet Beauty's AI Beauty Assistant. ✨ I'm here to help you find the perfect skincare, haircare, or makeup products tailored just for you. Could you share your skin type or any specific beauty concerns you'd like to address?");
+          } else {
+            throw new Error('Unexpected response from API');
+          }
+        })
+        .catch(error => {
+          validationStatus.textContent = `Error: ${error.message}. Generate a new key at https://aistudio.google.com/app/apikey or check your network.`;
+          validationStatus.className = 'text-sm text-red-500';
+        })
+        .finally(() => {
+          validateSpinner.classList.remove('active');
         });
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error: ${response.status} - ${response.statusText}`);
-        }
+    }
 
-        const data = await response.json();
-        
-        if (data && !data.error && data.text) {
-          apiKeyValidated = true;
-          apiValidationStatus.innerHTML = '<span class="text-green-500">✅ Connected! Start chatting.</span>';
+    async function callGeminiAPI(prompt, isValidation = false) {
+      const requestData = {
+        contents: [
+          {
+            parts: [
+              { text: prompt }
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 1,
+          topP: 0.95,
+          topK: 64,
+          maxOutputTokens: 2048,
+          responseMimeType: 'text/plain'
+        }
+      };
+
+      const tryFetch = async () => {
+        const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestData)
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error?.message || 'API request failed');
+        }
+        return response.json();
+      };
+
+      try {
+        const data = await tryFetch();
+        if (!data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts) {
+          throw new Error('Invalid response from Gemini API');
+        }
+        return { text: data.candidates[0].content.parts[0].text };
+      } catch (error) {
+        if (!isValidation && (error.message.includes('429') || error.message.includes('500'))) {
+          console.warn('Retrying API call due to error:', error.message);
+          return await tryFetch(); // Retry once
+        }
+        throw error;
+      }
+    }
+
+    function sendMessage() {
+      const message = userInput.value.trim();
+      if (!message || !isValidated) return;
+
+      addUserMessage(message);
+      userInput.value = '';
+      userInput.disabled = true;
+      sendButton.disabled = true;
+      showTypingIndicator();
+
+      conversationHistory.push({ role: 'user', message });
+      if (conversationHistory.length > 6) {
+        conversationHistory = conversationHistory.slice(-6);
+      }
+      updateUserProfile(message);
+      const prompt = buildPrompt(message);
+
+      callGeminiAPI(prompt)
+        .then(data => {
+          hideTypingIndicator();
+          processResponse(data.text);
           userInput.disabled = false;
           sendButton.disabled = false;
           userInput.focus();
-          setTimeout(() => { document.getElementById('api-key-section').style.display = 'none'; }, 1500);
-        } else {
-          throw new Error(data.error ? data.error.message : "Invalid API response");
-        }
-      } catch (error) {
-        apiValidationStatus.innerHTML = `<span class="text-red-500">❌ Failed: ${error.message}. Check API key/proxy.</span>`;
-        console.error("Validation error details:", error);
-      }
+        })
+        .catch(error => {
+          hideTypingIndicator();
+          addBotMessage(`I'm sorry, I encountered an error: ${error.message}. Please try again or generate a new API key.`);
+          console.error('API Error:', error);
+          userInput.disabled = false;
+          sendButton.disabled = false;
+          userInput.focus();
+        });
     }
 
-    async function handleUserMessage() {
-      const message = userInput.value.trim();
-      if (!message || !apiKeyValidated) return;
-      
-      addUserMessage(message);
-      userInput.value = '';
-      conversationHistory.push({ role: 'user', content: message });
-      addTypingIndicator();
-      userInput.disabled = true;
-      sendButton.disabled = true;
-      
-      try {
-        analyzeUserMessage(message);
-        const prompt = generateAIPrompt(message);
-        const response = await callGeminiAPI(prompt);
-        await processAIResponse(response);
-      } catch (error) {
-        removeTypingIndicator();
-        addBotMessage(`<p>Sorry, an error occurred: ${error.message}. Try again.</p>`);
-      }
-      
-      userInput.disabled = false;
-      sendButton.disabled = false;
-      userInput.focus();
-    }
+    function buildPrompt(message) {
+      let context = `You are Planet Beauty's AI Beauty Assistant, an expert in skincare, haircare, and makeup, exclusively recommending products from planetbeauty.com. Your role is to provide personalized product recommendations and beauty advice based on the user's needs, skin type, concerns, and preferences. Use a friendly, professional tone, and keep responses concise (under 100 words). For product recommendations, ALWAYS use the format [PRODUCT_REC]Product Name|Category|Short Description|Valid Image URL[/PRODUCT_REC] with exactly 2 recommendations per response, choosing from the following planetbeauty.com products:\n\n`;
 
-    function analyzeUserMessage(message) {
-      const skinTypes = ['dry', 'oily', 'combination', 'normal', 'sensitive'];
-      for (const type of skinTypes) {
-        if (message.toLowerCase().includes(type)) {
-          userProfile.skinType = type;
-          break;
-        }
-      }
-      const skinToneRegex = /(?:skin tone|complexion).*?(fair|light|medium|tan|dark|deep)/i;
-      const toneMatch = message.match(skinToneRegex);
-      if (toneMatch) userProfile.skinTone = toneMatch[1].toLowerCase();
-      
-      const concerns = ['acne', 'wrinkles', 'aging', 'dark spots', 'dark circles', 'redness', 'dryness', 'oiliness', 'dullness', 'pores', 'texture', 'frizz', 'volume', 'damage'];
-      for (const concern of concerns) {
-        if (message.toLowerCase().includes(concern) && !userProfile.concerns.includes(concern)) {
-          userProfile.concerns.push(concern);
-        }
-      }
-    }
+      context += planetBeautyProducts.map(p => 
+        `- ${p.name} (${p.category}): ${p.description} [Image: ${p.imageUrl}, URL: ${p.productUrl}]`
+      ).join('\n') + '\n\n';
 
-    function generateAIPrompt(message) {
-      let prompt = `You are a beauty advisor for Planet Beauty. Provide personalized advice and recommend products from our catalog.\n\nUser info:`;
-      if (userProfile.skinType) prompt += `\nSkin type: ${userProfile.skinType}`;
-      if (userProfile.skinTone) prompt += `\nSkin tone: ${userProfile.skinTone}`;
-      if (userProfile.concerns.length) prompt += `\nConcerns: ${userProfile.concerns.join(', ')}`;
-      
-      prompt += `\n\nHistory:`;
-      conversationHistory.slice(-6).forEach(msg => {
-        prompt += `\n${msg.role === 'user' ? 'Customer' : 'Advisor'}: ${msg.content}`;
+      context += `Ensure image URLs are valid and hosted on planetbeauty.com (e.g., https://www.planetbeauty.com/cdn/shop/files/...). If no matching product fits, ask clarifying questions instead of recommending. Base recommendations on:\n\n`;
+
+      context += `User Profile: Skin Type: ${userProfile.skinType || 'Unknown'}, Concerns: ${userProfile.concerns.join(', ') || 'None'}, Preferences: ${userProfile.preferences.join(', ') || 'None'}\n\n`;
+
+      context += 'Conversation History:\n';
+      conversationHistory.forEach(entry => {
+        context += `${entry.role === 'user' ? 'User' : 'Assistant'}: ${entry.message}\n`;
       });
-      
-      prompt += `\n\nCurrent message: ${message}\n\nGuidelines:
-        1. Be friendly and helpful
-        2. Ask follow-ups if needed
-        3. Use [PRODUCT_REC]Product Name[/PRODUCT_REC] for recommendations
-        4. Explain why products suit the user
-        5. Suggest 2-3 products max`;
-      return prompt;
+
+      context += `\nCurrent Message: ${message}\n\n`;
+      context += 'Provide a helpful response with 2 product recommendations if relevant, using only the listed products. If unclear, ask for details.';
+
+      return context;
     }
 
-    async function callGeminiAPI(prompt) {
-      const apiKey = apiKeyInput.value.trim();
-      const proxyUrl = proxyUrlInput.value.trim();
-      
-      const response = await fetch(proxyUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ apiKey: apiKey, prompt: prompt })
-      });
-      
-      if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-      const data = await response.json();
-      
-      if (data.text) return data.text;
-      throw new Error("Unexpected API response");
+    function updateUserProfile(message) {
+      const lowerMessage = message.toLowerCase();
+      if (lowerMessage.includes('dry skin')) userProfile.skinType = 'Dry';
+      else if (lowerMessage.includes('oily skin')) userProfile.skinType = 'Oily';
+      else if (lowerMessage.includes('combination skin')) userProfile.skinType = 'Combination';
+      else if (lowerMessage.includes('normal skin')) userProfile.skinType = 'Normal';
+      else if (lowerMessage.includes('sensitive skin')) userProfile.skinType = 'Sensitive';
+
+      if (lowerMessage.includes('acne')) userProfile.concerns.push('Acne');
+      if (lowerMessage.includes('dryness')) userProfile.concerns.push('Dryness');
+      if (lowerMessage.includes('oiliness')) userProfile.concerns.push('Oiliness');
+      if (lowerMessage.includes('redness')) userProfile.concerns.push('Redness');
+      if (lowerMessage.includes('aging') || lowerMessage.includes('wrinkles')) userProfile.concerns.push('Aging');
+
+      if (lowerMessage.includes('natural') || lowerMessage.includes('organic')) userProfile.preferences.push('Natural');
+      if (lowerMessage.includes('vegan')) userProfile.preferences.push('Vegan');
+      if (lowerMessage.includes('fragrance-free')) userProfile.preferences.push('Fragrance-Free');
+
+      userProfile.concerns = [...new Set(userProfile.concerns)].slice(-3);
+      userProfile.preferences = [...new Set(userProfile.preferences)].slice(-3);
     }
 
-    async function processAIResponse(response) {
-      removeTypingIndicator();
-      conversationHistory.push({ role: 'assistant', content: response });
-      
-      // Parse product recommendation markers if any.
-      const regex = /\[PRODUCT_REC\](.*?)\[\/PRODUCT_REC\]/gs;
-      const recommendedProducts = [];
-      let cleanedResponse = response;
-      
+    function processResponse(responseText) {
+      const productRegex = /\[PRODUCT_REC\](.*?)\|(.*?)\|(.*?)\|(.*?)\[\/PRODUCT_REC\]/g;
+      let lastIndex = 0;
+      let messageContent = '';
       let match;
-      while ((match = regex.exec(response)) !== null) {
-        const productName = match[1].trim();
-        const product = products.find(p => p.name.toLowerCase().includes(productName.toLowerCase()));
-        if (product && !recommendedProducts.some(p => p.id === product.id)) recommendedProducts.push(product);
-        cleanedResponse = cleanedResponse.replace(match[0], '');
+
+      while ((match = productRegex.exec(responseText)) !== null) {
+        messageContent += responseText.slice(lastIndex, match.index);
+        const [_, name, category, description, imageUrl] = match;
+
+        // Validate product data
+        if (name && category && description && imageUrl && imageUrl.includes('planetbeauty.com')) {
+          // Generate product URL (replace with real URLs in production)
+          const productSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+          const productUrl = planetBeautyProducts.find(p => p.name === name)?.productUrl || `https://www.planetbeauty.com/products/${productSlug}`;
+          const safeImageUrl = imageUrl || FALLBACK_IMAGE;
+
+          messageContent += `
+            <a href="${productUrl}" target="_blank" class="product-card">
+              <img src="${safeImageUrl}" alt="${name}" onerror="this.src='${FALLBACK_IMAGE}'">
+              <div>
+                <h3>${name}</h3>
+                <p><strong>${category}</strong>: ${description}</p>
+              </div>
+            </a>
+          `;
+        } else {
+          console.warn('Malformed product recommendation:', match[0]);
+        }
+        lastIndex = match.index + match[0].length;
       }
-      
-      addBotMessage(cleanedResponse.replace(/\n\n/g, '</p><p class="mt-2">').replace(/\n/g, '<br>'));
-      if (recommendedProducts.length) displayProductRecommendations(recommendedProducts);
+      messageContent += responseText.slice(lastIndex);
+
+      addBotMessage(messageContent);
     }
 
     function addUserMessage(message) {
-      const div = document.createElement('div');
-      div.className = 'chat-message flex justify-end my-4';
-      div.innerHTML = `<div class="max-w-3/4 message-user px-4 py-3"><p>${message}</p></div>`;
-      chatContainer.appendChild(div);
-      scrollToBottom();
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'message user-message';
+      messageDiv.textContent = message;
+      chatBody.appendChild(messageDiv);
+      chatBody.scrollTop = chatBody.scrollHeight;
     }
 
     function addBotMessage(message) {
-      const div = document.createElement('div');
-      div.className = 'chat-message flex my-4';
-      div.innerHTML = `<div class="max-w-3/4 message-bot px-4 py-3">${message}</div>`;
-      chatContainer.appendChild(div);
-      scrollToBottom();
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'message bot-message';
+      messageDiv.innerHTML = message;
+      chatBody.appendChild(messageDiv);
+      chatBody.scrollTop = chatBody.scrollHeight;
     }
 
-    function displayProductRecommendations(products) {
-      const div = document.createElement('div');
-      div.className = 'my-4';
-      div.innerHTML = `
-        <div class="mb-2 font-medium planet-beauty-pink">Recommended Products:</div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          ${products.map(p => `
-            <div class="product-card rounded-lg border bg-white">
-              <div class="flex">
-                <div class="w-1/3 p-2">
-                  <img src="${p.image}" alt="${p.name}" class="w-full h-auto rounded">
-                </div>
-                <div class="w-2/3 p-3">
-                  <h3 class="font-medium text-sm planet-beauty-pink">${p.name}</h3>
-                  <p class="text-gray-700 text-xs mt-1">${p.description.substring(0, 60)}...</p>
-                  <div class="flex justify-between items-center mt-2">
-                    <span class="font-bold text-sm">${p.price}</span>
-                    <a href="${p.url}" target="_blank" class="text-xs px-3 py-1 planet-beauty-bg text-white rounded">Shop Now</a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      `;
-      chatContainer.appendChild(div);
-      scrollToBottom();
+    function showTypingIndicator() {
+      let typingIndicator = document.querySelector('.typing-indicator');
+      if (!typingIndicator) {
+        typingIndicator = document.createElement('div');
+        typingIndicator.className = 'typing-indicator';
+        typingIndicator.textContent = 'Assistant is typing...';
+        chatBody.appendChild(typingIndicator);
+      }
+      typingIndicator.classList.add('active');
+      chatBody.scrollTop = chatBody.scrollHeight;
     }
 
-    function addTypingIndicator() {
-      const div = document.createElement('div');
-      div.id = 'typing-indicator';
-      div.className = 'chat-message flex my-4';
-      div.innerHTML = `<div class="message-bot px-4 py-3"><div class="typing-indicator"><span></span><span></span><span></span></div></div>`;
-      chatContainer.appendChild(div);
-      scrollToBottom();
+    function hideTypingIndicator() {
+      const typingIndicator = document.querySelector('.typing-indicator');
+      if (typingIndicator) {
+        typingIndicator.classList.remove('active');
+      }
     }
 
-    function removeTypingIndicator() {
-      const indicator = document.getElementById('typing-indicator');
-      if (indicator) indicator.remove();
-    }
-
-    function scrollToBottom() {
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
+    // Auto-validate on load
+    validateAPI();
   </script>
 </body>
 </html>
