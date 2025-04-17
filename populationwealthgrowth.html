@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time World Population & Wealth Statistics</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
+        }
+        .counter-box {
+            background-color: #1e293b;
+            border-radius: 0.5rem;
+            transition: transform 0.3s ease;
+        }
+        .counter-box:hover {
+            transform: translateY(-5px);
+        }
+        .counter-value {
+            font-size: 2.25rem;
+            font-weight: bold;
+        }
+        .chart-container {
+            height: 400px;
+            background-color: #1e293b;
+            border-radius: 0.5rem;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .gradient-text {
+            background: linear-gradient(45deg, #f59e0b, #ef4444);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .top-billionaire:nth-child(odd) {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+        .glass-morphism {
+            backdrop-filter: blur(10px);
+            background-color: rgba(30, 41, 59, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <header class="py-6 px-4 sm:px-6 lg:px-8 mb-8 glass-morphism">
+        <div class="container mx-auto">
+            <h1 class="text-4xl font-bold text-center mb-2">Global Population & Wealth Monitor</h1>
+            <p class="text-xl text-center text-gray-400">Real-time statistics on world population and wealth distribution</p>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 pb-20">
+        <!-- Population Statistics Section -->
+        <section class="mb-16">
+            <h2 class="text-3xl font-bold mb-6 gradient-text">Population Statistics</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="counter-box p-6 shadow-lg">
+                    <h3 class="text-xl font-semibold mb-2 text-gray-300">Current World Population</h3>
+                    <div class="counter-value text-blue-400" id="currentPopulation">8,216,499,338</div>
+                    <div class="text-sm mt-2 text-gray-400">Updating in real-time</div>
+                </div>
+                <div class="counter-box p-6 shadow-lg">
+                    <h3 class="text-xl font-semibold mb-2 text-gray-300">Births This Year</h3>
+                    <div class="counter-value text-green-400" id="birthsThisYear">0</div>
+                    <div class="text-sm mt-2 text-gray-400">Since January 1, 2025</div>
+                </div>
+                <div class="counter-box p-6 shadow-lg">
+                    <h3 class="text-xl font-semibold mb-2 text-gray-300">Births Today</h3>
+                    <div class="counter-value text-green-400" id="birthsToday">0</div>
+                    <div class="text-sm mt-2 text-gray-400">Since midnight UTC</div>
+                </div>
+                <div class="counter-box p-6 shadow-lg">
+                    <h3 class="text-xl font-semibold mb-2 text-gray-300">Deaths This Year</h3>
+                    <div class="counter-value text-red-400" id="deathsThisYear">0</div>
+                    <div class="text-sm mt-2 text-gray-400">Since January 1, 2025</div>
+                </div>
+                <div class="counter-box p-6 shadow-lg">
+                    <h3 class="text-xl font-semibold mb-2 text-gray-300">Deaths Today</h3>
+                    <div class="counter-value text-red-400" id="deathsToday">0</div>
+                    <div class="text-sm mt-2 text-gray-400">Since midnight UTC</div>
+                </div>
+                <div class="counter-box p-6 shadow-lg">
+                    <h3 class="text-xl font-semibold mb-2 text-gray-300">Net Population Growth This Year</h3>
+                    <div class="counter-value text-purple-400" id="netGrowthYear">0</div>
+                    <div class="text-sm mt-2 text-gray-400">Since January 1, 2025</div>
+                </div>
+                <div class="counter-box p-6 shadow-lg">
+                    <h3 class="text-xl font-semibold mb-2 text-gray-300">Net Population Growth Today</h3>
+                    <div class="counter-value text-purple-400" id="netGrowthToday">0</div>
+                    <div class="text-sm mt-2 text-gray-400">Since midnight UTC</div>
+                </div>
+                <div class="counter-box p-6 shadow-lg">
+                    <h3 class="text-xl font-semibold mb-2 text-gray-300">Growth Rate</h3>
+                    <div class="counter-value text-yellow-400" id="growthRate">0.85%</div>
+                    <div class="text-sm mt-2 text-gray-400">Annual rate for 2025</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Wealth Distribution Section -->
+        <section class="mb-16">
+            <h2 class="text-3xl font-bold mb-6 gradient-text">Global Wealth Distribution</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="counter-box p-6 shadow-lg">
+                    <h3 class="text-xl font-semibold mb-2 text-gray-300">Current Billionaires</h3>
+                    <div class="counter-value text-amber-400" id="billionairesCount">2,781</div>
+                    <div class="text-sm mt-2 text-gray-400">Combined wealth: $14.2 trillion</div>
+                </div>
+                <div class="counter-box p-6 shadow-lg">
+                    <h3 class="text-xl font-semibold mb-2 text-gray-300">Current Millionaires</h3>
+                    <div class="counter-value text-amber-400" id="millionairesCount">58,000,000</div>
+                    <div class="text-sm mt-2 text-gray-400">Approximately 1.5% of global adult population</div>
+                </div>
+            </div>
+
+            <div class="counter-box p-6 shadow-lg mb-6">
+                <h3 class="text-2xl font-semibold mb-4 text-center text-gray-300">Top 20 Billionaires (2025)</h3>
+                <div class="overflow-x-auto no-scrollbar">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="text-left text-gray-400 border-b border-gray-700">
+                                <th class="pb-2 pr-6">Rank</th>
+                                <th class="pb-2 pr-6">Name</th>
+                                <th class="pb-2 pr-6">Net Worth</th>
+                                <th class="pb-2">Source</th>
+                            </tr>
+                        </thead>
+                        <tbody id="billionairesList">
+                            <tr class="top-billionaire">
+                                <td class="py-3 pr-6">1</td>
+                                <td class="py-3 pr-6">Elon Musk</td>
+                                <td class="py-3 pr-6">$304 billion</td>
+                                <td class="py-3">Tesla, SpaceX</td>
+                            </tr>
+                            <tr class="top-billionaire">
+                                <td class="py-3 pr-6">2</td>
+                                <td class="py-3 pr-6">Jeff Bezos</td>
+                                <td class="py-3 pr-6">$197 billion</td>
+                                <td class="py-3">Amazon</td>
+                            </tr>
+                            <tr class="top-billionaire">
+                                <td class="py-3 pr-6">3</td>
+                                <td class="py-3 pr-6">Mark Zuckerberg</td>
+                                <td class="py-3 pr-6">$178 billion</td>
+                                <td class="py-3">Meta, Facebook</td>
+                            </tr>
+                            <tr class="top-billionaire">
+                                <td class="py-3 pr-6">4</td>
+                                <td class="py-3 pr-6">Warren Buffett</td>
+                                <td class="py-3 pr-6">$161 billion</td>
+                                <td class="py-3">Berkshire Hathaway</td>
+                            </tr>
+                            <tr class="top-billionaire">
+                                <td class="py-3 pr-6">5</td>
+                                <td class="py-3 pr-6">Bill Gates</td>
+                                <td class="py-3 pr-6">$158 billion</td>
+                                <td class="py-3">Microsoft</td>
+                            </tr>
+                            <tr class="top-billionaire">
+                                <td class="py-3 pr-6">6</td>
+                                <td class="py-3 pr-6">Larry Ellison</td>
+                                <td class="py-3 pr-6">$156 billion</td>
+                                <td class="py-3">Oracle</td>
+                            </tr>
+                            <tr class="top-billionaire">
+                                <td class="py-3 pr-6">7</td>
+                                <td class="py-3 pr-6">Bernard Arnault</td>
+                                <td class="py-3 pr-6">$150 billion</td>
+                                <td class="py-3">LVMH</td>
+                            </tr>
+                            <tr class="top-billionaire">
+                                <td class="py-3 pr-6">8</td>
+                                <td class="py-3 pr-6">Larry Page</td>
+                                <td class="py-3 pr-6">$132 billion</td>
+                                <td class="py-3">Google</td>
+                            </tr>
+                            <tr class="top-billionaire">
+                                <td class="py-3 pr-6">9</td>
+                                <td class="py-3 pr-6">Sergey Brin</td>
+                                <td class="py-3 pr-6">$127 billion</td>
+                                <td class="py-3">Google</td>
+                            </tr>
+                            <tr class="top-billionaire">
+                                <td class="py-3 pr-6">10</td>
+                                <td class="py-3 pr-6">Steve Ballmer</td>
+                                <td class="py-3 pr-6">$122 billion</td>
+                                <td class="py-3">Microsoft</td>
+                            </tr>
+                            <tr class="top-billionaire">
+                                <td class="py-3 pr-6">11</td>
+                                <td class="py-3 pr-6">Mukesh Ambani</td>
+                                <td class="py-3 pr-6">$116 billion</td>
+                                <td class="py-3">Reliance Industries</td>
+                            </tr>
+                            <tr class="top-billionaire">
+                                <td class="py-3 pr-6">12</td>
+                                <td class="py-3 pr-6">Amancio Ortega</td>
+                                <td class="py-3 pr-6">$108 billion</td>
+                                <td class="py-3">Zara</td>
+                            </tr>
+                            <tr class="top-billionaire">
+                                <td class="py-3 pr-6">13</td>
+                                <td class="py-3 pr-6">Michael Bloomberg</td>
+                                <td class="py-3 pr-6">$105 billion</td>
+                                <td class="py-3">Bloomberg LP</td>
+                            </tr>
+                            <tr class="top-billionaire">
+                                <td class="py-3 pr-6">14</td>
+                                <td class="py-3 pr-6">Jim Walton</td>
+                                <td class="py-3 pr-6">$95 billion</td>
+                                <td class="py-3">Walmart</td>
+                            </tr>
+                            <tr class="top-billionaire">
+                                <td class="py-3 pr-6">15</td>
+                                <td class="py-3 pr-6">Rob Walton</td>
+                                <td class="py-3 pr-6">$94 billion</td>
+                                <td class="py-3">Walmart</td>
+                            </tr>
+                            <tr class="top-billionaire">
+                                <td class="py-3 pr-6">16</td>
+                                <td class="py-3 pr-6">Alice Walton</td>
+                                <td class="py-3 pr-6">$93 billion</td>
+                                <td class="py-3">Walmart</td>
+                            </tr>
+                            <tr class="top-billionaire">
+                                <td class="py-3 pr-6">17</td>
+                                <td class="py-3 pr-6">Gautam Adani</td>
+                                <td class="py-3 pr-6">$92 billion</td>
+                                <td class="py-3">Infrastructure, Commodities</td>
+                            </tr>
+                            <tr class="top-billionaire">
+                                <td class="py-3 pr-6">18</td>
+                                <td class="py-3 pr-6">Francoise Bettencourt Meyers</td>
+                                <td class="py-3 pr-6">$91 billion</td>
+                                <td class="py-3">L'Oréal</td>
+                            </tr>
+                            <tr class="top-billionaire">
+                                <td class="py-3 pr-6">19</td>
+                                <td class="py-3 pr-6">Carlos Slim Helu</td>
+                                <td class="py-3 pr-6">$88 billion</td>
+                                <td class="py-3">Telecom</td>
+                            </tr>
+                            <tr class="top-billionaire">
+                                <td class="py-3 pr-6">20</td>
+                                <td class="py-3 pr-6">Jensen Huang</td>
+                                <td class="py-3 pr-6">$85 billion</td>
+                                <td class="py-3">NVIDIA</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Charts & Projections Section -->
+        <section class="mb-16">
+            <h2 class="text-3xl font-bold mb-6 gradient-text">Future Projections & Trends</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="chart-container p-4">
+                    <h3 class="text-xl font-semibold mb-4 text-center text-gray-300">World Population Projection (2025-2100)</h3>
+                    <canvas id="populationProjectionChart"></canvas>
+                </div>
+                <div class="chart-container p-4">
+                    <h3 class="text-xl font-semibold mb-4 text-center text-gray-300">Annual Growth Rate Projection (2025-2100)</h3>
+                    <canvas id="growthRateChart"></canvas>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="chart-container p-4">
+                    <h3 class="text-xl font-semibold mb-4 text-center text-gray-300">Population by Continent (2025)</h3>
+                    <canvas id="continentChart"></canvas>
+                </div>
+                <div class="chart-container p-4">
+                    <h3 class="text-xl font-semibold mb-4 text-center text-gray-300">Millionaire Distribution by Region</h3>
+                    <canvas id="millionaireChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Knowledge Base Section -->
+        <section class="mb-16">
+            <h2 class="text-3xl font-bold mb-6 gradient-text">Global Population Knowledge Base</h2>
+            <div class="counter-box p-6 shadow-lg">
+                <h3 class="text-2xl font-semibold mb-4 text-gray-300">Live Updates & Key Facts</h3>
+                
+                <div class="mb-6">
+                    <h4 class="text-xl font-semibold mb-2 text-blue-400">Population Milestones</h4>
+                    <ul class="list-disc pl-5 space-y-2 text-gray-300">
+                        <li>Current world population is <strong>8.2 billion</strong> (2025)</li>
+                        <li>World population is projected to reach <strong>9 billion</strong> in 2037</li>
+                        <li>The 10 billion milestone is expected around <strong>2060</strong></li>
+                        <li>Historical milestones: 7 billion (2010), 6 billion (1998), 5 billion (1987), 4 billion (1974), 3 billion (1960)</li>
+                    </ul>
+                </div>
+
+                <div class="mb-6">
+                    <h4 class="text-xl font-semibold mb-2 text-blue-400">Population Growth Statistics</h4>
+                    <ul class="list-disc pl-5 space-y-2 text-gray-300">
+                        <li>Current annual growth rate is <strong>0.85%</strong> (2025), down from 0.97% in 2020</li>
+                        <li>About <strong>70 million people</strong> are added to the world population annually</li>
+                        <li>The growth rate peaked at around 2% in the mid-1960s and has been declining since</li>
+                        <li>Population density worldwide is approximately <strong>55 people per km²</strong></li>
+                    </ul>
+                </div>
+
+                <div class="mb-6">
+                    <h4 class="text-xl font-semibold mb-2 text-blue-400">Regional Distribution</h4>
+                    <ul class="list-disc pl-5 space-y-2 text-gray-300">
+                        <li><strong>Asia:</strong> 4.8 billion people (58.7% of world population)</li>
+                        <li><strong>Africa:</strong> 1.5 billion people (18.8% of world population)</li>
+                        <li><strong>Europe:</strong> 744 million people (9.0% of world population)</li>
+                        <li><strong>Latin America & Caribbean:</strong> 667 million people (8.1% of world population)</li>
+                        <li><strong>Northern America:</strong> 387 million people (4.7% of world population)</li>
+                        <li><strong>Oceania:</strong> 46 million people (0.6% of world population)</li>
+                    </ul>
+                </div>
+
+                <div class="mb-6">
+                    <h4 class="text-xl font-semibold mb-2 text-blue-400">Wealth Distribution Facts</h4>
+                    <ul class="list-disc pl-5 space-y-2 text-gray-300">
+                        <li>There are approximately <strong>58 million millionaires</strong> worldwide (1.5% of global adult population)</li>
+                        <li>The United States is home to <strong>22 million millionaires</strong> (38% of the global total)</li>
+                        <li>There are about <strong>2,781 billionaires</strong> worldwide with a combined wealth of $14.2 trillion</li>
+                        <li>The top 10 richest people hold more wealth than the bottom 40% of the global population</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-xl font-semibold mb-2 text-blue-400">Population Challenges</h4>
+                    <ul class="list-disc pl-5 space-y-2 text-gray-300">
+                        <li>Median age worldwide is <strong>30.9 years</strong> (2025) and rising</li>
+                        <li>Global fertility rate is <strong>2.24 children per woman</strong> (2025), down from 2.32 in 2020</li>
+                        <li>Urban population comprises about <strong>56%</strong> of the total world population</li>
+                        <li>By 2050, it's projected that 68% of the world population will live in urban areas</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="py-6 px-4 bg-gray-900 text-center">
+        <div class="container mx-auto">
+            <p class="text-gray-400">Data sourced from Worldometers, United Nations Population Division, Forbes, and UBS Global Wealth Report</p>
+            <p class="mt-2 text-lg">Developed with ❤️ by Jose Espinosa</p>
+            <p class="mt-2 text-sm text-gray-500">Last updated: April 17, 2025</p>
+        </div>
+    </footer>
+
+    <script>
+        // Population constants and variables
+        const WORLD_POPULATION_START_2025 = 8216499338;
+        const ANNUAL_GROWTH_RATE = 0.0085;
+        const BIRTHS_PER_YEAR = 140000000;  // Approximate births per year
+        const DEATHS_PER_YEAR = 70000000;   // Approximate deaths per year
+        
+        const BIRTHS_PER_SECOND = BIRTHS_PER_YEAR / (365 * 24 * 60 * 60);
+        const DEATHS_PER_SECOND = DEATHS_PER_YEAR / (365 * 24 * 60 * 60);
+        const GROWTH_PER_SECOND = BIRTHS_PER_SECOND - DEATHS_PER_SECOND;
+        
+        let startOfYear = new Date(2025, 0, 1);
+        let startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+        
+        function updateCounters() {
+            const now = new Date();
+            
+            // Calculate seconds elapsed
+            const secondsThisYear = (now - startOfYear) / 1000;
+            const secondsToday = (now - startOfDay) / 1000;
+            
+            // Calculate population metrics
+            const birthsThisYear = Math.floor(BIRTHS_PER_SECOND * secondsThisYear);
+            const birthsToday = Math.floor(BIRTHS_PER_SECOND * secondsToday);
+            const deathsThisYear = Math.floor(DEATHS_PER_SECOND * secondsThisYear);
+            const deathsToday = Math.floor(DEATHS_PER_SECOND * secondsToday);
+            const netGrowthYear = birthsThisYear - deathsThisYear;
+            const netGrowthToday = birthsToday - deathsToday;
+            
+            // Calculate current population
+            const currentPopulation = Math.floor(WORLD_POPULATION_START_2025 + netGrowthYear);
+            
+            // Update DOM elements
+            document.getElementById('currentPopulation').textContent = formatNumber(currentPopulation);
+            document.getElementById('birthsThisYear').textContent = formatNumber(birthsThisYear);
+            document.getElementById('birthsToday').textContent = formatNumber(birthsToday);
+            document.getElementById('deathsThisYear').textContent = formatNumber(deathsThisYear);
+            document.getElementById('deathsToday').textContent = formatNumber(deathsToday);
+            document.getElementById('netGrowthYear').textContent = formatNumber(netGrowthYear);
+            document.getElementById('netGrowthToday').textContent = formatNumber(netGrowthToday);
+            
+            // Simulate small random changes in billionaire and millionaire counts
+            const billionaires = 2781 + Math.floor(Math.random() * 3) - 1;
+            const millionaireChange = Math.floor(Math.random() * 1000) - 300;
+            const millionaires = 58000000 + millionaireChange;
+            
+            document.getElementById('billionairesCount').textContent = formatNumber(billionaires);
+            document.getElementById('millionairesCount').textContent = formatNumber(millionaires);
+        }
+        
+        function formatNumber(num) {
+            return new Intl.NumberFormat().format(num);
+        }
+        
+        // Initialize and update counters
+        updateCounters();
+        setInterval(updateCounters, 1000);
+
+        // Population Projection Chart
+        const populationProjectionCtx = document.getElementById('populationProjectionChart').getContext('2d');
+        const populationProjectionChart = new Chart(populationProjectionCtx, {
+            type: 'line',
+            data: {
+                labels: ['2025', '2030', '2035', '2040', '2045', '2050', '2060', '2070', '2080', '2090', '2100'],
+                datasets: [{
+                    label: 'World Population (billions)',
+                    data: [8.2, 8.5, 8.9, 9.2, 9.4, 9.7, 10.0, 10.2, 10.2, 10.2, 10.2],
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#e2e8f0'
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#e2e8f0'
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#e2e8f0'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Growth Rate Chart
+        const growthRateCtx = document.getElementById('growthRateChart').getContext('2d');
+        const growthRateChart = new Chart(growthRateCtx, {
+            type: 'line',
+            data: {
+                labels: ['2025', '2030', '2035', '2040', '2045', '2050', '2060', '2070', '2080', '2090', '2100'],
+                datasets: [{
+                    label: 'Annual Growth Rate (%)',
+                    data: [0.85, 0.81, 0.73, 0.65, 0.57, 0.47, 0.33, 0.17, 0.07, 0.01, 0.00],
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#e2e8f0'
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#e2e8f0'
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#e2e8f0'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Population by Continent Chart
+        const continentCtx = document.getElementById('continentChart').getContext('2d');
+        const continentChart = new Chart(continentCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Asia', 'Africa', 'Europe', 'Latin America & Caribbean', 'Northern America', 'Oceania'],
+                datasets: [{
+                    data: [58.7, 18.8, 9.0, 8.1, 4.7, 0.6],
+                    backgroundColor: [
+                        '#3b82f6',
+                        '#f59e0b',
+                        '#10b981',
+                        '#8b5cf6',
+                        '#ec4899',
+                        '#14b8a6'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            color: '#e2e8f0'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Millionaire Distribution Chart
+        const millionaireCtx = document.getElementById('millionaireChart').getContext('2d');
+        const millionaireChart = new Chart(millionaireCtx, {
+            type: 'bar',
+            data: {
+                labels: ['United States', 'Western Europe', 'Mainland China', 'Japan', 'Other Asia', 'Rest of World'],
+                datasets: [{
+                    label: 'Percentage of Global Millionaires',
+                    data: [38, 28, 10, 7, 10, 7],
+                    backgroundColor: [
+                        '#10b981',
+                        '#8b5cf6',
+                        '#f59e0b',
+                        '#ec4899',
+                        '#3b82f6',
+                        '#6b7280'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#e2e8f0'
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#e2e8f0'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
