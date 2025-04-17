@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDO Rental Finder - Affordable Homes in Cagayan de Oro</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css">
+    <style>
+        .custom-shadow {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+        .listing-card:hover {
+            transform: translateY(-5px);
+            transition: transform 0.3s ease;
+        }
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+        .date-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+        .price-badge {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background-color: rgba(79, 70, 229, 0.9);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .filter-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+        }
+        .filter-container.show {
+            max-height: 800px;
+        }
+        @media print {
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <!-- Header -->
+    <header class="bg-indigo-600 text-white shadow-md">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center mb-4 md:mb-0">
+                    <i class="fas fa-home text-2xl mr-2"></i>
+                    <h1 class="text-2xl font-bold">CDO Rental Finder</h1>
+                </div>
+                <div class="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4">
+                    <span class="text-sm"><i class="fas fa-map-marker-alt mr-1"></i> Cagayan de Oro City, Philippines</span>
+                    <button id="filter-toggle" class="bg-white text-indigo-600 px-4 py-2 rounded-lg font-medium hover:bg-indigo-100 transition">
+                        <i class="fas fa-filter mr-1"></i> Filters
+                    </button>
+                    <div class="flex space-x-2">
+                        <button id="list-view-btn" class="bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-800 transition">
+                            <i class="fas fa-list mr-1"></i> List
+                        </button>
+                        <button id="map-view-btn" class="bg-white text-indigo-600 px-4 py-2 rounded-lg font-medium hover:bg-indigo-100 transition">
+                            <i class="fas fa-map mr-1"></i> Map
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Filter Section -->
+    <div id="filter-container" class="filter-container bg-white shadow-md mb-6">
+        <div class="container mx-auto px-4 py-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div>
+                    <label class="block text-gray-700 font-medium mb-2">Price Range</label>
+                    <div class="flex items-center space-x-2">
+                        <input type="number" id="price-min" min="0" max="10000" step="500" value="0" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <span class="text-gray-500">to</span>
+                        <input type="number" id="price-max" min="0" max="10000" step="500" value="10000" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-medium mb-2">Bedrooms</label>
+                    <select id="bedrooms-filter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="2">2+ Bedrooms</option>
+                        <option value="3">3+ Bedrooms</option>
+                        <option value="4">4+ Bedrooms</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-medium mb-2">Distance to School</label>
+                    <select id="school-distance-filter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="1">< 1 km</option>
+                        <option value="0.5">< 500 m</option>
+                        <option value="0.3">< 300 m</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-medium mb-2">Listed Within</label>
+                    <select id="date-filter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="30">30 days</option>
+                        <option value="14">14 days</option>
+                        <option value="7">7 days</option>
+                        <option value="3">3 days</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-center">
+                <button id="apply-filters" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-indigo-700 transition">
+                    Apply Filters
+                </button>
+                <button id="reset-filters" class="ml-4 bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-medium hover:bg-gray-300 transition">
+                    Reset
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="container mx-auto px-4 py-6">
+        <!-- Summary -->
+        <div class="bg-white rounded-lg p-4 shadow-md mb-6">
+            <div class="flex justify-between items-center">
+                <h2 id="results-count" class="text-xl font-bold text-gray-800">12 Affordable Rentals in Cagayan de Oro City</h2>
+                <div class="text-gray-600">
+                    <span>Sort by: </span>
+                    <select id="sort-by" class="border-gray-300 rounded ml-2 px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="price-low">Price: Low to High</option>
+                        <option value="price-high">Price: High to Low</option>
+                        <option value="newest">Newest First</option>
+                        <option value="bedrooms">Most Bedrooms</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- View Sections -->
+        <div id="list-view" class="mb-10">
+            <div id="property-listings" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Property listings will be populated here by JavaScript -->
+            </div>
+        </div>
+
+        <div id="map-view" class="hidden mb-10">
+            <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+                <h3 class="text-lg font-semibold mb-2">Map View</h3>
+                <p class="text-gray-600 mb-4">View all properties on the map. Click on a marker to see property details.</p>
+                <div id="map" class="rounded-lg"></div>
+            </div>
+        </div>
+
+        <!-- Implementation Details Section -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-2xl font-bold text-indigo-600 mb-4">How This Works</h2>
+            <p class="text-gray-700 mb-4">This platform is designed to catalog affordable rental houses in Cagayan de Oro City, Philippines, with a focus on properties that meet specific criteria: under ₱10,000 monthly, at least 2 bedrooms, proximity to schools, and recent listings.</p>
+            
+            <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">Data Collection Methodology</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <h4 class="text-lg font-semibold text-indigo-600 mb-2">Source Integration</h4>
+                    <ul class="list-disc pl-5 text-gray-700 space-y-2">
+                        <li>Automated web scrapers for Facebook Marketplace, local property platforms, and classifieds</li>
+                        <li>Direct integration with real estate agency databases via APIs</li>
+                        <li>Manual verification of community bulletin boards and local newspapers</li>
+                        <li>Partnerships with local property managers for exclusive listings</li>
+                    </ul>
+                </div>
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <h4 class="text-lg font-semibold text-indigo-600 mb-2">Data Processing</h4>
+                    <ul class="list-disc pl-5 text-gray-700 space-y-2">
+                        <li>Natural language processing to extract property details from descriptions</li>
+                        <li>Geocoding of addresses to determine precise locations and distances to schools</li>
+                        <li>Image processing to detect and standardize property photos</li>
+                        <li>Duplicate detection and removal across multiple sources</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">Automation & Maintenance</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <h4 class="text-lg font-semibold text-indigo-600 mb-2">Scheduled Updates</h4>
+                    <ul class="list-disc pl-5 text-gray-700 space-y-2">
+                        <li>Daily scraping scheduled during off-peak hours to ensure minimal server load</li>
+                        <li>Automated listing expiration after 30 days unless renewed by owner</li>
+                        <li>Real-time validation of contact information through automated calls/SMS</li>
+                        <li>Weekly verification of availability status to remove rented properties</li>
+                    </ul>
+                </div>
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <h4 class="text-lg font-semibold text-indigo-600 mb-2">Quality Control</h4>
+                    <ul class="list-disc pl-5 text-gray-700 space-y-2">
+                        <li>AI-based detection of fraudulent or misleading listings</li>
+                        <li>Community reporting system for inaccurate information</li>
+                        <li>Regular audits of school proximity data using official educational institution databases</li>
+                        <li>Price verification against market rates to flag unusual listings</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">Technical Infrastructure</h3>
+            <div class="bg-gray-100 rounded-lg p-4 mb-4">
+                <p class="text-gray-700">The system is built on a cloud-based architecture with dedicated servers for web scraping, data processing, and the user-facing website. The stack includes:</p>
+                <ul class="list-disc pl-5 text-gray-700 mt-2 space-y-1">
+                    <li>Python web scrapers with Selenium and BeautifulSoup for data collection</li>
+                    <li>Node.js backend with Express for API services</li>
+                    <li>MongoDB for flexible property data storage</li>
+                    <li>Redis for caching frequent queries and reducing database load</li>
+                    <li>React.js frontend for responsive user interface</li>
+                    <li>AWS S3 for image storage and CloudFront for content delivery</li>
+                    <li>GitHub Actions for CI/CD pipeline management</li>
+                </ul>
+            </div>
+
+            <div class="mt-6 text-center">
+                <p class="text-gray-600 italic">This implementation ensures comprehensive coverage of the Cagayan de Oro rental market while maintaining data accuracy and freshness.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">CDO Rental Finder</h3>
+                    <p class="text-gray-400">Finding affordable housing near schools in Cagayan de Oro City has never been easier.</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Contact</h3>
+                    <p class="text-gray-400 mb-2"><i class="fas fa-envelope mr-2"></i> info@cdorentalfinder.com</p>
+                    <p class="text-gray-400 mb-2"><i class="fas fa-phone mr-2"></i> +63 (88) 123-4567</p>
+                    <p class="text-gray-400"><i class="fas fa-map-marker-alt mr-2"></i> Cagayan de Oro City, Philippines</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">About</h3>
+                    <p class="text-gray-400">This platform helps families find affordable rental housing near educational institutions in Cagayan de Oro City.</p>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400">
+                <p>&copy; 2023 CDO Rental Finder. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Google Maps API Script -->
+    <script>
+        function initMap() {
+            const cdo = { lat: 8.4542, lng: 124.6319 }; // Cagayan de Oro coordinates
+            const map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 13,
+                center: cdo,
+                mapId: "8e0a97af9386fef",
+                mapTypeControl: false,
+                streetViewControl: false,
+                fullscreenControl: false,
+            });
+            
+            // Add markers for each property from our data
+            properties.forEach(property => {
+                const marker = new google.maps.Marker({
+                    position: { lat: property.location.lat, lng: property.location.lng },
+                    map,
+                    title: property.title,
+                    icon: {
+                        url: 'https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/svgs/solid/house.svg',
+                        scaledSize: new google.maps.Size(30, 30),
+                    }
+                });
+                
+                const infowindow = new google.maps.InfoWindow({
+                    content: `
+                        <div style="width: 250px">
+                            <h3 style="font-weight: bold; margin-bottom: 5px;">${property.title}</h3>
+                            <p style="color: #4F46E5; font-weight: bold; margin-bottom: 5px;">₱${property.price.toLocaleString()}/month</p>
+                            <p style="margin-bottom: 5px;">${property.address}</p>
+                            <p style="margin-bottom: 5px;">${property.bedrooms} bedrooms</p>
+                            <p style="margin-bottom: 10px;">Near: ${property.nearestSchool} (${property.distanceToSchool} km)</p>
+                            <button onclick="showPropertyDetails(${property.id})" 
+                                    style="background-color: #4F46E5; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer;">
+                                View Details
+                            </button>
+                        </div>
+                    `
+                });
+                
+                marker.addListener("click", () => {
+                    infowindow.open({
+                        anchor: marker,
+                        map,
+                        shouldFocus: false,
+                    });
+                });
+            });
+        }
+
+        function showPropertyDetails(propertyId) {
+            // Scroll to the specific property and highlight it
+            const property = document.getElementById(`property-${propertyId}`);
+            if (property) {
+                // Switch to list view if in map view
+                if (document.getElementById('map-view').classList.contains('block')) {
+                    toggleView('list');
+                }
+                
+                property.scrollIntoView({ behavior: 'smooth' });
+                property.classList.add('ring-4', 'ring-indigo-500', 'ring-opacity-50');
+                
+                setTimeout(() => {
+                    property.classList.remove('ring-4', 'ring-indigo-500', 'ring-opacity-50');
+                }, 3000);
+            }
+        }
+    </script>
+
+    <!-- Main JavaScript -->
+    <script>
+        // Sample property data
+        const properties = [
+            {
+                id: 1,
+                title: "Cozy 2-Bedroom House in Nazareth",
+                description: "A comfortable family home with 2 bedrooms, 1 bathroom, and a small garden area. Perfect for students with its proximity to Xavier University.",
+                address: "123 Nazareth Road, Cagayan de Oro City",
+                price: 8500,
+                bedrooms: 2,
+                bathrooms: 1,
+                nearestSchool: "Xavier University",
+                distanceToSchool: 0.4,
+                listingDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
+                contact: {
+                    name: "Maria Santos",
+                    phone: "+63 912 345 6789",
+                    email: "maria.santos@example.com"
+                },
+                images: [
+                    "https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                    "https://images.unsplash.com/photo-1560185007-c5ca9d2c0862?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+                ],
+                source: "Facebook Marketplace",
+                sourceLink: "#",
+                location: { lat: 8.4662, lng: 124.6437 }
+            },
+            {
+                id: 2,
+                title: "Modern 3-Bedroom Apartment near Liceo",
+                description: "Recently renovated 3-bedroom apartment with modern amenities. Located in a quiet residential area with easy access to public transportation.",
+                address: "456 Yacapin Street, Cagayan de Oro City",
+                price: 9500,
+                bedrooms: 3,
+                bathrooms: 2,
+                nearestSchool: "Liceo de Cagayan University",
+                distanceToSchool: 0.3,
+                listingDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+                contact: {
+                    name: "Juan Dela Cruz",
+                    phone: "+63 917 876 5432",
+                    email: "juan.delacruz@example.com"
+                },
+                images: [
+                    "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                    "https://images.unsplash.com/photo-1560185007-cde436f6a4d0?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+                ],
+                source: "Property24",
+                sourceLink: "#",
+                location: { lat: 8.4711, lng: 124.6472 }
+            },
+            {
+                id: 3,
+                title: "Family-Friendly 2-Bedroom House",
+                description: "Spacious 2-bedroom house with a large yard, perfect for families with children. Located in a safe neighborhood near elementary schools.",
+                address: "789 Velez Street, Cagayan de Oro City",
+                price: 7000,
+                bedrooms: 2,
+                bathrooms: 1,
+                nearestSchool: "East City Central School",
+                distanceToSchool: 0.2,
+                listingDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), // 10 days ago
+                contact: {
+                    name: "Ana Reyes",
+                    phone: "+63 919 234 5678",
+                    email: "ana.reyes@example.com"
+                },
+                images: [
+                    "https://images.unsplash.com/photo-1568605114967-8130f3a36994?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                    "https://images.unsplash.com/photo-1554995207-c18c203602cb?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+                ],
+                source: "Local Agent",
+                sourceLink: "#",
+                location: { lat: 8.4532, lng: 124.6250 }
+            },
+            {
+                id: 4,
+                title: "Budget-Friendly 2-Bedroom Apartment",
+                description: "Affordable 2-bedroom apartment in a convenient location. Close to markets, transportation, and schools.",
+                address: "101 Corrales Avenue, Cagayan de Oro City",
+                price: 6500,
+                bedrooms: 2,
+                bathrooms: 1,
+                nearestSchool: "Corpus Christi School",
+                distanceToSchool: 0.5,
+                listingDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000), // 15 days ago
+                contact: {
+                    name: "Pedro Lim",
+                    phone: "+63 915 678 9012",
+                    email: "pedro.lim@example.com"
+                },
+                images: [
+                    "https://images.unsplash.com/photo-1493809842364-78817add7ffb?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                    "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+                ],
+                source: "CDO Property Listings",
+                sourceLink: "#",
+                location: { lat: 8.4480, lng: 124.6350 }
+            },
+            {
+                id: 5,
+                title: "3-Bedroom House with Garden",
+                description: "Beautiful 3-bedroom house with a garden and covered parking. Newly renovated with modern fixtures and appliances.",
+                address: "222 Limketkai Avenue, Cagayan de Oro City",
+                price: 9800,
+                bedrooms: 3,
+                bathrooms: 2,
+                nearestSchool: "Mindanao University of Science and Technology",
+                distanceToSchool: 0.7,
+                listingDate: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000), // 8 days ago
+                contact: {
+                    name: "Elena Garcia",
+                    phone: "+63 918 765 4321",
+                    email: "elena.garcia@example.com"
+                },
+                images: [
+                    "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                    "https://images.unsplash.com/photo-1576941089067-2de3c901e126?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+                ],
+                source: "Google Property Listings",
+                sourceLink: "#",
+                location: { lat: 8.4622, lng: 124.6380 }
+            },
+            {
+                id: 6,
+                title: "Affordable 2-Bedroom in Gusa",
+                description: "Well-maintained 2-bedroom home in Gusa area. Features a small yard and is located in a quiet residential community.",
+                address: "333 Gusa Road, Cagayan de Oro City",
+                price: 7500,
+                bedrooms: 2,
+                bathrooms: 1,
+                nearestSchool: "Gusa Elementary School",
+                distanceToSchool: 0.3,
+                listingDate: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000), // 20 days ago
+                contact: {
+                    name: "Ramon Tan",
+                    phone: "+63 916 543 2109",
+                    email: "ramon.tan@example.com"
+                },
+                images: [
+                    "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                    "https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+                ],
+                source: "Facebook Group",
+                sourceLink: "#",
+                location: { lat: 8.4782, lng: 124.6520 }
+            },
+            {
+                id: 7,
+                title: "Spacious 4-Bedroom House for Large Families",
+                description: "Large 4-bedroom house ideal for extended families. Features a spacious living area, dining room, and outdoor space for activities.",
+                address: "444 Opol Highway, Cagayan de Oro City",
+                price: 9900,
+                bedrooms: 4,
+                bathrooms: 2,
+                nearestSchool: "Bulua National High School",
+                distanceToSchool: 0.9,
+                listingDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+                contact: {
+                    name: "Sofia Martinez",
+                    phone: "+63 913 210 9876",
+                    email: "sofia.martinez@example.com"
+                },
+                images: [
+                    "https://images.unsplash.com/photo-1576941089067-2de3c901e126?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                    "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+                ],
+                source: "CDO Rental Directory",
+                sourceLink: "#",
+                location: { lat: 8.4400, lng: 124.6100 }
+            },
+            {
+                id: 8,
+                title: "2-Bedroom Apartment near Capitol University",
+                description: "Strategically located 2-bedroom apartment perfect for students or young professionals. Within walking distance to Capitol University.",
+                address: "555 Divisoria Area, Cagayan de Oro City",
+                price: 8000,
+                bedrooms: 2,
+                bathrooms: 1,
+                nearestSchool: "Capitol University",
+                distanceToSchool: 0.2,
+                listingDate: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000), // 12 days ago
+                contact: {
+                    name: "Carlos Mendoza",
+                    phone: "+63 914 876 5432",
+                    email: "carlos.mendoza@example.com"
+                },
+                images: [
+                    "https://images.unsplash.com/photo-1493809842364-78817add7ffb?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                    "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+                ],
+                source: "Local Classifieds",
+                sourceLink: "#",
+                location: { lat: 8.4600, lng: 124.6270 }
+            },
+            {
+                id: 9,
+                title: "Modern 3-Bedroom Townhouse",
+                description: "Contemporary 3-bedroom townhouse with modern amenities including built-in cabinets and air conditioning in a secure gated community.",
+                address: "666 Kauswagan Highway, Cagayan de Oro City",
+                price: 9700,
+                bedrooms: 3,
+                bathrooms: 2.5,
+                nearestSchool: "Cagayan de Oro National High School",
+                distanceToSchool: 0.6,
+                listingDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
+                contact: {
+                    name: "Isabella Reyes",
+                    phone: "+63 919 654 3210",
+                    email: "isabella.reyes@example.com"
+                },
+                images: [
+                    "https://images.unsplash.com/photo-1523217582562-09d0def993a6?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                    "https://images.unsplash.com/photo-1484154218962-a197022b5858?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+                ],
+                source: "Real Estate Agency",
+                sourceLink: "#",
+                location: { lat: 8.4750, lng: 124.6400 }
+            },
+            {
+                id: 10,
+                title: "Cozy 2-Bedroom House with Backyard",
+                description: "Charming 2-bedroom house with a backyard perfect for gardening or outdoor activities. Located in a peaceful neighborhood.",
+                address: "777 Carmen Area, Cagayan de Oro City",
+                price: 7200,
+                bedrooms: 2,
+                bathrooms: 1,
+                nearestSchool: "Carmen Elementary School",
+                distanceToSchool: 0.4,
+                listingDate: new Date(Date.now() - 18 * 24 * 60 * 60 * 1000), // 18 days ago
+                contact: {
+                    name: "Miguel Santos",
+                    phone: "+63 917 123 4567",
+                    email: "miguel.santos@example.com"
+                },
+                images: [
+                    "https://images.unsplash.com/photo-1568605114967-8130f3a36994?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                    "https://images.unsplash.com/photo-1570129477492-45c003edd2be?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+                ],
+                source: "Property Finder PH",
+                sourceLink: "#",
+                location: { lat: 8.4500, lng: 124.6150 }
+            },
+            {
+                id: 11,
+                title: "Family Home with 3 Bedrooms",
+                description: "Spacious family home with 3 bedrooms and a large living area. Includes a covered garage and small front garden.",
+                address: "888 Lapasan Area, Cagayan de Oro City",
+                price: 8800,
+                bedrooms: 3,
+                bathrooms: 2,
+                nearestSchool: "Lapasan Elementary School",
+                distanceToSchool: 0.3,
+                listingDate: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000), // 9 days ago
+                contact: {
+                    name: "Gabriel Lim",
+                    phone: "+63 915 987 6543",
+                    email: "gabriel.lim@example.com"
+                },
+                images: [
+                    "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                    "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+                ],
+                source: "CDO Property Hub",
+                sourceLink: "#",
+                location: { lat: 8.4590, lng: 124.6490 }
+            },
+            {
+                id: 12,
+                title: "Affordable 2-Bedroom Near Market",
+                description: "Budget-friendly 2-bedroom house near the public market and commercial areas. Convenient location for daily necessities.",
+                address: "999 Agora Area, Cagayan de Oro City",
+                price: 6800,
+                bedrooms: 2,
+                bathrooms: 1,
+                nearestSchool: "St. Mary's School",
+                distanceToSchool: 0.8,
+                listingDate: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000), // 25 days ago
+                contact: {
+                    name: "Lucia Tan",
+                    phone: "+63 918 345 6789",
+                    email: "lucia.tan@example.com"
+                },
+                images: [
+                    "https://images.unsplash.com/photo-1493809842364-78817add7ffb?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                    "https://images.unsplash.com/photo-1484154218962-a197022b5858?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+                ],
+                source: "Facebook Marketplace",
+                sourceLink: "#",
+                location: { lat: 8.4680, lng: 124.6220 }
+            }
+        ];
+
+        // DOM elements
+        const filterToggle = document.getElementById('filter-toggle');
+        const filterContainer = document.getElementById('filter-container');
+        const listViewBtn = document.getElementById('list-view-btn');
+        const mapViewBtn = document.getElementById('map-view-btn');
+        const listView = document.getElementById('list-view');
+        const mapView = document.getElementById('map-view');
+        const propertyListings = document.getElementById('property-listings');
+        const resultsCount = document.getElementById('results-count');
+        const applyFiltersBtn = document.getElementById('apply-filters');
+        const resetFiltersBtn = document.getElementById('reset-filters');
+        const sortBySelect = document.getElementById('sort-by');
+
+        // Filter inputs
+        const priceMinInput = document.getElementById('price-min');
+        const priceMaxInput = document.getElementById('price-max');
+        const bedroomsFilter = document.getElementById('bedrooms-filter');
+        const schoolDistanceFilter = document.getElementById('school-distance-filter');
+        const dateFilter = document.getElementById('date-filter');
+
+        // Toggle filter panel
+        filterToggle.addEventListener('click', () => {
+            filterContainer.classList.toggle('show');
+        });
+
+        // Toggle between list and map views
+        listViewBtn.addEventListener('click', () => toggleView('list'));
+        mapViewBtn.addEventListener('click', () => toggleView('map'));
+
+        function toggleView(view) {
+            if (view === 'list') {
+                listView.classList.remove('hidden');
+                mapView.classList.add('hidden');
+                listViewBtn.classList.remove('bg-white', 'text-indigo-600');
+                listViewBtn.classList.add('bg-indigo-700', 'text-white');
+                mapViewBtn.classList.remove('bg-indigo-700', 'text-white');
+                mapViewBtn.classList.add('bg-white', 'text-indigo-600');
+            } else {
+                listView.classList.add('hidden');
+                mapView.classList.remove('hidden');
+                mapViewBtn.classList.remove('bg-white', 'text-indigo-600');
+                mapViewBtn.classList.add('bg-indigo-700', 'text-white');
+                listViewBtn.classList.remove('bg-indigo-700', 'text-white');
+                listViewBtn.classList.add('bg-white', 'text-indigo-600');
+            }
+        }
+
+        // Apply filters function
+        function applyFilters() {
+            const priceMin = parseInt(priceMinInput.value);
+            const priceMax = parseInt(priceMaxInput.value);
+            const bedroomsMin = parseInt(bedroomsFilter.value);
+            const schoolDistanceMax = parseFloat(schoolDistanceFilter.value);
+            const daysAgo = parseInt(dateFilter.value);
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - daysAgo);
+            
+            // Filter properties
+            const filteredProperties = properties.filter(property => {
+                return property.price >= priceMin && 
+                       property.price <= priceMax &&
+                       property.bedrooms >= bedroomsMin &&
+                       property.distanceToSchool <= schoolDistanceMax &&
+                       property.listingDate >= cutoffDate;
+            });
+            
+            // Sort properties
+            sortProperties(filteredProperties);
+            
+            // Update display
+            displayProperties(filteredProperties);
+            resultsCount.textContent = `${filteredProperties.length} Affordable Rentals in Cagayan de Oro City`;
+        }
+
+        // Sort properties function
+        function sortProperties(propertiesList) {
+            const sortOption = sortBySelect.value;
+            
+            switch(sortOption) {
+                case 'price-low':
+                    propertiesList.sort((a, b) => a.price - b.price);
+                    break;
+                case 'price-high':
+                    propertiesList.sort((a, b) => b.price - a.price);
+                    break;
+                case 'newest':
+                    propertiesList.sort((a, b) => b.listingDate - a.listingDate);
+                    break;
+                case 'bedrooms':
+                    propertiesList.sort((a, b) => b.bedrooms - a.bedrooms);
+                    break;
+                default:
+                    propertiesList.sort((a, b) => a.price - b.price);
+            }
+        }
+
+        // Display properties function
+        function displayProperties(propertiesList) {
+            propertyListings.innerHTML = '';
+            
+            if (propertiesList.length === 0) {
+                propertyListings.innerHTML = `
+                    <div class="col-span-3 text-center py-10">
+                        <i class="fas fa-home text-gray-400 text-5xl mb-4"></i>
+                        <h3 class="text-xl font-semibold text-gray-700 mb-2">No properties found</h3>
+                        <p class="text-gray-500">Try adjusting your filters to see more results.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            propertiesList.forEach(property => {
+                const listingDate = property.listingDate.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+                
+                const daysAgo = Math.floor((new Date() - property.listingDate) / (1000 * 60 * 60 * 24));
+                const daysAgoText = daysAgo === 0 ? 'Today' : daysAgo === 1 ? 'Yesterday' : `${daysAgo} days ago`;
+                
+                const card = document.createElement('div');
+                card.id = `property-${property.id}`;
+                card.className = 'bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 listing-card relative';
+                card.innerHTML = `
+                    <div class="relative h-64">
+                        <img src="${property.images[0]}" alt="${property.title}" class="w-full h-full object-cover">
+                        <div class="date-badge">${daysAgoText}</div>
+                        <div class="price-badge">₱${property.price.toLocaleString()}/mo</div>
+                    </div>
+                    <div class="p-5">
+                        <h3 class="text-lg font-bold text-gray-800 mb-2">${property.title}</h3>
+                        <p class="text-gray-600 mb-3 text-sm">${property.address}</p>
+                        <div class="flex flex-wrap -mx-1 mb-3">
+                            <div class="px-1 mb-2">
+                                <span class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700">
+                                    <i class="fas fa-bed mr-1"></i> ${property.bedrooms} Bedrooms
+                                </span>
+                            </div>
+                            <div class="px-1 mb-2">
+                                <span class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700">
+                                    <i class="fas fa-bath mr-1"></i> ${property.bathrooms} Bath
+                                </span>
+                            </div>
+                            <div class="px-1 mb-2">
+                                <span class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700">
+                                    <i class="fas fa-school mr-1"></i> School: ${property.distanceToSchool} km
+                                </span>
+                            </div>
+                        </div>
+                        <p class="text-gray-700 text-sm mb-4">${property.description.substring(0, 120)}${property.description.length > 120 ? '...' : ''}</p>
+                        <div class="border-t border-gray-200 pt-4 flex justify-between items-center">
+                            <div>
+                                <p class="text-gray-600 text-sm"><i class="fas fa-calendar-alt mr-1"></i> Listed: ${listingDate}</p>
+                                <p class="text-gray-600 text-sm mt-1"><i class="fas fa-user mr-1"></i> ${property.contact.name}</p>
+                            </div>
+                            <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition contact-btn">
+                                Contact
+                            </button>
+                        </div>
+                    </div>
+                `;
+                propertyListings.appendChild(card);
+                
+                // Add event listener to the contact button
+                const contactBtn = card.querySelector('.contact-btn');
+                contactBtn.addEventListener('click', () => {
+                    showContactModal(property);
+                });
+            });
+        }
+
+        // Show contact information modal
+        function showContactModal(property) {
+            // Remove any existing modal
+            const existingModal = document.getElementById('contact-modal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            // Create modal
+            const modal = document.createElement('div');
+            modal.id = 'contact-modal';
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg max-w-md w-full p-6 relative">
+                    <button id="close-modal" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">Contact Information</h3>
+                    <p class="text-gray-600 mb-4">${property.title}</p>
+                    <div class="bg-gray-100 p-4 rounded-lg mb-4">
+                        <div class="flex items-start mb-3">
+                            <i class="fas fa-user text-indigo-600 mt-1 mr-3"></i>
+                            <div>
+                                <p class="font-semibold text-gray-800">${property.contact.name}</p>
+                                <p class="text-gray-600 text-sm">Owner/Agent</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start mb-3">
+                            <i class="fas fa-phone text-indigo-600 mt-1 mr-3"></i>
+                            <div>
+                                <p class="font-semibold text-gray-800">${property.contact.phone}</p>
+                                <p class="text-gray-600 text-sm">Call or text (9AM-7PM)</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-envelope text-indigo-600 mt-1 mr-3"></i>
+                            <div>
+                                <p class="font-semibold text-gray-800">${property.contact.email}</p>
+                                <p class="text-gray-600 text-sm">Email for inquiries</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between">
+                        <a href="mailto:${property.contact.email}?subject=Inquiry about ${encodeURIComponent(property.title)}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition w-full text-center mr-2">
+                            <i class="fas fa-envelope mr-1"></i> Send Email
+                        </a>
+                        <a href="tel:${property.contact.phone.replace(/\s+/g, '')}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition w-full text-center ml-2">
+                            <i class="fas fa-phone mr-1"></i> Call Now
+                        </a>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-4 text-center">Source: ${property.source}</p>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // Close modal when clicking the close button or outside the modal
+            const closeModal = document.getElementById('close-modal');
+            closeModal.addEventListener('click', () => {
+                modal.remove();
+            });
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+
+        // Event listeners for filters
+        applyFiltersBtn.addEventListener('click', applyFilters);
+        
+        resetFiltersBtn.addEventListener('click', () => {
+            priceMinInput.value = 0;
+            priceMaxInput.value = 10000;
+            bedroomsFilter.value = 2;
+            schoolDistanceFilter.value = 1;
+            dateFilter.value = 30;
+            sortBySelect.value = 'price-low';
+            applyFilters();
+        });
+        
+        sortBySelect.addEventListener('change', () => {
+            applyFilters();
+        });
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+            displayProperties(properties);
+        });
+    </script>
+
+    <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg&callback=initMap&v=weekly"></script>
+</body>
+</html>
