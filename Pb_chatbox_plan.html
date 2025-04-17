@@ -1,0 +1,1612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planet Beauty AI Chatbot System: Implementation Guide</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 700;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+            color: #2d3748;
+        }
+        h1 {
+            font-size: 2.5rem;
+            border-bottom: 3px solid #f472b6;
+            padding-bottom: 10px;
+            color: #be185d;
+        }
+        h2 {
+            font-size: 1.8rem;
+            border-bottom: 2px solid #f472b6;
+            padding-bottom: 8px;
+            color: #be185d;
+        }
+        h3 {
+            font-size: 1.5rem;
+            color: #be185d;
+        }
+        h4 {
+            font-size: 1.25rem;
+        }
+        p {
+            margin-bottom: 1rem;
+        }
+        pre {
+            background-color: #f1f5f9;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            color: #be185d;
+        }
+        .code-block {
+            background-color: #f1f5f9;
+            border-left: 4px solid #be185d;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+            font-family: 'Courier New', Courier, monospace;
+            overflow-x: auto;
+        }
+        ul, ol {
+            margin-left: 20px;
+            margin-bottom: 20px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .note {
+            background-color: #fdf2f8;
+            border-left: 4px solid #db2777;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .warning {
+            background-color: #fff7ed;
+            border-left: 4px solid #ea580c;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .tip {
+            background-color: #ecfdf5;
+            border-left: 4px solid #059669;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .step {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .step-number {
+            background-color: #be185d;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .step-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #be185d;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f8fafc;
+            font-weight: 600;
+        }
+        tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+        .image-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .image-container img {
+            max-width: 100%;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .image-caption {
+            margin-top: 10px;
+            font-style: italic;
+            color: #64748b;
+        }
+        .cover {
+            text-align: center;
+            padding: 50px 0;
+            margin-bottom: 30px;
+            background-color: #fdf2f8;
+            border-radius: 10px;
+        }
+        .logo {
+            max-width: 200px;
+            margin-bottom: 20px;
+        }
+        .cover-title {
+            font-size: 2.5rem;
+            color: #be185d;
+            margin-bottom: 10px;
+        }
+        .cover-subtitle {
+            font-size: 1.5rem;
+            color: #64748b;
+            margin-bottom: 30px;
+        }
+        .cover-date {
+            font-size: 1rem;
+            color: #64748b;
+        }
+        .toc {
+            background-color: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 30px 0;
+        }
+        .toc-title {
+            font-size: 1.5rem;
+            color: #be185d;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        .toc-item {
+            margin-bottom: 5px;
+        }
+        .toc-item a {
+            color: #334155;
+            text-decoration: none;
+        }
+        .toc-item a:hover {
+            color: #be185d;
+            text-decoration: underline;
+        }
+        .toc-level-2 {
+            margin-left: 20px;
+        }
+        .planet-beauty-theme {
+            color: #be185d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Cover Page -->
+        <div class="cover">
+            <div class="cover-title">Planet Beauty AI Chatbot System</div>
+            <div class="cover-subtitle">Implementation Guide</div>
+            <div class="mt-8 mb-4 text-gray-600">
+                A comprehensive guide for building and deploying a<br>
+                Gemini-powered AI chatbot system in n8n.io with Shopify integration
+            </div>
+            <div class="cover-date">April 2025</div>
+        </div>
+
+        <!-- Table of Contents -->
+        <div class="toc">
+            <div class="toc-title">Table of Contents</div>
+            <div class="toc-item"><a href="#introduction">1. Introduction</a></div>
+            <div class="toc-item"><a href="#overview">2. System Overview</a></div>
+            <div class="toc-item"><a href="#prerequisites">3. Prerequisites and Setup</a></div>
+            <div class="toc-item"><a href="#n8n">4. Setting Up n8n.io</a></div>
+            <div class="toc-item"><a href="#gemini">5. Configuring Google Gemini API</a></div>
+            <div class="toc-item"><a href="#chatbot">6. Building the Chatbot Workflow</a></div>
+            <div class="toc-item toc-level-2"><a href="#workflow-design">6.1 Workflow Design</a></div>
+            <div class="toc-item toc-level-2"><a href="#ai-integration">6.2 AI Integration</a></div>
+            <div class="toc-item toc-level-2"><a href="#memory">6.3 Implementing Memory</a></div>
+            <div class="toc-item"><a href="#shopify">7. Shopify Integration</a></div>
+            <div class="toc-item toc-level-2"><a href="#api-setup">7.1 API Setup</a></div>
+            <div class="toc-item toc-level-2"><a href="#product-integration">7.2 Product Integration</a></div>
+            <div class="toc-item toc-level-2"><a href="#order-integration">7.3 Order Integration</a></div>
+            <div class="toc-item"><a href="#frontend">8. Creating the Frontend Interface</a></div>
+            <div class="toc-item toc-level-2"><a href="#embed-code">8.1 Embed Code</a></div>
+            <div class="toc-item toc-level-2"><a href="#customization">8.2 Customization</a></div>
+            <div class="toc-item toc-level-2"><a href="#responsiveness">8.3 Responsiveness</a></div>
+            <div class="toc-item"><a href="#testing">9. Testing and Deployment</a></div>
+            <div class="toc-item"><a href="#monetization">10. Monetization Strategy</a></div>
+            <div class="toc-item"><a href="#conclusion">11. Conclusion and Next Steps</a></div>
+        </div>
+
+        <!-- Introduction -->
+        <h1 id="introduction">1. Introduction</h1>
+        <p>Welcome to the comprehensive guide for building and implementing a Gemini-powered AI chatbot system for Planet Beauty's Shopify stores. This document provides detailed, step-by-step instructions for creating an intelligent, context-aware chatbot that will enhance customer experience, drive sales, and provide valuable insights for your business.</p>
+        
+        <p>AI chatbots are rapidly transforming the e-commerce landscape, with approximately 65% of organizations now reporting regular use of generative AI in at least one business function. For beauty retailers like Planet Beauty, an AI chatbot offers tremendous potential to improve customer engagement by providing personalized product recommendations, answering skincare and beauty questions, and helping customers find exactly what they need.</p>
+        
+        <div class="note">
+            <strong>Project Goal:</strong> Develop and deploy a fully-functional, Gemini-powered AI chatbot system for Planet Beauty's Shopify stores that provides personalized product recommendations, answers customer queries, and assists with purchases, ultimately enhancing customer experience and increasing sales conversion.
+        </div>
+
+        <!-- System Overview -->
+        <h1 id="overview">2. System Overview</h1>
+        <p>The Planet Beauty chatbot system consists of several interconnected components that work together to deliver a seamless, intelligent customer experience:</p>
+
+        <div class="image-container">
+            <img src="https://cdn.jsdelivr.net/gh/wikimedia/mediawiki@master/resources/src/mediawiki.widgets/images/sample.svg" alt="System Architecture Diagram">
+            <div class="image-caption">Figure 1: Planet Beauty AI Chatbot System Architecture</div>
+        </div>
+
+        <h3>Key Components:</h3>
+        <ul>
+            <li><strong>n8n.io Workflow Engine:</strong> The core automation platform that orchestrates data flow between all system components</li>
+            <li><strong>Google Gemini AI:</strong> The large language model that powers natural language understanding and generation</li>
+            <li><strong>Shopify Integration:</strong> Direct connection to Planet Beauty's product catalog, inventory, and customer data</li>
+            <li><strong>Memory System:</strong> Contextual memory to maintain conversation history and personalization</li>
+            <li><strong>Frontend Interface:</strong> The chat widget that customers interact with on the website</li>
+            <li><strong>Analytics Dashboard:</strong> Tools to track performance metrics and customer interactions</li>
+        </ul>
+
+        <h3>Key Features:</h3>
+        <ul>
+            <li><strong>Natural Conversations:</strong> The chatbot engages in natural, contextually relevant dialogue</li>
+            <li><strong>Product Recommendations:</strong> Suggests products based on customer queries (e.g., "I need help with dry skin")</li>
+            <li><strong>Personalization:</strong> Remembers customer preferences and previous interactions</li>
+            <li><strong>Multi-Platform Support:</strong> Functions across web, mobile, and other customer touchpoints</li>
+            <li><strong>Real-Time Updates:</strong> Synchronizes with product inventory and pricing changes</li>
+            <li><strong>Planet Beauty Branding:</strong> Customized to match Planet Beauty's visual identity</li>
+        </ul>
+
+        <!-- Prerequisites -->
+        <h1 id="prerequisites">3. Prerequisites and Setup</h1>
+        <p>Before beginning the implementation, ensure you have the following prerequisites in place:</p>
+
+        <h3>Accounts and Access:</h3>
+        <ul>
+            <li><strong>n8n.io Account:</strong> Sign up for an n8n.io account (Cloud or self-hosted option)</li>
+            <li><strong>Google AI Studio Account:</strong> For accessing the Gemini API</li>
+            <li><strong>Shopify Partner Account:</strong> With appropriate access to Planet Beauty's Shopify store</li>
+            <li><strong>Shopify Admin Access:</strong> Admin privileges to Planet Beauty's Shopify store</li>
+            <li><strong>Web Hosting:</strong> For any custom frontend components (optional if using only Shopify's built-in options)</li>
+        </ul>
+
+        <h3>Technical Requirements:</h3>
+        <ul>
+            <li><strong>API Keys:</strong> Gemini API key, Shopify API credentials</li>
+            <li><strong>SSL Certificate:</strong> Required for secure communications</li>
+            <li><strong>Domain Name:</strong> For hosting the n8n instance if self-hosted</li>
+            <li><strong>Basic Knowledge:</strong> Familiarity with workflow automation, APIs, and web technologies</li>
+        </ul>
+
+        <div class="warning">
+            <strong>Important Security Note:</strong> All API keys and credentials should be properly secured and never exposed in public repositories or client-side code. Follow security best practices throughout the implementation.
+        </div>
+
+        <!-- Setting Up n8n.io -->
+        <h1 id="n8n">4. Setting Up n8n.io</h1>
+        <p>n8n.io serves as the workflow automation platform for our chatbot system. This section covers how to set up and configure your n8n instance for Planet Beauty's needs.</p>
+
+        <div class="step">
+            <div class="step-title"><span class="step-number">1</span> Set Up n8n.io Instance</div>
+            <p>Choose between cloud-hosted or self-hosted option based on Planet Beauty's requirements:</p>
+            
+            <h4>Cloud-Hosted Option (Recommended for quick deployment)</h4>
+            <ol>
+                <li>Go to <a href="https://app.n8n.cloud/register" target="_blank">https://app.n8n.cloud/register</a> and create an account</li>
+                <li>Select a subscription plan based on expected usage volume</li>
+                <li>Follow the onboarding process to create your first workspace</li>
+            </ol>
+            
+            <h4>Self-Hosted Option (For greater control and customization)</h4>
+            <p>For self-hosting, you can use Docker for easy deployment:</p>
+            <div class="code-block">
+                # Pull the latest n8n image<br>
+                docker pull n8nio/n8n<br><br>
+                
+                # Run n8n in Docker<br>
+                docker run -it --rm \<br>
+                  --name n8n \<br>
+                  -p 5678:5678 \<br>
+                  -v ~/.n8n:/home/node/.n8n \<br>
+                  n8nio/n8n
+            </div>
+            <p>Access the n8n interface at <code>http://localhost:5678</code> (or your server domain).</p>
+        </div>
+
+        <div class="step">
+            <div class="step-title"><span class="step-number">2</span> Install Required n8n.io Nodes</div>
+            <p>Ensure the following nodes are available in your n8n instance:</p>
+            <ul>
+                <li><strong>HTTP Request:</strong> For API calls to Gemini and Shopify</li>
+                <li><strong>Shopify:</strong> For direct integration with Planet Beauty's store</li>
+                <li><strong>Function:</strong> For custom JavaScript processing</li>
+                <li><strong>Split In Batches:</strong> For handling multiple products or queries</li>
+                <li><strong>Merge:</strong> For combining data from different sources</li>
+                <li><strong>IF:</strong> For conditional logic in the workflow</li>
+            </ul>
+            <p>Most of these nodes are included in the standard n8n installation. For any missing nodes, you can install them from the n8n community node repository.</p>
+        </div>
+
+        <div class="step">
+            <div class="step-title"><span class="step-number">3</span> Create Your First Workflow</div>
+            <p>Let's create a simple test workflow to verify your n8n setup:</p>
+            <ol>
+                <li>From the n8n dashboard, click "Create New Workflow"</li>
+                <li>Name it "Planet Beauty - Test Workflow"</li>
+                <li>Add a "Manual Trigger" node as the starting point</li>
+                <li>Add an "HTTP Request" node connected to the trigger</li>
+                <li>Configure the HTTP Request node for a simple GET request to <code>https://jsonplaceholder.typicode.com/todos/1</code></li>
+                <li>Execute the workflow to test the connection</li>
+            </ol>
+            <p>You should see a successful HTTP response with JSON data if everything is working correctly.</p>
+        </div>
+
+        <div class="tip">
+            <strong>Workflow Management Tip:</strong> Create a dedicated folder structure for Planet Beauty chatbot components to keep your workflows organized. Consider separating the main chatbot logic, Shopify integration, and any custom tools into different workflows that can communicate with each other.
+        </div>
+
+        <!-- Configuring Google Gemini API -->
+        <h1 id="gemini">5. Configuring Google Gemini API</h1>
+        <p>Google's Gemini API will power the natural language understanding and generation capabilities of our chatbot. This section covers how to set up and configure the Gemini API for Planet Beauty's chatbot.</p>
+
+        <div class="step">
+            <div class="step-title"><span class="step-number">1</span> Create a Google AI Studio Account</div>
+            <ol>
+                <li>Go to <a href="https://aistudio.google.com/" target="_blank">https://aistudio.google.com/</a></li>
+                <li>Sign in with a Google account (preferably a business account for Planet Beauty)</li>
+                <li>Complete the onboarding process</li>
+                <li>Accept the terms of service</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <div class="step-title"><span class="step-number">2</span> Generate API Key</div>
+            <ol>
+                <li>In Google AI Studio, navigate to the "API keys" section</li>
+                <li>Click "Create API Key"</li>
+                <li>Name your key "Planet Beauty Chatbot"</li>
+                <li>Set appropriate usage limits based on expected traffic</li>
+                <li>Copy and securely store the generated API key</li>
+            </ol>
+            <div class="warning">
+                <strong>Security Note:</strong> Never expose your API key in client-side code or public repositories. Store it securely within n8n's credentials manager.
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-title"><span class="step-number">3</span> Configure Gemini in n8n.io</div>
+            <p>Add the Gemini API credentials to n8n:</p>
+            <ol>
+                <li>In n8n, go to "Settings" → "Credentials"</li>
+                <li>Click "New Credential"</li>
+                <li>Select "Generic API" as the type</li>
+                <li>Name it "Gemini API"</li>
+                <li>Enter the API key in the "API Key" field</li>
+                <li>Set "Add to Header" to <code>x-goog-api-key</code></li>
+                <li>Save the credential</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <div class="step-title"><span class="step-number">4</span> Test Gemini API Connection</div>
+            <p>Create a simple test workflow to verify your Gemini API connection:</p>
+            <ol>
+                <li>Create a new workflow named "Gemini API Test"</li>
+                <li>Add a "Manual Trigger" node</li>
+                <li>Add an "HTTP Request" node connected to the trigger</li>
+                <li>Configure the HTTP Request node as follows:
+                    <ul>
+                        <li>Method: POST</li>
+                        <li>URL: <code>https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent</code></li>
+                        <li>Authentication: Select your "Gemini API" credential</li>
+                        <li>Request Body: JSON
+                            <div class="code-block">
+                                {<br>
+                                  "contents": [<br>
+                                    {<br>
+                                      "parts": [<br>
+                                        {<br>
+                                          "text": "Write a short welcome message for Planet Beauty customers"<br>
+                                        }<br>
+                                      ]<br>
+                                    }<br>
+                                  ]<br>
+                                }
+                            </div>
+                        </li>
+                    </ul>
+                </li>
+                <li>Execute the workflow and check the response</li>
+            </ol>
+            <p>You should receive a generated welcome message from Gemini if everything is configured correctly.</p>
+        </div>
+
+        <h3>Gemini Model Selection</h3>
+        <p>For Planet Beauty's chatbot, we recommend using the following Gemini models based on specific needs:</p>
+        <table>
+            <tr>
+                <th>Use Case</th>
+                <th>Recommended Model</th>
+                <th>Notes</th>
+            </tr>
+            <tr>
+                <td>General conversations</td>
+                <td>gemini-pro</td>
+                <td>Best for most customer interactions</td>
+            </tr>
+            <tr>
+                <td>Product image analysis</td>
+                <td>gemini-pro-vision</td>
+                <td>For handling image inputs (future feature)</td>
+            </tr>
+            <tr>
+                <td>Shorter, faster responses</td>
+                <td>gemini-flash</td>
+                <td>When response speed is critical</td>
+            </tr>
+        </table>
+
+        <!-- Building the Chatbot Workflow -->
+        <h1 id="chatbot">6. Building the Chatbot Workflow</h1>
+        <p>This section covers the core workflow design for the Planet Beauty chatbot, including AI integration and memory implementation.</p>
+
+        <h2 id="workflow-design">6.1 Workflow Design</h2>
+
+        <div class="step">
+            <div class="step-title"><span class="step-number">1</span> Create the Main Chatbot Workflow</div>
+            <ol>
+                <li>Create a new workflow named "Planet Beauty - Chatbot Core"</li>
+                <li>Add a "Webhook" node as the entry point
+                    <ul>
+                        <li>Set to POST method</li>
+                        <li>Authentication: Optional (based on security requirements)</li>
+                        <li>Response Mode: Last Node</li>
+                    </ul>
+                </li>
+                <li>Add a "Function" node to process the incoming message
+                    <div class="code-block">
+                        // Process incoming chat message<br>
+                        const incomingData = items[0].json;<br>
+                        const userId = incomingData.userId || 'anonymous';<br>
+                        const message = incomingData.message;<br>
+                        const sessionId = incomingData.sessionId || crypto.randomUUID();<br><br>
+                        
+                        // Return processed data<br>
+                        return {<br>
+                          json: {<br>
+                            userId,<br>
+                            message,<br>
+                            sessionId,<br>
+                            timestamp: new Date().toISOString()<br>
+                          }<br>
+                        };
+                    </div>
+                </li>
+            </ol>
+        </div>
+
+        <h2 id="ai-integration">6.2 AI Integration</h2>
+
+        <div class="step">
+            <div class="step-title"><span class="step-number">1</span> Integrate Gemini AI</div>
+            <p>After the Function node, add an HTTP Request node to call the Gemini API:</p>
+            <ol>
+                <li>Add an "HTTP Request" node</li>
+                <li>Configure it as follows:
+                    <ul>
+                        <li>Method: POST</li>
+                        <li>URL: <code>https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent</code></li>
+                        <li>Authentication: Select your "Gemini API" credential</li>
+                        <li>Request Body: JSON</li>
+                    </ul>
+                </li>
+                <li>Set the body to incorporate System Instructions for Planet Beauty context:
+                    <div class="code-block">
+                        {<br>
+                          "contents": [<br>
+                            {<br>
+                              "parts": [<br>
+                                {<br>
+                                  "text": "You are a helpful beauty advisor for Planet Beauty. You help customers find the right products for their beauty and skincare needs. Respond in a friendly, helpful manner. Be concise but informative. If a customer mentions a specific concern like 'dry skin', 'acne', or 'anti-aging', recommend appropriate product categories. When recommending products, focus on Planet Beauty's offerings.\n\nCustomer message: {{$node[\"Function\"].json[\"message\"]}}"<br>
+                                }<br>
+                              ]<br>
+                            }<br>
+                          ],<br>
+                          "generationConfig": {<br>
+                            "temperature": 0.4,<br>
+                            "topP": 0.95,<br>
+                            "topK": 40,<br>
+                            "maxOutputTokens": 1024<br>
+                          },<br>
+                          "safetySettings": [<br>
+                            {<br>
+                              "category": "HARM_CATEGORY_HARASSMENT",<br>
+                              "threshold": "BLOCK_MEDIUM_AND_ABOVE"<br>
+                            },<br>
+                            {<br>
+                              "category": "HARM_CATEGORY_HATE_SPEECH",<br>
+                              "threshold": "BLOCK_MEDIUM_AND_ABOVE"<br>
+                            },<br>
+                            {<br>
+                              "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",<br>
+                              "threshold": "BLOCK_MEDIUM_AND_ABOVE"<br>
+                            },<br>
+                            {<br>
+                              "category": "HARM_CATEGORY_DANGEROUS_CONTENT",<br>
+                              "threshold": "BLOCK_MEDIUM_AND_ABOVE"<br>
+                            }<br>
+                          ]<br>
+                        }
+                    </div>
+                </li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <div class="step-title"><span class="step-number">2</span> Process Gemini Response</div>
+            <p>Add another Function node to extract and format the Gemini response:</p>
+            <div class="code-block">
+                // Extract response from Gemini API<br>
+                const response = items[0].json;<br>
+                let aiResponse = '';<br><br>
+                
+                if (response.candidates && response.candidates[0] && response.candidates[0].content) {<br>
+                  const content = response.candidates[0].content;<br>
+                  if (content.parts && content.parts[0] && content.parts[0].text) {<br>
+                    aiResponse = content.parts[0].text;<br>
+                  }<br>
+                }<br><br>
+                
+                // Format for frontend<br>
+                return {<br>
+                  json: {<br>
+                    response: aiResponse,<br>
+                    sessionId: $node["Function"].json.sessionId,<br>
+                    timestamp: new Date().toISOString()<br>
+                  }<br>
+                };
+            </div>
+        </div>
+
+        <h2 id="memory">6.3 Implementing Memory</h2>
+
+        <div class="step">
+            <div class="step-title"><span class="step-number">1</span> Create a Conversation Memory Store</div>
+            <p>To maintain context across interactions, implement a conversation memory system:</p>
+            <ol>
+                <li>Add a "Function" node after processing the incoming message but before the Gemini API call</li>
+                <li>Implement memory retrieval logic:
+                    <div class="code-block">
+                        // Memory retrieval function<br>
+                        const sessionId = $node["Function"].json.sessionId;<br>
+                        const userId = $node["Function"].json.userId;<br><br>
+                        
+                        // Get context from previous conversations (simplified example)<br>
+                        // In production, use a database or persistent storage<br>
+                        const getMemory = async (sessionId) => {<br>
+                          // This would be replaced with actual database lookup<br>
+                          const memoryItems = $getWorkflowStaticData("global").memory || {};<br>
+                          return memoryItems[sessionId] || [];<br>
+                        };<br><br>
+                        
+                        // Retrieve memory for this session<br>
+                        const memory = await getMemory(sessionId);<br>
+                        
+                        // Add current message to memory<br>
+                        memory.push({<br>
+                          role: "user",<br>
+                          message: $node["Function"].json.message,<br>
+                          timestamp: new Date().toISOString()<br>
+                        });<br><br>
+                        
+                        // Format conversation history for Gemini<br>
+                        let conversationContext = "";<br>
+                        <br>
+                        // Only use the last 5 messages to keep context manageable<br>
+                        const recentMemory = memory.slice(-5);<br>
+                        if (recentMemory.length > 1) {<br>
+                          conversationContext = "Previous conversation:\n";<br>
+                          recentMemory.forEach(item => {<br>
+                            conversationContext += `${item.role}: ${item.message}\n`;<br>
+                          });<br>
+                          conversationContext += "\n";<br>
+                        }<br><br>
+                        
+                        return {<br>
+                          json: {<br>
+                            ...${$node["Function"].json},<br>
+                            conversationContext,<br>
+                            memory<br>
+                          }<br>
+                        };
+                    </div>
+                </li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <div class="step-title"><span class="step-number">2</span> Update Gemini API Call with Memory</div>
+            <p>Modify the Gemini API HTTP Request to include conversation history:</p>
+            <div class="code-block">
+                {<br>
+                  "contents": [<br>
+                    {<br>
+                      "parts": [<br>
+                        {<br>
+                          "text": "You are a helpful beauty advisor for Planet Beauty. You help customers find the right products for their beauty and skincare needs. Respond in a friendly, helpful manner. Be concise but informative.\n\n{{$node[\"Memory Function\"].json[\"conversationContext\"]}}\nCustomer message: {{$node[\"Function\"].json[\"message\"]}}"<br>
+                        }<br>
+                      ]<br>
+                    }<br>
+                  ],<br>
+                  "generationConfig": {<br>
+                    "temperature": 0.4,<br>
+                    "topP": 0.95,<br>
+                    "topK": 40,<br>
+                    "maxOutputTokens": 1024<br>
+                  }<br>
+                }
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-title"><span class="step-number">3</span> Store Updated Memory</div>
+            <p>After receiving the AI response, add a Function node to update the memory store:</p>
+            <div class="code-block">
+                // Update memory with AI response<br>
+                const memory = $node["Memory Function"].json.memory;<br>
+                const sessionId = $node["Function"].json.sessionId;<br>
+                
+                // Add AI response to memory<br>
+                memory.push({<br>
+                  role: "assistant",<br>
+                  message: $node["Response Processing"].json.response,<br>
+                  timestamp: new Date().toISOString()<br>
+                });<br>
+                
+                // Update memory store (simplified example)<br>
+                // In production, use a database or persistent storage<br>
+                const memoryStore = $getWorkflowStaticData("global").memory || {};<br>
+                memoryStore[sessionId] = memory;<br>
+                $setWorkflowStaticData("global", { memory: memoryStore });<br>
+                
+                // Return final response<br>
+                return {<br>
+                  json: $node["Response Processing"].json<br>
+                };
+            </div>
+            <p>This simplified memory implementation uses workflow static data. For production, replace with a database connection (MongoDB, PostgreSQL, etc.)</p>
+        </div>
+
+        <!-- Shopify Integration -->
+        <h1 id="shopify">7. Shopify Integration</h1>
+        <p>This section covers how to integrate the chatbot with Planet Beauty's Shopify store to enable product recommendations and order information retrieval.</p>
+
+        <h2 id="api-setup">7.1 API Setup</h2>
+
+        <div class="step">
+            <div class="step-title"><span class="step-number">1</span> Create a Private App in Shopify</div>
+            <ol>
+                <li>Log in to Planet Beauty's Shopify Admin</li>
+                <li>Go to "Apps" → "App and sales channel settings"</li>
+                <li>Click "Develop apps" → "Create an app"</li>
+                <li>Name the app "Planet Beauty Chatbot"</li>
+                <li>Set appropriate app configuration settings</li>
+                <li>Once created, go to "Configuration" → "Admin API integration"</li>
+                <li>Select the required scopes for the chatbot:
+                    <ul>
+                        <li>read_products</li>
+                        <li>read_orders</li>
+                        <li>read_customers</li>
+                        <li>read_inventory</li>
+                    </ul>
+                </li>
+                <li>Save and install the app in your store</li>
+                <li>Note down the API key and API secret key</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <div class="step-title"><span class="step-number">2</span> Add Shopify Credentials to n8n</div>
+            <ol>
+                <li>In n8n, go to "Settings" → "Credentials"</li>
+                <li>Click "New Credential"</li>
+                <li>Select "Shopify API" as the type</li>
+                <li>Enter the following details:
+                    <ul>
+                        <li>Credential Name: "Planet Beauty Shopify"</li>
+                        <li>Shop Name: [Planet Beauty's Shopify domain without .myshopify.com]</li>
+                        <li>API Key: [Your API key from previous step]</li>
+                        <li>Password: [Your API secret key from previous step]</li>
+                    </ul>
+                </li>
+                <li>Save the credential</li>
+            </ol>
+        </div>
+
+        <h2 id="product-integration">7.2 Product Integration</h2>
+
+        <div class="step">
+            <div class="step-title"><span class="step-number">1</span> Create a Product Search Workflow</div>
+            <p>Create a separate workflow for product searches that can be called by the main chatbot workflow:</p>
+            <ol>
+                <li>Create a new workflow named "Planet Beauty - Product Search"</li>
+                <li>Add a "Webhook" node as entry point (for internal communication)</li>
+                <li>Add a "Shopify" node with the following configuration:
+                    <ul>
+                        <li>Authentication: Select your "Planet Beauty Shopify" credential</li>
+                        <li>Resource: Product</li>
+                        <li>Operation: Get All</li>
+                        <li>Additional Fields: Set Limit to a reasonable number (e.g., 20)</li>
+                        <li>Additional Options: Add filters as needed</li>
+                    </ul>
+                </li>
+                <li>Add a "Function" node to filter and format product data based on search query:
+                    <div class="code-block">
+                        // Get search query from webhook<br>
+                        const searchQuery = items[0].json.searchQuery.toLowerCase();<br>
+                        const products = $node["Shopify"].json.products;<br><br>
+                        
+                        // Filter products based on search query<br>
+                        // Implement more sophisticated search logic as needed<br>
+                        const filteredProducts = products.filter(product => {<br>
+                          const title = product.title.toLowerCase();<br>
+                          const description = product.body_html ? product.body_html.toLowerCase() : '';<br>
+                          const tags = product.tags ? product.tags.toLowerCase() : '';<br>
+                          
+                          // Match against product details<br>
+                          return title.includes(searchQuery) || <br>
+                                 description.includes(searchQuery) || <br>
+                                 tags.includes(searchQuery);<br>
+                        });<br><br>
+                        
+                        // Format products for chatbot response<br>
+                        const formattedProducts = filteredProducts.slice(0, 3).map(product => {<br>
+                          return {<br>
+                            title: product.title,<br>
+                            description: product.body_html ? product.body_html.replace(/<[^>]*>/g, '').substring(0, 100) + '...' : '',<br>
+                            price: product.variants[0].price,<br>
+                            image: product.images && product.images.length > 0 ? product.images[0].src : null,<br>
+                            url: `https://planetbeauty.com/products/${product.handle}`,<br>
+                            id: product.id<br>
+                          };<br>
+                        });<br><br>
+                        
+                        return {<br>
+                          json: {<br>
+                            products: formattedProducts,<br>
+                            totalFound: filteredProducts.length<br>
+                          }<br>
+                        };
+                    </div>
+                </li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <div class="step-title"><span class="step-number">2</span> Integrate Product Search with Chatbot</div>
+            <p>In the main chatbot workflow, add functionality to call the product search workflow when needed:</p>
+            <ol>
+                <li>After processing the Gemini response, add an "IF" node</li>
+                <li>Set condition to check if the response indicates product recommendation:
+                    <div class="code-block">
+                        // Check if response mentions products or recommendations<br>
+                        const response = $node["Response Processing"].json.response.toLowerCase();<br>
+                        const productTerms = ['product', 'recommend', 'try', 'suggest', 'for your'];<br>
+                        <br>
+                        return productTerms.some(term => response.includes(term));<br>
+                    </div>
+                </li>
+                <li>If True branch: Add an "HTTP Request" node to call the Product Search webhook</li>
+                <li>In the True branch, add a "Function" node to enhance the response with product data:
+                    <div class="code-block">
+                        // Extract product keywords from Gemini response<br>
+                        const response = $node["Response Processing"].json.response;<br>
+                        const message = $node["Function"].json.message.toLowerCase();<br><br>
+                        
+                        // Extract possible product keywords<br>
+                        // This is a simplified approach - consider NLP for production<br>
+                        let searchQuery = "";<br>
+                        <br>
+                        const skinConcerns = ['dry skin', 'oily skin', 'acne', 'wrinkles', 'anti-aging', <br>
+                                              'sensitive skin', 'redness', 'dark spots', 'hydration'];<br>
+                        <br>
+                        // Check for skin concerns in customer message<br>
+                        for (const concern of skinConcerns) {<br>
+                          if (message.includes(concern)) {<br>
+                            searchQuery = concern;<br>
+                            break;<br>
+                          }<br>
+                        }<br><br>
+                        
+                        // If no specific concern found, use general category if mentioned<br>
+                        if (!searchQuery) {<br>
+                          const categories = ['moisturizer', 'serum', 'cleanser', 'sunscreen', <br>
+                                              'mask', 'foundation', 'lipstick', 'eye', 'hair'];<br>
+                          <br>
+                          for (const category of categories) {<br>
+                            if (message.includes(category)) {<br>
+                              searchQuery = category;<br>
+                              break;<br>
+                            }<br>
+                          }<br>
+                        }<br><br>
+                        
+                        // If still no keyword found, use a default<br>
+                        if (!searchQuery) {<br>
+                          searchQuery = "bestseller";<br>
+                        }<br><br>
+                        
+                        return {<br>
+                          json: {<br>
+                            searchQuery<br>
+                          }<br>
+                        };<br>
+                    </div>
+                </li>
+                <li>Connect this to an HTTP Request node to call the Product Search webhook</li>
+                <li>Finally, add a "Function" node to combine the AI response with product data:
+                    <div class="code-block">
+                        // Combine AI response with product recommendations<br>
+                        const aiResponse = $node["Response Processing"].json.response;<br>
+                        const productData = $node["Product Search"].json;<br><br>
+                        
+                        let enhancedResponse = aiResponse;<br><br>
+                        
+                        // Add product recommendations if found<br>
+                        if (productData.products && productData.products.length > 0) {<br>
+                          enhancedResponse += "\n\nHere are some products I recommend:";<br>
+                          <br>
+                          productData.products.forEach(product => {<br>
+                            enhancedResponse += `\n\n➤ ${product.title} - $${product.price}`;<br>
+                            enhancedResponse += `\n   ${product.description}`;<br>
+                            enhancedResponse += `\n   Shop now: ${product.url}`;<br>
+                          });<br>
+                        }<br><br>
+                        
+                        return {<br>
+                          json: {<br>
+                            response: enhancedResponse,<br>
+                            sessionId: $node["Function"].json.sessionId,<br>
+                            hasProductRecommendations: productData.products && productData.products.length > 0,<br>
+                            products: productData.products || [],<br>
+                            timestamp: new Date().toISOString()<br>
+                          }<br>
+                        };<br>
+                    </div>
+                </li>
+            </ol>
+        </div>
+
+        <h2 id="order-integration">7.3 Order Integration</h2>
+
+        <p>Similarly, create workflows for order lookup and other Shopify data as needed. The implementation follows the same pattern as the product search workflow.</p>
+
+        <div class="tip">
+            <strong>Advanced Integration:</strong> For more sophisticated integration, consider implementing a query classifier that determines what type of Shopify data is needed based on the customer's query, and then routes to the appropriate specialized workflow.
+        </div>
+
+        <!-- Frontend Interface -->
+        <h1 id="frontend">8. Creating the Frontend Interface</h1>
+        <p>This section covers how to create and customize the chatbot frontend interface that Planet Beauty customers will interact with.</p>
+
+        <h2 id="embed-code">8.1 Embed Code</h2>
+
+        <div class="step">
+            <div class="step-title"><span class="step-number">1</span> Create the Chatbot Widget HTML/CSS/JS</div>
+            <p>Here's a simplified version of the chatbot widget code to embed in Planet Beauty's Shopify store:</p>
+            <div class="code-block">
+                <!-- HTML Structure --><br>
+                &lt;div id="planet-beauty-chatbot-container" class="chatbot-container"&gt;<br>
+                  &lt;div class="chatbot-header"&gt;<br>
+                    &lt;div class="chatbot-logo"&gt;&lt;img src="https://planetbeauty.com/logo.png" alt="Planet Beauty"&gt;&lt;/div&gt;<br>
+                    &lt;div class="chatbot-title"&gt;Beauty Assistant&lt;/div&gt;<br>
+                    &lt;div class="chatbot-close"&gt;&times;&lt;/div&gt;<br>
+                  &lt;/div&gt;<br>
+                  &lt;div class="chatbot-messages"&gt;<br>
+                    &lt;div class="message bot-message"&gt;<br>
+                      Hi there! I'm your Planet Beauty assistant. How can I help you today?<br>
+                    &lt;/div&gt;<br>
+                  &lt;/div&gt;<br>
+                  &lt;div class="chatbot-input"&gt;<br>
+                    &lt;input type="text" placeholder="Type your question here..."&gt;<br>
+                    &lt;button class="send-button"&gt;&lt;i class="fas fa-paper-plane"&gt;&lt;/i&gt;&lt;/button&gt;<br>
+                  &lt;/div&gt;<br>
+                &lt;/div&gt;<br>
+                <br>
+                &lt;div class="chatbot-toggle"&gt;<br>
+                  &lt;div class="toggle-icon"&gt;&lt;i class="fas fa-comments"&gt;&lt;/i&gt;&lt;/div&gt;<br>
+                &lt;/div&gt;<br>
+                <br>
+                &lt;style&gt;<br>
+                  /* Chatbot Styling */<br>
+                  .chatbot-container {<br>
+                    position: fixed;<br>
+                    bottom: 20px;<br>
+                    right: 20px;<br>
+                    width: 350px;<br>
+                    height: 500px;<br>
+                    background: #fff;<br>
+                    border-radius: 10px;<br>
+                    box-shadow: 0 5px 15px rgba(0,0,0,0.1);<br>
+                    display: flex;<br>
+                    flex-direction: column;<br>
+                    overflow: hidden;<br>
+                    z-index: 1000;<br>
+                    font-family: 'Arial', sans-serif;<br>
+                    display: none;<br>
+                  }<br>
+                  <br>
+                  .chatbot-header {<br>
+                    background: #be185d;<br>
+                    color: white;<br>
+                    padding: 15px;<br>
+                    display: flex;<br>
+                    align-items: center;<br>
+                    justify-content: space-between;<br>
+                  }<br>
+                  <br>
+                  .chatbot-logo img {<br>
+                    height: 30px;<br>
+                  }<br>
+                  <br>
+                  .chatbot-title {<br>
+                    font-weight: bold;<br>
+                  }<br>
+                  <br>
+                  .chatbot-close {<br>
+                    cursor: pointer;<br>
+                    font-size: 20px;<br>
+                  }<br>
+                  <br>
+                  .chatbot-messages {<br>
+                    flex: 1;<br>
+                    padding: 15px;<br>
+                    overflow-y: auto;<br>
+                  }<br>
+                  <br>
+                  .message {<br>
+                    margin-bottom: 15px;<br>
+                    padding: 10px;<br>
+                    border-radius: 10px;<br>
+                    max-width: 80%;<br>
+                  }<br>
+                  <br>
+                  .bot-message {<br>
+                    background: #f8f9fa;<br>
+                    align-self: flex-start;<br>
+                  }<br>
+                  <br>
+                  .user-message {<br>
+                    background: #be185d;<br>
+                    color: white;<br>
+                    align-self: flex-end;<br>
+                    margin-left: auto;<br>
+                  }<br>
+                  <br>
+                  .chatbot-input {<br>
+                    display: flex;<br>
+                    padding: 10px;<br>
+                    border-top: 1px solid #e2e8f0;<br>
+                  }<br>
+                  <br>
+                  .chatbot-input input {<br>
+                    flex: 1;<br>
+                    padding: 10px;<br>
+                    border: 1px solid #e2e8f0;<br>
+                    border-radius: 5px;<br>
+                  }<br>
+                  <br>
+                  .send-button {<br>
+                    background: #be185d;<br>
+                    color: white;<br>
+                    border: none;<br>
+                    border-radius: 5px;<br>
+                    padding: 10px 15px;<br>
+                    margin-left: 10px;<br>
+                    cursor: pointer;<br>
+                  }<br>
+                  <br>
+                  .chatbot-toggle {<br>
+                    position: fixed;<br>
+                    bottom: 20px;<br>
+                    right: 20px;<br>
+                    background: #be185d;<br>
+                    color: white;<br>
+                    width: 60px;<br>
+                    height: 60px;<br>
+                    border-radius: 50%;<br>
+                    display: flex;<br>
+                    align-items: center;<br>
+                    justify-content: center;<br>
+                    cursor: pointer;<br>
+                    box-shadow: 0 5px 15px rgba(0,0,0,0.1);<br>
+                    z-index: 999;<br>
+                  }<br>
+                  <br>
+                  .toggle-icon {<br>
+                    font-size: 24px;<br>
+                  }<br>
+                  <br>
+                  .product-card {<br>
+                    border: 1px solid #e2e8f0;<br>
+                    border-radius: 8px;<br>
+                    padding: 10px;<br>
+                    margin-top: 10px;<br>
+                    background: white;<br>
+                  }<br>
+                  <br>
+                  .product-image {<br>
+                    width: 80px;<br>
+                    height: 80px;<br>
+                    object-fit: cover;<br>
+                    border-radius: 5px;<br>
+                  }<br>
+                  <br>
+                  .product-details {<br>
+                    margin-top: 10px;<br>
+                  }<br>
+                  <br>
+                  .product-title {<br>
+                    font-weight: bold;<br>
+                    margin-bottom: 5px;<br>
+                  }<br>
+                  <br>
+                  .product-price {<br>
+                    color: #be185d;<br>
+                    font-weight: bold;<br>
+                  }<br>
+                  <br>
+                  .product-link {<br>
+                    display: block;<br>
+                    background: #be185d;<br>
+                    color: white;<br>
+                    text-align: center;<br>
+                    padding: 8px;<br>
+                    border-radius: 5px;<br>
+                    margin-top: 10px;<br>
+                    text-decoration: none;<br>
+                  }<br>
+                  <br>
+                  /* Typing indicator */<br>
+                  .typing {<br>
+                    display: flex;<br>
+                    align-items: center;<br>
+                    margin-bottom: 15px;<br>
+                  }<br>
+                  <br>
+                  .typing-dot {<br>
+                    width: 8px;<br>
+                    height: 8px;<br>
+                    background: #be185d;<br>
+                    border-radius: 50%;<br>
+                    margin: 0 2px;<br>
+                    animation: typing 1.5s infinite;<br>
+                  }<br>
+                  <br>
+                  .typing-dot:nth-child(2) {<br>
+                    animation-delay: 0.2s;<br>
+                  }<br>
+                  <br>
+                  .typing-dot:nth-child(3) {<br>
+                    animation-delay: 0.4s;<br>
+                  }<br>
+                  <br>
+                  @keyframes typing {<br>
+                    0% { transform: translateY(0); }<br>
+                    50% { transform: translateY(-5px); }<br>
+                    100% { transform: translateY(0); }<br>
+                  }<br>
+                &lt;/style&gt;<br>
+                <br>
+                &lt;script&gt;<br>
+                  document.addEventListener('DOMContentLoaded', function() {<br>
+                    // DOM Elements<br>
+                    const chatbotContainer = document.getElementById('planet-beauty-chatbot-container');<br>
+                    const chatbotToggle = document.querySelector('.chatbot-toggle');<br>
+                    const chatbotClose = document.querySelector('.chatbot-close');<br>
+                    const messagesContainer = document.querySelector('.chatbot-messages');<br>
+                    const chatInput = document.querySelector('.chatbot-input input');<br>
+                    const sendButton = document.querySelector('.send-button');<br>
+                    <br>
+                    // Session ID for conversation tracking<br>
+                    const sessionId = generateSessionId();<br>
+                    <br>
+                    // API endpoint for chatbot backend<br>
+                    const chatbotAPI = 'https://your-n8n-instance.com/webhook/planet-beauty-chatbot';<br>
+                    <br>
+                    // Toggle chatbot visibility<br>
+                    chatbotToggle.addEventListener('click', function() {<br>
+                      chatbotContainer.style.display = 'flex';<br>
+                      chatbotToggle.style.display = 'none';<br>
+                    });<br>
+                    <br>
+                    chatbotClose.addEventListener('click', function() {<br>
+                      chatbotContainer.style.display = 'none';<br>
+                      chatbotToggle.style.display = 'flex';<br>
+                    });<br>
+                    <br>
+                    // Send message on button click or Enter key<br>
+                    sendButton.addEventListener('click', sendMessage);<br>
+                    <br>
+                    chatInput.addEventListener('keypress', function(e) {<br>
+                      if (e.key === 'Enter') {<br>
+                        sendMessage();<br>
+                      }<br>
+                    });<br>
+                    <br>
+                    // Send message function<br>
+                    function sendMessage() {<br>
+                      const message = chatInput.value.trim();<br>
+                      <br>
+                      if (message === '') return;<br>
+                      <br>
+                      // Add user message to chat<br>
+                      addMessage(message, 'user');<br>
+                      <br>
+                      // Clear input<br>
+                      chatInput.value = '';<br>
+                      <br>
+                      // Show typing indicator<br>
+                      showTypingIndicator();<br>
+                      <br>
+                      // Send to backend API<br>
+                      fetch(chatbotAPI, {<br>
+                        method: 'POST',<br>
+                        headers: {<br>
+                          'Content-Type': 'application/json'<br>
+                        },<br>
+                        body: JSON.stringify({<br>
+                          message: message,<br>
+                          sessionId: sessionId,<br>
+                          userId: getCookie('_shopify_customer') || 'anonymous'<br>
+                        })<br>
+                      })<br>
+                      .then(response => response.json())<br>
+                      .then(data => {<br>
+                        // Remove typing indicator<br>
+                        removeTypingIndicator();<br>
+                        <br>
+                        // Add bot response to chat<br>
+                        addMessage(data.response, 'bot');<br>
+                        <br>
+                        // If products are included in response, add product cards<br>
+                        if (data.hasProductRecommendations && data.products) {<br>
+                          data.products.forEach(product => {<br>
+                            addProductCard(product);<br>
+                          });<br>
+                        }<br>
+                      })<br>
+                      .catch(error => {<br>
+                        console.error('Error:', error);<br>
+                        removeTypingIndicator();<br>
+                        addMessage('Sorry, I encountered an error. Please try again later.', 'bot');<br>
+                      });<br>
+                    }<br>
+                    <br>
+                    // Add message to chat<br>
+                    function addMessage(text, sender) {<br>
+                      const messageDiv = document.createElement('div');<br>
+                      messageDiv.classList.add('message');<br>
+                      messageDiv.classList.add(sender + '-message');<br>
+                      messageDiv.textContent = text;<br>
+                      <br>
+                      messagesContainer.appendChild(messageDiv);<br>
+                      <br>
+                      // Scroll to bottom<br>
+                      messagesContainer.scrollTop = messagesContainer.scrollHeight;<br>
+                    }<br>
+                    <br>
+                    // Add product card to chat<br>
+                    function addProductCard(product) {<br>
+                      const cardDiv = document.createElement('div');<br>
+                      cardDiv.classList.add('product-card');<br>
+                      <br>
+                      let cardHTML = '';<br>
+                      <br>
+                      if (product.image) {<br>
+                        cardHTML += `<img src="${product.image}" alt="${product.title}" class="product-image">`;<br>
+                      }<br>
+                      <br>
+                      cardHTML += `<div class="product-details">`;<br>
+                      cardHTML += `<div class="product-title">${product.title}</div>`;<br>
+                      cardHTML += `<div class="product-price">$${product.price}</div>`;<br>
+                      cardHTML += `<a href="${product.url}" class="product-link" target="_blank">View Product</a>`;<br>
+                      cardHTML += `</div>`;<br>
+                      <br>
+                      cardDiv.innerHTML = cardHTML;<br>
+                      messagesContainer.appendChild(cardDiv);<br>
+                      <br>
+                      // Scroll to bottom<br>
+                      messagesContainer.scrollTop = messagesContainer.scrollHeight;<br>
+                    }<br>
+                    <br>
+                    // Show typing indicator<br>
+                    function showTypingIndicator() {<br>
+                      const typingDiv = document.createElement('div');<br>
+                      typingDiv.classList.add('typing');<br>
+                      typingDiv.innerHTML = `<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>`;<br>
+                      messagesContainer.appendChild(typingDiv);<br>
+                      messagesContainer.scrollTop = messagesContainer.scrollHeight;<br>
+                    }<br>
+                    <br>
+                    // Remove typing indicator<br>
+                    function removeTypingIndicator() {<br>
+                      const typingIndicator = document.querySelector('.typing');<br>
+                      if (typingIndicator) {<br>
+                        typingIndicator.remove();<br>
+                      }<br>
+                    }<br>
+                    <br>
+                    // Generate session ID<br>
+                    function generateSessionId() {<br>
+                      return 'xxxx-xxxx-xxxx-xxxx'.replace(/x/g, function() {<br>
+                        return Math.floor(Math.random() * 16).toString(16);<br>
+                      });<br>
+                    }<br>
+                    <br>
+                    // Get cookie helper function<br>
+                    function getCookie(name) {<br>
+                      const value = `; ${document.cookie}`;<br>
+                      const parts = value.split(`; ${name}=`);<br>
+                      if (parts.length === 2) return parts.pop().split(';').shift();<br>
+                    }<br>
+                  });<br>
+                &lt;/script&gt;
+            </div>
+        </div>
+
+        <h2 id="customization">8.2 Customization</h2>
+
+        <div class="step">
+            <div class="step-title"><span class="step-number">1</span> Planet Beauty Branding Customization</div>
+            <p>Customize the chatbot's appearance to match Planet Beauty's branding:</p>
+            <ul>
+                <li><strong>Colors:</strong> Update the CSS variables to match Planet Beauty's brand colors (currently using #be185d as the primary color)</li>
+                <li><strong>Logo:</strong> Replace the logo URL with Planet Beauty's actual logo</li>
+                <li><strong>Fonts:</strong> If Planet Beauty uses specific fonts, update the font-family in the CSS</li>
+                <li><strong>Language:</strong> Customize the greeting and bot messages to reflect Planet Beauty's brand voice</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <div class="step-title"><span class="step-number">2</span> Add Advanced UI Features</div>
+            <p>Enhance the chatbot UI with additional features:</p>
+            <ul>
+                <li><strong>Quick Reply Buttons:</strong> Add preset options for common questions</li>
+                <li><strong>Chat Feedback:</strong> Add thumbs up/down buttons for response feedback</li>
+                <li><strong>Image Carousels:</strong> For displaying multiple product options</li>
+                <li><strong>Message Reactions:</strong> Allow users to react to bot messages</li>
+            </ul>
+        </div>
+
+        <h2 id="responsiveness">8.3 Responsiveness</h2>
+
+        <div class="step">
+            <div class="step-title"><span class="step-number">1</span> Ensure Mobile Responsiveness</div>
+            <p>Add additional CSS to ensure the chatbot works well on mobile devices:</p>
+            <div class="code-block">
+                /* Mobile Responsiveness */<br>
+                @media (max-width: 768px) {<br>
+                  .chatbot-container {<br>
+                    width: 90%;<br>
+                    height: 70vh;<br>
+                    bottom: 70px;<br>
+                    right: 5%;<br>
+                  }<br>
+                  <br>
+                  .chatbot-toggle {<br>
+                    bottom: 10px;<br>
+                    right: 10px;<br>
+                  }<br>
+                }<br>
+                <br>
+                @media (max-width: 480px) {<br>
+                  .chatbot-container {<br>
+                    width: 100%;<br>
+                    height: 80vh;<br>
+                    bottom: 0;<br>
+                    right: 0;<br>
+                    border-radius: 0;<br>
+                  }<br>
+                  <br>
+                  .chatbot-toggle {<br>
+                    bottom: 10px;<br>
+                    right: 10px;<br>
+                  }<br>
+                }
+            </div>
+        </div>
+
+        <!-- Testing and Deployment -->
+        <h1 id="testing">9. Testing and Deployment</h1>
+        <p>Before launching the chatbot system, thorough testing is essential to ensure it meets Planet Beauty's requirements and provides a high-quality customer experience.</p>
+
+        <div class="step">
+            <div class="step-title"><span class="step-number">1</span> Testing Protocol</div>
+            <p>Implement the following testing procedure:</p>
+            <ol>
+                <li><strong>Functional Testing:</strong>
+                    <ul>
+                        <li>Test basic conversation flow and responses</li>
+                        <li>Verify product recommendations accuracy</li>
+                        <li>Test conversation memory and context retention</li>
+                        <li>Ensure proper error handling</li>
+                    </ul>
+                </li>
+                <li><strong>Integration Testing:</strong>
+                    <ul>
+                        <li>Verify Shopify data retrieval and accuracy</li>
+                        <li>Test connections between n8n workflows</li>
+                        <li>Validate webhook endpoints and security</li>
+                    </ul>
+                </li>
+                <li><strong>UI/UX Testing:</strong>
+                    <ul>
+                        <li>Test on multiple browsers (Chrome, Safari, Firefox, Edge)</li>
+                        <li>Test on various devices (desktop, tablet, mobile)</li>
+                        <li>Verify responsive design and layout</li>
+                        <li>Check accessibility compliance</li>
+                    </ul>
+                </li>
+                <li><strong>Performance Testing:</strong>
+                    <ul>
+                        <li>Measure response times under various loads</li>
+                        <li>Test with concurrent users</li>
+                        <li>Monitor resource usage on n8n server</li>
+                    </ul>
+                </li>
+                <li><strong>Security Testing:</strong>
+                    <ul>
+                        <li>Review API key and credential handling</li>
+                        <li>Check for data encryption in transit</li>
+                        <li>Validate input sanitization</li>
+                        <li>Test against common vulnerabilities</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <div class="step-title"><span class="step-number">2</span> Deployment Strategy</div>
+            <p>Follow this deployment strategy for a smooth rollout:</p>
+            <ol>
+                <li><strong>Development Environment:</strong>
+                    <ul>
+                        <li>Set up a development instance of n8n</li>
+                        <li>Connect to a test Shopify store or use staging data</li>
+                        <li>Develop and test all workflows in isolation</li>
+                    </ul>
+                </li>
+                <li><strong>Staging Environment:</strong>
+                    <ul>
+                        <li>Deploy workflows to a staging n8n instance</li>
+                        <li>Connect to actual Planet Beauty Shopify data (read-only)</li>
+                        <li>Conduct integration testing and QA</li>
+                    </ul>
+                </li>
+                <li><strong>Limited Production Rollout:</strong>
+                    <ul>
+                        <li>Deploy to production n8n instance</li>
+                        <li>Enable chatbot for a small percentage of users (5-10%)</li>
+                        <li>Monitor performance and gather feedback</li>
+                    </ul>
+                </li>
+                <li><strong>Full Production Deployment:</strong>
+                    <ul>
+                        <li>After validation, increase availability to all users</li>
+                        <li>Implement monitoring and alerting</li>
+                        <li>Establish regular maintenance schedule</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <div class="step-title"><span class="step-number">3</span> Monitoring and Maintenance</div>
+            <p>Implement ongoing monitoring and maintenance processes:</p>
+            <ul>
+                <li><strong>Performance Monitoring:</strong>
+                    <ul>
+                        <li>Track response times and system resources</li>
+                        <li>Set up alerts for abnormal behavior</li>
+                    </ul>
+                </li>
+                <li><strong>Conversation Quality:</strong>
+                    <ul>
+                        <li>Review conversation logs regularly</li>
+                        <li>Analyze user feedback data</li>
+                        <li>Identify common issues or misunderstandings</li>
+                    </ul>
+                </li>
+                <li><strong>Regular Updates:</strong>
+                    <ul>
+                        <li>Update Gemini system instructions based on performance</li>
+                        <li>Refine product search algorithms</li>
+                        <li>Add new features and capabilities</li>
+                    </ul>
+                </li>
+                <li><strong>Backup and Recovery:</strong>
+                    <ul>
+                        <li>Implement regular backups of n8n workflows</li>
+                        <li>Document recovery procedures</li>
+                        <li>Test restore processes periodically</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Monetization Strategy -->
+        <h1 id="monetization">10. Monetization Strategy</h1>
+        <p>This section outlines how to package and monetize the Planet Beauty chatbot solution as a paid service for other businesses.</p>
+
+        <h3>Shopify App Development</h3>
+        <p>Transform the chatbot system into a Shopify app that can be sold to other businesses:</p>
+        <ol>
+            <li><strong>Create a Shopify Partner Account:</strong>
+                <ul>
+                    <li>Sign up at <a href="https://partners.shopify.com/" target="_blank">https://partners.shopify.com/</a></li>
+                    <li>Complete the application and verification process</li>
+                </ul>
+            </li>
+            <li><strong>Develop the Shopify App:</strong>
+                <ul>
+                    <li>Design a multi-tenant architecture to support multiple stores</li>
+                    <li>Create a user-friendly settings interface</li>
+                    <li>Add customization options for branding</li>
+                    <li>Implement usage analytics and monitoring</li>
+                </ul>
+            </li>
+            <li><strong>Submit to Shopify App Store:</strong>
+                <ul>
+                    <li>Prepare app listing with screenshots and documentation</li>
+                    <li>Submit for Shopify review</li>
+                    <li>Address any feedback or requirements</li>
+                </ul>
+            </li>
+        </ol>
+
+        <h3>Pricing Strategy</h3>
+        <p>Develop a multi-tier pricing strategy to accommodate different business sizes and needs:</p>
+        <table>
+            <tr>
+                <th>Plan</th>
+                <th>Price</th>
+                <th>Features</th>
+                <th>Target Market</th>
+            </tr>
+            <tr>
+                <td>Basic</td>
+                <td>$29/month</td>
+                <td>
+                    - Standard chatbot<br>
+                    - Basic product search<br>
+                    - Limited customization<br>
+                    - 1,000 queries/month
+                </td>
+                <td>Small stores with basic needs</td>
+            </tr>
+            <tr>
+                <td>Professional</td>
+                <td>$79/month</td>
+                <td>
+                    - Advanced chatbot<br>
+                    - Full product integration<br>
+                    - Customizable branding<br>
+                    - 5,000 queries/month<br>
+                    - Analytics dashboard
+                </td>
+                <td>Medium-sized businesses</td>
+            </tr>
+            <tr>
+                <td>Enterprise</td>
+                <td>$199/month</td>
+                <td>
+                    - Premium chatbot<br>
+                    - Advanced customization<br>
+                    - Order lookup integration<br>
+                    - Unlimited queries<br>
+                    - Priority support<br>
+                    - Custom training
+                </td>
+                <td>Large retailers with high volume</td>
+            </tr>
+        </table>
+
+        <h3>Marketing Strategy</h3>
+        <p>Promote your chatbot solution to potential customers:</p>
+        <ul>
+            <li><strong>Case Study:</strong> Document Planet Beauty's success with measurable metrics</li>
+            <li><strong>Content Marketing:</strong> Create blog posts, videos, and webinars about AI chatbots for e-commerce</li>
+            <li><strong>Shopify App Store Optimization:</strong> Optimize app listing with keywords and compelling screenshots</li>
+            <li><strong>Partnerships:</strong> Partner with Shopify agencies and theme developers</li>
+            <li><strong>Email Marketing:</strong> Target Shopify store owners with tailored messaging</li>
+            <li><strong>Free Trial:</strong> Offer a 14-day free trial to demonstrate value</li>
+        </ul>
+
+        <h3>Customer Support and Onboarding</h3>
+        <p>Provide comprehensive support to ensure customer success:</p>
+        <ul>
+            <li><strong>Documentation:</strong> Create detailed setup guides and FAQs</li>
+            <li><strong>Onboarding Process:</strong> Develop a structured onboarding flow for new customers</li>
+            <li><strong>Support Channels:</strong> Offer email, chat, and possibly phone support</li>
+            <li><strong>Training Resources:</strong> Provide video tutorials and webinars</li>
+            <li><strong>Success Managers:</strong> Assign dedicated account managers for enterprise clients</li>
+        </ul>
+
+        <!-- Conclusion -->
+        <h1 id="conclusion">11. Conclusion and Next Steps</h1>
+        <p>You now have a comprehensive guide for building, deploying, and monetizing a Gemini-powered AI chatbot system for Planet Beauty using n8n.io and Shopify integration. This implementation combines the power of Google's advanced AI capabilities with n8n's flexible workflow automation and Shopify's robust e-commerce platform.</p>
+
+        <h3>Key Takeaways</h3>
+        <ul>
+            <li>The Planet Beauty chatbot leverages Gemini AI for natural, context-aware conversations</li>
+            <li>n8n.io provides a flexible, no-code/low-code platform for implementing complex workflows</li>
+            <li>Shopify integration enables access to product data, customer information, and order details</li>
+            <li>Conversation memory enables personalized, contextual interactions with customers</li>
+            <li>The customizable frontend allows for seamless integration with Planet Beauty's branding</li>
+        </ul>
+
+        <h3>Next Steps</h3>
+        <ol>
+            <li><strong>Initial Setup:</strong> Begin with n8n.io and Gemini API configuration</li>
+            <li><strong>Core Workflow:</strong> Implement the basic chatbot conversation flow</li>
+            <li><strong>Shopify Integration:</strong> Connect to Planet Beauty's product catalog</li>
+            <li><strong>Frontend Development:</strong> Create and customize the chat interface</li>
+            <li><strong>Testing:</strong> Conduct thorough testing across all components</li>
+            <li><strong>Deployment:</strong> Roll out the solution incrementally</li>
+            <li><strong>Monetization:</strong> Package the solution for sale to other businesses</li>
+        </ol>
+
+        <div class="note">
+            <strong>Continuous Improvement:</strong> AI technology is rapidly evolving. Plan to regularly update the system with new capabilities and improvements based on customer feedback and technological advancements.
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Developed by Jose Espinosa for Planet Beauty Development Plan</p>
+            <p>&copy; 2025 Planet Beauty. All rights reserved.</p>
+            <p>Last updated: April 2025</p>
+        </div>
+    </div>
+</body>
+</html>
