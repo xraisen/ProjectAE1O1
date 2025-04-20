@@ -353,7 +353,7 @@
 
     <script>
         // --- Configuration ---
-        const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyYNtxdIyAvgY7jQWOaTKHYpPEvdVEO5DNoue77jbTlRPXLn3uzlLg6Y-FWVLUW1Rfk/exec'; // Replace with your Google Apps Script Web App URL
+        const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwVKQE3eBf_Mi2LOZREMppeU3rCZx2b0Z0Uvpl317XABU0KXlGb5khFzc8wGmaV4Ind/exec'; // Replace with your Google Apps Script Web App URL
         const API_TIMEOUT = 15000;
         const IMAGE_TIMEOUT = 5000;
 
@@ -598,7 +598,7 @@
             } catch (error) {
                 console.error('Error:', error);
                 hideTypingIndicator();
-                displayError("Sorry, I encountered an issue. Please try again or browse our products below:");
+                displayError(`Sorry, I encountered an issue: ${error.message}. Please try again or browse our products below:`);
                 const fallbackProducts = fallbackSearch(message);
                 if (fallbackProducts.length > 0) {
                     fallbackProducts.forEach(p => addProductCard(p, message));
@@ -632,20 +632,20 @@
                         return parsedResponse;
                     } catch (parseError) {
                         console.error('JSON Parse Error:', parseError);
-                        const fallbackResponse = { text: res.data, query_type: 'other', products: [] };
-                        conversationHistory.push({ role: 'model', parts: [{ text: res.data }] });
+                        const fallbackResponse = { text: 'Sorry, I had trouble understanding the response. Please try again.', query_type: 'other', products: [] };
+                        conversationHistory.push({ role: 'model', parts: [{ text: JSON.stringify(fallbackResponse) }] });
                         return fallbackResponse;
                     }
                 } else if (res.data && res.data.error) {
                     throw new Error(`API Error: ${res.data.error}`);
                 } else {
-                    throw new Error('Unexpected response format.');
+                    throw new Error('Unexpected response format from server.');
                 }
             } catch (error) {
                 if (error.response) {
                     throw new Error(`API Error: ${error.response.status} - ${error.response.data?.error || 'Unknown error'}`);
                 } else if (error.request) {
-                    throw new Error('Request timed out.');
+                    throw new Error('Request timed out. Please check your network connection.');
                 } else {
                     throw new Error(`Request error: ${error.message}`);
                 }
@@ -659,7 +659,6 @@
             let matchedProducts = [];
             for (const [category, catKeywords] of Object.entries(categoryKeywords)) {
                 if (catKeywords.some(kw => queryLower.includes(kw))) {
-                    // Fetch products dynamically if needed, but for fallback, rely on keywords
                     matchedProducts.push({
                         name: `Suggested ${category} Product`,
                         description: `A product for ${category} needs.`,
