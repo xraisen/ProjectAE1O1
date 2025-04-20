@@ -1,0 +1,2234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Trends Dashboard 2025</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/apexcharts@3.35.0/dist/apexcharts.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.35.0/dist/apexcharts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8fafc;
+            color: #333;
+        }
+        .dashboard-section {
+            min-height: 700px;
+            display: none;
+        }
+        .dashboard-section.active {
+            display: block;
+        }
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: #3b82f6;
+            transition: width 0.3s ease;
+        }
+        .nav-link.active::after {
+            width: 100%;
+        }
+        .nav-link.active {
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        .trend-up {
+            color: #10b981;
+        }
+        .trend-down {
+            color: #ef4444;
+        }
+        .update-badge {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+        .skill-bar {
+            height: 10px;
+            border-radius: 5px;
+            background-color: #e5e7eb;
+            position: relative;
+            overflow: hidden;
+        }
+        .skill-level {
+            height: 100%;
+            border-radius: 5px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: #3b82f6;
+        }
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .data-point {
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        .data-point:hover {
+            transform: scale(1.05);
+        }
+        .tooltip {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 10;
+        }
+        /* For optimal PDF export */
+        @media print {
+            .dashboard-section {
+                display: block !important;
+                page-break-inside: avoid;
+                margin-bottom: 30px;
+            }
+            .chart-container {
+                break-inside: avoid;
+            }
+            nav.sticky {
+                position: relative !important;
+            }
+            button, .update-options {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="relative">
+    <!-- Header -->
+    <header class="bg-white shadow-md">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center mb-4 md:mb-0">
+                    <h1 class="text-3xl font-bold text-blue-600">Global Trends Dashboard</h1>
+                    <span class="ml-4 text-gray-500 text-sm">Real-time data and projections for 2025 and beyond</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center">
+                        <span class="text-sm text-gray-600">Last Updated:</span>
+                        <span id="last-updated" class="ml-2 text-sm font-semibold">April 21, 2025</span>
+                        <span class="ml-2 px-2 py-0.5 text-xs bg-green-100 text-green-800 rounded-full update-badge">Live</span>
+                    </div>
+                    <div class="relative">
+                        <select id="region-selector" class="appearance-none bg-gray-100 border border-gray-300 rounded-md py-2 px-4 pr-8 text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="global">Global</option>
+                            <option value="north-america">North America</option>
+                            <option value="europe">Europe</option>
+                            <option value="asia-pacific">Asia Pacific</option>
+                            <option value="latin-america">Latin America</option>
+                            <option value="africa">Africa</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-md sticky top-0 z-10">
+        <div class="container mx-auto px-4">
+            <div class="overflow-x-auto">
+                <ul class="flex space-x-8 py-4">
+                    <li><a href="#jobs" class="nav-link active text-gray-800 hover:text-blue-600" data-section="jobs">Jobs & Careers</a></li>
+                    <li><a href="#industries" class="nav-link text-gray-800 hover:text-blue-600" data-section="industries">Industries & Businesses</a></li>
+                    <li><a href="#products" class="nav-link text-gray-800 hover:text-blue-600" data-section="products">Products & Services</a></li>
+                    <li><a href="#crypto" class="nav-link text-gray-800 hover:text-blue-600" data-section="crypto">Cryptocurrencies</a></li>
+                    <li><a href="#stocks" class="nav-link text-gray-800 hover:text-blue-600" data-section="stocks">Stock Market</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Update Interval Controls -->
+    <div class="container mx-auto px-4 py-3 bg-gray-50 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+            <div class="text-sm text-gray-600">
+                <span>Data refresh interval:</span>
+                <div class="update-options inline-flex ml-3">
+                    <button data-interval="10" class="interval-btn px-3 py-1 bg-blue-600 text-white text-xs rounded-l-md hover:bg-blue-700">10s</button>
+                    <button data-interval="60" class="interval-btn px-3 py-1 bg-gray-200 text-gray-800 text-xs hover:bg-gray-300">1m</button>
+                    <button data-interval="300" class="interval-btn px-3 py-1 bg-gray-200 text-gray-800 text-xs hover:bg-gray-300">5m</button>
+                    <button data-interval="3600" class="interval-btn px-3 py-1 bg-gray-200 text-gray-800 text-xs rounded-r-md hover:bg-gray-300">1h</button>
+                </div>
+            </div>
+            <div class="text-sm flex items-center">
+                <span class="text-gray-600 mr-2">Legend:</span>
+                <span class="flex items-center mr-3"><span class="w-3 h-3 mr-1 bg-gray-400 rounded-full"></span> Historical</span>
+                <span class="flex items-center mr-3"><span class="w-3 h-3 mr-1 bg-green-500 rounded-full"></span> Growth</span>
+                <span class="flex items-center mr-3"><span class="w-3 h-3 mr-1 bg-red-500 rounded-full"></span> Decline</span>
+                <span class="flex items-center"><span class="w-3 h-3 mr-1 bg-blue-400 rounded-full"></span> Projected</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Jobs & Careers Section -->
+        <section id="jobs" class="dashboard-section active">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">Jobs & Careers Trends</h2>
+                <p class="text-gray-600">Explore the evolution of job markets and career trends over the past five years, with projections for future growth based on current data and industry forecasts.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <!-- Career Growth Chart -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Career Growth Projections (2023-2030)</h3>
+                    <div class="chart-container" id="career-growth-chart"></div>
+                </div>
+
+                <!-- Fastest Growing Careers -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Fastest Growing Careers</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-semibold">1. Data Scientists</h4>
+                                <p class="text-sm text-gray-600">AI, Machine Learning, Data Analysis</p>
+                            </div>
+                            <span class="trend-up font-bold">+36%</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-semibold">2. Renewable Energy Engineers</h4>
+                                <p class="text-sm text-gray-600">Solar, Wind, Sustainable Technologies</p>
+                            </div>
+                            <span class="trend-up font-bold">+31%</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-semibold">3. AI Specialists</h4>
+                                <p class="text-sm text-gray-600">Artificial Intelligence, Deep Learning</p>
+                            </div>
+                            <span class="trend-up font-bold">+28%</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-semibold">4. Cybersecurity Experts</h4>
+                                <p class="text-sm text-gray-600">Information Security, Risk Analysis</p>
+                            </div>
+                            <span class="trend-up font-bold">+26%</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-semibold">5. Healthcare Technicians</h4>
+                                <p class="text-sm text-gray-600">Medical Technology, Telehealth</p>
+                            </div>
+                            <span class="trend-up font-bold">+23%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Declining Careers -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Declining Careers</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-semibold">1. Data Entry Operators</h4>
+                                <p class="text-sm text-gray-600">Replaced by Automation</p>
+                            </div>
+                            <span class="trend-down font-bold">-18%</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-semibold">2. Postal Service Workers</h4>
+                                <p class="text-sm text-gray-600">Digital Communication</p>
+                            </div>
+                            <span class="trend-down font-bold">-15%</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-semibold">3. Travel Agents</h4>
+                                <p class="text-sm text-gray-600">Online Booking Platforms</p>
+                            </div>
+                            <span class="trend-down font-bold">-12%</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-semibold">4. Telemarketers</h4>
+                                <p class="text-sm text-gray-600">AI and Automated Systems</p>
+                            </div>
+                            <span class="trend-down font-bold">-9%</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-semibold">5. Print Press Operators</h4>
+                                <p class="text-sm text-gray-600">Digital Media</p>
+                            </div>
+                            <span class="trend-down font-bold">-7%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Highest Paying Sectors -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Highest Paying Sectors (Average Annual Salary)</h3>
+                    <div class="chart-container" id="salary-chart"></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <!-- Latest Job Market News -->
+                <div class="bg-white p-6 rounded-lg shadow-md col-span-1 lg:col-span-2">
+                    <h3 class="text-xl font-semibold mb-4">Latest Job Market News</h3>
+                    <div class="space-y-6">
+                        <div class="border-l-4 border-blue-500 pl-4">
+                            <h4 class="font-semibold">Tech Layoffs Slowing in Q2 2025</h4>
+                            <p class="text-sm text-gray-700 mb-2">After a challenging start to the year, tech industry layoffs have decreased by 28% in Q2, suggesting stabilization in the sector.</p>
+                            <p class="text-xs text-gray-500">Source: TechTrends Report - April 20, 2025</p>
+                        </div>
+                        <div class="border-l-4 border-green-500 pl-4">
+                            <h4 class="font-semibold">Healthcare Jobs Lead Post-Pandemic Recovery</h4>
+                            <p class="text-sm text-gray-700 mb-2">Healthcare employment has surpassed pre-pandemic levels, with a 15% increase in specialized nursing and medical technician roles.</p>
+                            <p class="text-xs text-gray-500">Source: Bureau of Labor Statistics - April 15, 2025</p>
+                        </div>
+                        <div class="border-l-4 border-purple-500 pl-4">
+                            <h4 class="font-semibold">Remote Work Becomes Permanent for 30% of Office Jobs</h4>
+                            <p class="text-sm text-gray-700 mb-2">A new survey indicates that 30% of traditionally office-based positions will remain permanently remote, with another 45% adopting hybrid models.</p>
+                            <p class="text-xs text-gray-500">Source: Future Workplace Report - April 10, 2025</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Skills in Highest Demand -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Skills in Highest Demand (2025)</h3>
+                    <div class="mb-4">
+                        <h4 class="font-semibold text-blue-600 mb-2">Technical Skills</h4>
+                        <ul class="space-y-3">
+                            <li>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-sm">AI & Machine Learning</span>
+                                    <span class="text-sm text-gray-600">92%</span>
+                                </div>
+                                <div class="skill-bar">
+                                    <div class="skill-level" style="width: 92%; background-color: #3b82f6;"></div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-sm">Cloud Computing</span>
+                                    <span class="text-sm text-gray-600">88%</span>
+                                </div>
+                                <div class="skill-bar">
+                                    <div class="skill-level" style="width: 88%; background-color: #3b82f6;"></div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-sm">Cybersecurity</span>
+                                    <span class="text-sm text-gray-600">85%</span>
+                                </div>
+                                <div class="skill-bar">
+                                    <div class="skill-level" style="width: 85%; background-color: #3b82f6;"></div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-sm">Data Analysis</span>
+                                    <span class="text-sm text-gray-600">83%</span>
+                                </div>
+                                <div class="skill-bar">
+                                    <div class="skill-level" style="width: 83%; background-color: #3b82f6;"></div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-sm">Blockchain</span>
+                                    <span class="text-sm text-gray-600">76%</span>
+                                </div>
+                                <div class="skill-bar">
+                                    <div class="skill-level" style="width: 76%; background-color: #3b82f6;"></div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="mb-4">
+                        <h4 class="font-semibold text-green-600 mb-2">Soft Skills</h4>
+                        <ul class="space-y-1 text-sm">
+                            <li>• Adaptability</li>
+                            <li>• Critical Thinking</li>
+                            <li>• Emotional Intelligence</li>
+                            <li>• Complex Problem Solving</li>
+                            <li>• Creativity</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-purple-600 mb-2">Business Skills</h4>
+                        <ul class="space-y-1 text-sm">
+                            <li>• Digital Literacy</li>
+                            <li>• Remote Team Management</li>
+                            <li>• Digital Marketing</li>
+                            <li>• Project Management</li>
+                            <li>• Sustainability Practices</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Industries & Businesses Section -->
+        <section id="industries" class="dashboard-section">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">Industries & Businesses</h2>
+                <p class="text-gray-600">Track the performance and trends of major industries worldwide, with insights into emerging sectors and business model innovations.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <!-- Industry Growth Chart -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Industry Growth Rate (2023-2025)</h3>
+                    <div class="chart-container" id="industry-growth-chart"></div>
+                </div>
+
+                <!-- Emerging Industries -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Emerging Industries</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-semibold">1. Sustainable Energy Solutions</h4>
+                                <p class="text-sm text-gray-600">Green hydrogen, advanced solar, energy storage</p>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="trend-up font-bold mr-2">+42%</span>
+                                <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">High Potential</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-semibold">2. Digital Health & Telemedicine</h4>
+                                <p class="text-sm text-gray-600">Remote diagnostics, AI health monitoring</p>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="trend-up font-bold mr-2">+38%</span>
+                                <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">High Potential</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-semibold">3. Edge Computing Infrastructure</h4>
+                                <p class="text-sm text-gray-600">Distributed computing, IoT networks</p>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="trend-up font-bold mr-2">+35%</span>
+                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Growing Fast</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-semibold">4. Circular Economy Solutions</h4>
+                                <p class="text-sm text-gray-600">Recycling innovation, waste reduction</p>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="trend-up font-bold mr-2">+33%</span>
+                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Growing Fast</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-semibold">5. Vertical Farming</h4>
+                                <p class="text-sm text-gray-600">Urban agriculture, controlled environment</p>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="trend-up font-bold mr-2">+29%</span>
+                                <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">Emerging</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                <!-- M&A Activity -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">M&A Activity by Sector</h3>
+                    <div class="chart-container" id="ma-chart"></div>
+                </div>
+
+                <!-- Venture Capital Investments -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Venture Capital Investments</h3>
+                    <div class="chart-container" id="vc-chart"></div>
+                </div>
+
+                <!-- Business Model Innovations -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Business Model Innovations</h3>
+                    <div class="space-y-4">
+                        <div class="p-3 bg-blue-50 rounded-lg">
+                            <h4 class="font-semibold">Outcome-Based Models</h4>
+                            <p class="text-sm text-gray-700">Shifting from product sales to guaranteed outcomes, particularly in B2B sectors.</p>
+                            <div class="flex items-center justify-between mt-2">
+                                <span class="text-xs text-gray-500">Adoption rate:</span>
+                                <span class="text-xs font-semibold">42%</span>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-green-50 rounded-lg">
+                            <h4 class="font-semibold">Decentralized Autonomous Organizations</h4>
+                            <p class="text-sm text-gray-700">Blockchain-powered organizations with distributed governance.</p>
+                            <div class="flex items-center justify-between mt-2">
+                                <span class="text-xs text-gray-500">Adoption rate:</span>
+                                <span class="text-xs font-semibold">26%</span>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-purple-50 rounded-lg">
+                            <h4 class="font-semibold">API-as-a-Business</h4>
+                            <p class="text-sm text-gray-700">Companies monetizing proprietary data and capabilities through APIs.</p>
+                            <div class="flex items-center justify-between mt-2">
+                                <span class="text-xs text-gray-500">Adoption rate:</span>
+                                <span class="text-xs font-semibold">54%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Industry News -->
+            <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                <h3 class="text-xl font-semibold mb-4">Industry News & Developments</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        <h4 class="font-semibold">Manufacturing Automation Reaches New Milestone</h4>
+                        <p class="text-sm text-gray-700 mb-2">Over 70% of large manufacturing plants now operate with advanced robotic systems, increasing productivity by an average of 32%.</p>
+                        <p class="text-xs text-gray-500">Source: Global Manufacturing Review - April 18, 2025</p>
+                    </div>
+                    <div class="border-l-4 border-green-500 pl-4">
+                        <h4 class="font-semibold">Sustainable Finance Grows 47% YoY</h4>
+                        <p class="text-sm text-gray-700 mb-2">Green bonds and sustainability-linked loans reach record volumes as financial institutions prioritize ESG metrics in lending decisions.</p>
+                        <p class="text-xs text-gray-500">Source: Financial Markets Monitor - April 12, 2025</p>
+                    </div>
+                    <div class="border-l-4 border-purple-500 pl-4">
+                        <h4 class="font-semibold">Retail Spaces Evolve into Experience Centers</h4>
+                        <p class="text-sm text-gray-700 mb-2">Major retailers repurpose 40% of store space for immersive experiences, blending digital and physical shopping environments.</p>
+                        <p class="text-xs text-gray-500">Source: Retail Innovation Report - April 8, 2025</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Products & Services Section -->
+        <section id="products" class="dashboard-section">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">Products & Services</h2>
+                <p class="text-gray-600">Discover emerging product trends, innovative services, and consumer preferences shaping markets worldwide.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <!-- Consumer Technology Adoption -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Consumer Technology Adoption Rates</h3>
+                    <div class="chart-container" id="tech-adoption-chart"></div>
+                </div>
+
+                <!-- Product Lifecycle Analysis -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Product Lifecycle Analysis</h3>
+                    <div class="chart-container" id="product-lifecycle-chart"></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                <!-- Trending Products -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Trending Products</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-brain text-blue-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="font-semibold">Personal AI Assistants</h4>
+                                <p class="text-sm text-gray-600">Advanced AI companions with deep personalization</p>
+                                <div class="flex items-center mt-1">
+                                    <div class="text-xs px-2 py-0.5 bg-green-100 text-green-800 rounded-full">+145% YoY Growth</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-solar-panel text-green-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="font-semibold">Home Energy Management Systems</h4>
+                                <p class="text-sm text-gray-600">Smart grid integration with renewable optimization</p>
+                                <div class="flex items-center mt-1">
+                                    <div class="text-xs px-2 py-0.5 bg-green-100 text-green-800 rounded-full">+118% YoY Growth</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-vr-cardboard text-purple-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="font-semibold">Mixed Reality Wearables</h4>
+                                <p class="text-sm text-gray-600">Everyday AR/VR devices with practical applications</p>
+                                <div class="flex items-center mt-1">
+                                    <div class="text-xs px-2 py-0.5 bg-green-100 text-green-800 rounded-full">+103% YoY Growth</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-leaf text-yellow-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="font-semibold">Sustainable Packaging Solutions</h4>
+                                <p class="text-sm text-gray-600">Biodegradable and reusable packaging systems</p>
+                                <div class="flex items-center mt-1">
+                                    <div class="text-xs px-2 py-0.5 bg-green-100 text-green-800 rounded-full">+92% YoY Growth</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subscription Services -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Subscription Services Market</h3>
+                    <div class="chart-container" id="subscription-chart"></div>
+                    <div class="mt-4 grid grid-cols-2 gap-3">
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <h4 class="font-semibold text-sm">Entertainment</h4>
+                            <p class="text-xs text-gray-600">$286B Market Size</p>
+                            <p class="text-xs text-green-600">+18% Growth</p>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <h4 class="font-semibold text-sm">Food & Grocery</h4>
+                            <p class="text-xs text-gray-600">$184B Market Size</p>
+                            <p class="text-xs text-green-600">+24% Growth</p>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <h4 class="font-semibold text-sm">Digital Tools</h4>
+                            <p class="text-xs text-gray-600">$137B Market Size</p>
+                            <p class="text-xs text-green-600">+15% Growth</p>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <h4 class="font-semibold text-sm">Wellness Services</h4>
+                            <p class="text-xs text-gray-600">$98B Market Size</p>
+                            <p class="text-xs text-green-600">+29% Growth</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Consumer Priorities -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Consumer Priorities (2025)</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="text-sm font-medium">Sustainability</span>
+                                <span class="text-sm text-gray-600">78%</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-level" style="width: 78%; background-color: #10b981;"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="text-sm font-medium">Privacy & Data Control</span>
+                                <span class="text-sm text-gray-600">76%</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-level" style="width: 76%; background-color: #3b82f6;"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="text-sm font-medium">Personalization</span>
+                                <span class="text-sm text-gray-600">72%</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-level" style="width: 72%; background-color: #8b5cf6;"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="text-sm font-medium">Convenience</span>
+                                <span class="text-sm text-gray-600">68%</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-level" style="width: 68%; background-color: #f59e0b;"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="text-sm font-medium">Value for Money</span>
+                                <span class="text-sm text-gray-600">64%</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-level" style="width: 64%; background-color: #ef4444;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-6 text-sm">
+                        <p class="text-gray-600 italic">Based on global consumer survey of 50,000+ respondents across 32 countries. Percentage indicates proportion of consumers rating factor as "very important" in purchase decisions.</p>
+                        <p class="text-xs text-gray-500 mt-2">Source: Global Consumer Insights Report - March 2025</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Innovation News -->
+            <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                <h3 class="text-xl font-semibold mb-4">Product Innovation Highlights</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="card p-4 border border-gray-200 rounded-lg hover:shadow-lg">
+                        <div class="text-blue-600 mb-2"><i class="fas fa-microchip text-xl"></i></div>
+                        <h4 class="font-semibold">Quantum Sensors Entering Consumer Market</h4>
+                        <p class="text-sm text-gray-700 mt-2">First generation of quantum-enhanced sensors for smartphones and wearables offering unprecedented measurement precision for everyday applications.</p>
+                        <p class="text-xs text-gray-500 mt-3">Source: Quantum Computing Report - April 17, 2025</p>
+                    </div>
+                    <div class="card p-4 border border-gray-200 rounded-lg hover:shadow-lg">
+                        <div class="text-green-600 mb-2"><i class="fas fa-prescription-bottle-alt text-xl"></i></div>
+                        <h4 class="font-semibold">Personalized Nutrition Service Expansion</h4>
+                        <p class="text-sm text-gray-700 mt-2">AI-driven nutrition services incorporating genetic, microbiome, and lifestyle data see 230% growth as consumers seek tailored health solutions.</p>
+                        <p class="text-xs text-gray-500 mt-3">Source: Healthcare Innovation Monitor - April 14, 2025</p>
+                    </div>
+                    <div class="card p-4 border border-gray-200 rounded-lg hover:shadow-lg">
+                        <div class="text-purple-600 mb-2"><i class="fas fa-robot text-xl"></i></div>
+                        <h4 class="font-semibold">Domestic Robots Reach 15% of Households</h4>
+                        <p class="text-sm text-gray-700 mt-2">Advanced household robots with multiple capabilities now in 15% of homes in developed markets, up from 3% in 2023, becoming mainstream consumer products.</p>
+                        <p class="text-xs text-gray-500 mt-3">Source: Consumer Electronics Trends - April 5, 2025</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Cryptocurrencies Section -->
+        <section id="crypto" class="dashboard-section">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">Cryptocurrencies</h2>
+                <p class="text-gray-600">Track performance of major cryptocurrencies, emerging tokens, and adoption trends across markets and industries.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8">
+                <!-- Bitcoin Card -->
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                                <i class="fab fa-bitcoin text-orange-500"></i>
+                            </div>
+                            <div class="ml-3">
+                                <h4 class="font-semibold">Bitcoin</h4>
+                                <p class="text-xs text-gray-600">BTC</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-lg font-bold">$92,475</div>
+                            <div class="text-xs trend-up">+3.2% (24h)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ethereum Card -->
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                <i class="fab fa-ethereum text-blue-500"></i>
+                            </div>
+                            <div class="ml-3">
+                                <h4 class="font-semibold">Ethereum</h4>
+                                <p class="text-xs text-gray-600">ETH</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-lg font-bold">$7,842</div>
+                            <div class="text-xs trend-up">+2.8% (24h)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Solana Card -->
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                                <span class="text-purple-500 font-bold text-xs">SOL</span>
+                            </div>
+                            <div class="ml-3">
+                                <h4 class="font-semibold">Solana</h4>
+                                <p class="text-xs text-gray-600">SOL</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-lg font-bold">$486</div>
+                            <div class="text-xs trend-up">+5.1% (24h)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cardano Card -->
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                <span class="text-blue-700 font-bold text-xs">ADA</span>
+                            </div>
+                            <div class="ml-3">
+                                <h4 class="font-semibold">Cardano</h4>
+                                <p class="text-xs text-gray-600">ADA</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-lg font-bold">$4.62</div>
+                            <div class="text-xs trend-down">-0.7% (24h)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <!-- Crypto Market Performance -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Crypto Market Performance (6 Months)</h3>
+                    <div class="chart-container" id="crypto-performance-chart"></div>
+                </div>
+
+                <!-- Market Dominance -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Market Dominance</h3>
+                    <div class="chart-container" id="crypto-dominance-chart"></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                <!-- Adoption Metrics -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Adoption Metrics</h3>
+                    <div class="space-y-6">
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="font-medium">Global Users</span>
+                                <span class="font-semibold">825M</span>
+                            </div>
+                            <div class="flex items-center text-sm">
+                                <span class="text-green-600 flex items-center mr-2">
+                                    <i class="fas fa-arrow-up mr-1 text-xs"></i> 18%
+                                </span>
+                                <span class="text-gray-600">from previous year</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="font-medium">Daily Transactions</span>
+                                <span class="font-semibold">24.3M</span>
+                            </div>
+                            <div class="flex items-center text-sm">
+                                <span class="text-green-600 flex items-center mr-2">
+                                    <i class="fas fa-arrow-up mr-1 text-xs"></i> 32%
+                                </span>
+                                <span class="text-gray-600">from previous year</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="font-medium">Active DeFi Users</span>
+                                <span class="font-semibold">48M</span>
+                            </div>
+                            <div class="flex items-center text-sm">
+                                <span class="text-green-600 flex items-center mr-2">
+                                    <i class="fas fa-arrow-up mr-1 text-xs"></i> 45%
+                                </span>
+                                <span class="text-gray-600">from previous year</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="font-medium">Countries with CBDC</span>
+                                <span class="font-semibold">38</span>
+                            </div>
+                            <div class="flex items-center text-sm">
+                                <span class="text-green-600 flex items-center mr-2">
+                                    <i class="fas fa-arrow-up mr-1 text-xs"></i> 52%
+                                </span>
+                                <span class="text-gray-600">from previous year</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Emerging Tokens -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Emerging Tokens to Watch</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <h4 class="font-semibold">Polkadot</h4>
+                                <p class="text-xs text-gray-600">Cross-chain interoperability protocol</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold">$86.34</div>
+                                <div class="text-xs trend-up">+128% (YTD)</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <h4 class="font-semibold">Polygon</h4>
+                                <p class="text-xs text-gray-600">Ethereum scaling solution</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold">$4.82</div>
+                                <div class="text-xs trend-up">+96% (YTD)</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <h4 class="font-semibold">Avalanche</h4>
+                                <p class="text-xs text-gray-600">High-throughput smart contract platform</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold">$124.67</div>
+                                <div class="text-xs trend-up">+115% (YTD)</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <h4 class="font-semibold">Aave</h4>
+                                <p class="text-xs text-gray-600">Decentralized lending protocol</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold">$278.12</div>
+                                <div class="text-xs trend-up">+84% (YTD)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Regulatory Landscape -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Regulatory Landscape</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-semibold text-green-600">Progressive Jurisdictions</h4>
+                            <ul class="mt-2 space-y-2">
+                                <li class="flex items-center text-sm">
+                                    <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                    <span>Singapore - Comprehensive licensing framework</span>
+                                </li>
+                                <li class="flex items-center text-sm">
+                                    <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                    <span>Switzerland - Clear token classification system</span>
+                                </li>
+                                <li class="flex items-center text-sm">
+                                    <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                    <span>UAE - Tax-friendly crypto innovation zones</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-yellow-600">Evolving Frameworks</h4>
+                            <ul class="mt-2 space-y-2">
+                                <li class="flex items-center text-sm">
+                                    <i class="fas fa-exclamation-circle text-yellow-500 mr-2"></i>
+                                    <span>United States - State-by-state variations</span>
+                                </li>
+                                <li class="flex items-center text-sm">
+                                    <i class="fas fa-exclamation-circle text-yellow-500 mr-2"></i>
+                                    <span>European Union - MiCA framework implementation</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-red-600">Restrictive Regions</h4>
+                            <ul class="mt-2 space-y-2">
+                                <li class="flex items-center text-sm">
+                                    <i class="fas fa-times-circle text-red-500 mr-2"></i>
+                                    <span>China - Maintains prohibition on crypto trading</span>
+                                </li>
+                                <li class="flex items-center text-sm">
+                                    <i class="fas fa-times-circle text-red-500 mr-2"></i>
+                                    <span>Russia - Restricted to institutional investors</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Latest Crypto News -->
+            <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                <h3 class="text-xl font-semibold mb-4">Latest Crypto News</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        <h4 class="font-semibold">ETH 3.0 Upgrade Completed Successfully</h4>
+                        <p class="text-sm text-gray-700 mb-2">The Ethereum network has completed its 3.0 upgrade, improving throughput to 100,000 transactions per second and reducing energy usage by 98%.</p>
+                        <p class="text-xs text-gray-500">Source: CryptoNews - April 18, 2025</p>
+                    </div>
+                    <div class="border-l-4 border-green-500 pl-4">
+                        <h4 class="font-semibold">Central Banks Pilot International CBDC Bridge</h4>
+                        <p class="text-sm text-gray-700 mb-2">A coalition of 12 central banks has launched a shared infrastructure for cross-border CBDC transfers, potentially revolutionizing international payments.</p>
+                        <p class="text-xs text-gray-500">Source: Financial Times - April 15, 2025</p>
+                    </div>
+                    <div class="border-l-4 border-purple-500 pl-4">
+                        <h4 class="font-semibold">Decentralized Social Media Reaches 200M Users</h4>
+                        <p class="text-sm text-gray-700 mb-2">Blockchain-based social platforms have collectively surpassed 200 million monthly active users, challenging Web2 incumbents with user-owned content models.</p>
+                        <p class="text-xs text-gray-500">Source: Web3 Observer - April 10, 2025</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stock Market Section -->
+        <section id="stocks" class="dashboard-section">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">Stock Market</h2>
+                <p class="text-gray-600">Monitor global stock market performance, sector analysis, and investment trends across major indices.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8">
+                <!-- S&P 500 Card -->
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-semibold">S&P 500</h4>
+                            <p class="text-xs text-gray-600">USA</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-lg font-bold">6,842.53</div>
+                            <div class="text-xs trend-up">+0.78% (Today)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NASDAQ Card -->
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-semibold">NASDAQ</h4>
+                            <p class="text-xs text-gray-600">USA</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-lg font-bold">22,476.21</div>
+                            <div class="text-xs trend-up">+1.24% (Today)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FTSE 100 Card -->
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-semibold">FTSE 100</h4>
+                            <p class="text-xs text-gray-600">UK</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-lg font-bold">9,387.64</div>
+                            <div class="text-xs trend-down">-0.12% (Today)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nikkei 225 Card -->
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-semibold">Nikkei 225</h4>
+                            <p class="text-xs text-gray-600">Japan</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-lg font-bold">42,567.89</div>
+                            <div class="text-xs trend-up">+0.56% (Today)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <!-- Major Indices Performance -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Major Indices Performance (YTD)</h3>
+                    <div class="chart-container" id="indices-performance-chart"></div>
+                </div>
+
+                <!-- Sector Performance -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Sector Performance</h3>
+                    <div class="chart-container" id="sector-performance-chart"></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                <!-- Top Performers -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Top Performing Stocks</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-semibold">QuantumAI Technologies</h4>
+                                <p class="text-xs text-gray-600">QAIT • Technology</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold">$842.37</div>
+                                <div class="text-xs trend-up">+168% (YTD)</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-semibold">GreenFusion Energy</h4>
+                                <p class="text-xs text-gray-600">GFE • Energy</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold">$124.62</div>
+                                <div class="text-xs trend-up">+145% (YTD)</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-semibold">NeuraTech Medical</h4>
+                                <p class="text-xs text-gray-600">NTM • Healthcare</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold">$376.28</div>
+                                <div class="text-xs trend-up">+132% (YTD)</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-semibold">OrbitalX Space</h4>
+                                <p class="text-xs text-gray-600">ORBX • Aerospace</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold">$512.94</div>
+                                <div class="text-xs trend-up">+124% (YTD)</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-semibold">BioRegenesis Labs</h4>
+                                <p class="text-xs text-gray-600">BRL • Biotechnology</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold">$218.75</div>
+                                <div class="text-xs trend-up">+112% (YTD)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Market Volatility -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Market Volatility</h3>
+                    <div class="chart-container" id="volatility-chart"></div>
+                    <div class="mt-4 grid grid-cols-2 gap-3">
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <h4 class="font-semibold text-sm">VIX Index</h4>
+                            <div class="flex items-center justify-between mt-1">
+                                <span class="text-lg font-bold">18.63</span>
+                                <span class="text-xs trend-down">-4.2%</span>
+                            </div>
+                            <p class="text-xs text-gray-600 mt-1">Moderate volatility</p>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <h4 class="font-semibold text-sm">Daily Range</h4>
+                            <div class="flex items-center justify-between mt-1">
+                                <span class="text-lg font-bold">1.8%</span>
+                                <span class="text-xs text-gray-600">Avg</span>
+                            </div>
+                            <p class="text-xs text-gray-600 mt-1">Last 30 days</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Investment Trends -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Investment Trends (2025)</h3>
+                    <div class="space-y-5">
+                        <div>
+                            <h4 class="font-semibold text-blue-600">Institutional Focus Areas</h4>
+                            <div class="mt-2 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm">Climate Tech</span>
+                                    <span class="text-sm font-medium">34% allocation</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm">Artificial Intelligence</span>
+                                    <span class="text-sm font-medium">28% allocation</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm">Biotech Innovation</span>
+                                    <span class="text-sm font-medium">22% allocation</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-green-600">Retail Investor Behavior</h4>
+                            <div class="mt-2 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm">ESG Focused Funds</span>
+                                    <span class="text-sm font-medium">+162% YoY</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm">AI Portfolio Tools</span>
+                                    <span class="text-sm font-medium">68% adoption</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm">Fractional Investing</span>
+                                    <span class="text-sm font-medium">42% of trades</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-xs text-gray-600">
+                        <p>Source: Global Investment Monitor, Q1 2025</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Market News -->
+            <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                <h3 class="text-xl font-semibold mb-4">Market News & Analysis</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        <h4 class="font-semibold">Fed Adjusts Interest Rate Policy</h4>
+                        <p class="text-sm text-gray-700 mb-2">The Federal Reserve announced a 25 basis point cut in interest rates, citing improving inflation data and stable economic growth forecasts.</p>
+                        <p class="text-xs text-gray-500">Source: Wall Street Journal - April 20, 2025</p>
+                    </div>
+                    <div class="border-l-4 border-green-500 pl-4">
+                        <h4 class="font-semibold">ESG Investments Surpass $30 Trillion</h4>
+                        <p class="text-sm text-gray-700 mb-2">Global ESG-focused investments have reached $32.6 trillion, accounting for 38% of professionally managed assets worldwide.</p>
+                        <p class="text-xs text-gray-500">Source: Bloomberg - April 16, 2025</p>
+                    </div>
+                    <div class="border-l-4 border-purple-500 pl-4">
+                        <h4 class="font-semibold">Tech IPO Market Rebounds</h4>
+                        <p class="text-sm text-gray-700 mb-2">After a slow 2024, the tech IPO market has rebounded with 28 new listings in Q1 2025, raising a combined $42 billion in capital.</p>
+                        <p class="text-xs text-gray-500">Source: Reuters - April 12, 2025</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Data Sources Section -->
+        <section class="mb-8 bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Data Sources</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                    <h3 class="font-semibold text-gray-700 mb-2">Economic Data</h3>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>• Bureau of Labor Statistics</li>
+                        <li>• World Economic Forum</li>
+                        <li>• International Labour Organization</li>
+                        <li>• Federal Reserve Economic Data</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-gray-700 mb-2">Market Data</h3>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>• Trading Economics</li>
+                        <li>• Bloomberg Terminal</li>
+                        <li>• Yahoo Finance API</li>
+                        <li>• S&P Global Market Intelligence</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-gray-700 mb-2">Cryptocurrency Data</h3>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>• CoinGecko</li>
+                        <li>• CoinMarketCap</li>
+                        <li>• Messari</li>
+                        <li>• DefiLlama</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-gray-700 mb-2">Industry Reports</h3>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>• International Energy Agency</li>
+                        <li>• World Bank</li>
+                        <li>• Gartner Research</li>
+                        <li>• McKinsey Global Institute</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- About the Dashboard -->
+        <section class="mb-8 bg-gray-50 p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-bold text-gray-800 mb-2">About this Dashboard</h2>
+            <p class="text-gray-600 mb-4">Global Trends Dashboard provides comprehensive data visualization and analysis of job markets, industries, products, cryptocurrencies, and stock markets from around the world. Updated regularly with current data and projections based on market research.</p>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                <div class="flex items-center">
+                    <div class="w-3 h-3 bg-gray-400 rounded-full mr-2"></div>
+                    <span class="text-sm text-gray-600">Historical Data</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                    <span class="text-sm text-gray-600">Growth Trend</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                    <span class="text-sm text-gray-600">Decline Trend</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="w-3 h-3 bg-blue-400 rounded-full mr-2"></div>
+                    <span class="text-sm text-gray-600">Projected Data</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <h2 class="text-lg font-bold">Global Trends Dashboard</h2>
+                    <p class="text-sm text-gray-400">© 2025 Global Trends Dashboard. All rights reserved.</p>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="#" class="text-gray-400 hover:text-white">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white">
+                        <i class="fab fa-github"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="mt-6 pt-6 border-t border-gray-700 text-center text-sm text-gray-400">
+                Developed with ❤️ by Jose Espinosa
+            </div>
+        </div>
+    </footer>
+
+    <!-- Tooltip Container -->
+    <div id="tooltip" class="tooltip"></div>
+
+    <script>
+        // Navigation functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Navigation
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('.dashboard-section');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetSection = this.getAttribute('data-section');
+                    
+                    // Update active link
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show target section, hide others
+                    sections.forEach(section => {
+                        section.classList.remove('active');
+                        if (section.id === targetSection) {
+                            section.classList.add('active');
+                        }
+                    });
+                });
+            });
+
+            // Update interval controls
+            const intervalButtons = document.querySelectorAll('.interval-btn');
+            intervalButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    intervalButtons.forEach(b => b.classList.remove('bg-blue-600', 'text-white'));
+                    intervalButtons.forEach(b => b.classList.add('bg-gray-200', 'text-gray-800'));
+                    this.classList.remove('bg-gray-200', 'text-gray-800');
+                    this.classList.add('bg-blue-600', 'text-white');
+                    
+                    const interval = parseInt(this.getAttribute('data-interval'));
+                    updateData(interval);
+                });
+            });
+            
+            // Initialize charts and simulate data updates
+            initializeCharts();
+            updateData(10); // Default 10-second updates
+        });
+
+        // Data update simulation
+        function updateData(intervalSeconds) {
+            // Clear any existing interval
+            if (window.updateInterval) {
+                clearInterval(window.updateInterval);
+            }
+            
+            // Setup new interval
+            window.updateInterval = setInterval(() => {
+                // Update last updated timestamp
+                const now = new Date();
+                const formattedDate = `${now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
+                const formattedTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                document.getElementById('last-updated').textContent = `${formattedDate} ${formattedTime}`;
+                
+                // Simulate data updates for charts (in a real implementation, this would fetch new data)
+                updateCharts();
+            }, intervalSeconds * 1000);
+        }
+
+        // Initialize all charts
+        function initializeCharts() {
+            // Jobs & Careers Charts
+            initializeCareerGrowthChart();
+            initializeSalaryChart();
+            
+            // Industries & Businesses Charts
+            initializeIndustryGrowthChart();
+            initializeMAChart();
+            initializeVCChart();
+            
+            // Products & Services Charts
+            initializeTechAdoptionChart();
+            initializeProductLifecycleChart();
+            initializeSubscriptionChart();
+            
+            // Cryptocurrency Charts
+            initializeCryptoPerformanceChart();
+            initializeCryptoDominanceChart();
+            
+            // Stock Market Charts
+            initializeIndicesPerformanceChart();
+            initializeSectorPerformanceChart();
+            initializeVolatilityChart();
+        }
+
+        // Update charts with new data (simulation)
+        function updateCharts() {
+            // In a real implementation, this would update charts with new data
+            // For this demo, we'll just add slight variations to simulate live updates
+            
+            // Example: Update career growth chart with slight variations
+            if (window.careerGrowthChart) {
+                const series = window.careerGrowthChart.w.globals.series.map(val => {
+                    // Add small random variation
+                    return val * (1 + (Math.random() * 0.04 - 0.02));
+                });
+                window.careerGrowthChart.updateSeries([{
+                    data: series
+                }]);
+            }
+            
+            // Similar updates would be done for other charts
+        }
+
+        // Chart initialization functions
+        function initializeCareerGrowthChart() {
+            const options = {
+                series: [{
+                    name: 'Growth Rate',
+                    data: [8, 12, 24, 18, 15, 22, 30]
+                }],
+                chart: {
+                    type: 'bar',
+                    height: 300,
+                    toolbar: {
+                        show: false
+                    }
+                },
+                colors: ['#3b82f6'],
+                plotOptions: {
+                    bar: {
+                        borderRadius: 4,
+                        horizontal: false,
+                        columnWidth: '60%'
+                    }
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                xaxis: {
+                    categories: ['2023', '2024', '2025', '2026', '2027', '2028', '2029', '2030'],
+                    labels: {
+                        style: {
+                            fontSize: '12px'
+                        }
+                    }
+                },
+                yaxis: {
+                    title: {
+                        text: 'Growth Rate (%)',
+                        style: {
+                            fontSize: '12px',
+                            fontWeight: 400
+                        }
+                    }
+                },
+                grid: {
+                    borderColor: '#f1f1f1'
+                },
+                tooltip: {
+                    y: {
+                        formatter: function(val) {
+                            return val + "%";
+                        }
+                    }
+                }
+            };
+
+            window.careerGrowthChart = new ApexCharts(document.querySelector("#career-growth-chart"), options);
+            window.careerGrowthChart.render();
+        }
+
+        function initializeSalaryChart() {
+            const options = {
+                series: [{
+                    name: 'Average Annual Salary ($K)',
+                    data: [165, 142, 130, 118, 105, 92, 85]
+                }],
+                chart: {
+                    type: 'bar',
+                    height: 300,
+                    toolbar: {
+                        show: false
+                    }
+                },
+                colors: ['#10b981'],
+                plotOptions: {
+                    bar: {
+                        borderRadius: 4,
+                        horizontal: true
+                    }
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                xaxis: {
+                    categories: ['Technology', 'Finance', 'Healthcare', 'Engineering', 'Legal', 'Marketing', 'Education'],
+                    labels: {
+                        style: {
+                            fontSize: '12px'
+                        }
+                    }
+                },
+                grid: {
+                    borderColor: '#f1f1f1'
+                },
+                tooltip: {
+                    y: {
+                        formatter: function(val) {
+                            return "$" + val + "K";
+                        }
+                    }
+                }
+            };
+
+            const salaryChart = new ApexCharts(document.querySelector("#salary-chart"), options);
+            salaryChart.render();
+        }
+
+        function initializeIndustryGrowthChart() {
+            const options = {
+                series: [{
+                    name: 'Growth Rate',
+                    data: [24, 18, 16, 14, 12, 9, 7, -3, -6]
+                }],
+                chart: {
+                    type: 'bar',
+                    height: 300,
+                    toolbar: {
+                        show: false
+                    }
+                },
+                colors: ['#3b82f6'],
+                plotOptions: {
+                    bar: {
+                        borderRadius: 4,
+                        horizontal: true,
+                        barHeight: '80%',
+                        distributed: true
+                    }
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                xaxis: {
+                    categories: [
+                        'Clean Tech', 
+                        'AI & ML', 
+                        'Healthcare Tech', 
+                        'Remote Work Tech', 
+                        'Biotech', 
+                        'Fintech', 
+                        'E-commerce', 
+                        'Traditional Retail', 
+                        'Fossil Fuels'
+                    ],
+                    labels: {
+                        style: {
+                            fontSize: '12px'
+                        }
+                    }
+                },
+                grid: {
+                    borderColor: '#f1f1f1'
+                },
+                tooltip: {
+                    y: {
+                        formatter: function(val) {
+                            return val + "%";
+                        }
+                    }
+                },
+                fill: {
+                    colors: function({ value, seriesIndex, w }) {
+                        if (value < 0) {
+                            return '#ef4444'
+                        } else if (value > 15) {
+                            return '#10b981'
+                        } else {
+                            return '#3b82f6'
+                        }
+                    }
+                }
+            };
+
+            const industryGrowthChart = new ApexCharts(document.querySelector("#industry-growth-chart"), options);
+            industryGrowthChart.render();
+        }
+
+        function initializeMAChart() {
+            const options = {
+                series: [42, 23, 15, 12, 8],
+                chart: {
+                    type: 'donut',
+                    height: 300,
+                    toolbar: {
+                        show: false
+                    }
+                },
+                labels: ['Technology', 'Healthcare', 'Renewable Energy', 'Financial Services', 'Others'],
+                colors: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#6b7280'],
+                plotOptions: {
+                    pie: {
+                        donut: {
+                            size: '60%'
+                        }
+                    }
+                },
+                legend: {
+                    position: 'bottom',
+                    fontSize: '12px'
+                },
+                tooltip: {
+                    y: {
+                        formatter: function(val) {
+                            return val + "%";
+                        }
+                    }
+                }
+            };
+
+            const maChart = new ApexCharts(document.querySelector("#ma-chart"), options);
+            maChart.render();
+        }
+
+        function initializeVCChart() {
+            const options = {
+                series: [{
+                    name: 'Funding ($B)',
+                    data: [158, 94, 76, 42, 38]
+                }],
+                chart: {
+                    type: 'bar',
+                    height: 300,
+                    toolbar: {
+                        show: false
+                    }
+                },
+                colors: ['#8b5cf6'],
+                plotOptions: {
+                    bar: {
+                        borderRadius: 4,
+                        horizontal: false,
+                        columnWidth: '55%'
+                    }
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                xaxis: {
+                    categories: ['AI & ML', 'Climate Tech', 'Biotech', 'Quantum Computing', 'Space Tech'],
+                    labels: {
+                        style: {
+                            fontSize: '12px'
+                        }
+                    }
+                },
+                yaxis: {
+                    title: {
+                        text: 'Funding ($B)',
+                        style: {
+                            fontSize: '12px'
+                        }
+                    }
+                },
+                grid: {
+                    borderColor: '#f1f1f1'
+                },
+                tooltip: {
+                    y: {
+                        formatter: function(val) {
+                            return "$" + val + "B";
+                        }
+                    }
+                }
+            };
+
+            const vcChart = new ApexCharts(document.querySelector("#vc-chart"), options);
+            vcChart.render();
+        }
+
+        function initializeTechAdoptionChart() {
+            const options = {
+                series: [{
+                    name: 'Adoption Rate',
+                    data: [82, 65, 48, 42, 38, 24]
+                }],
+                chart: {
+                    type: 'bar',
+                    height: 300,
+                    toolbar: {
+                        show: false
+                    }
+                },
+                colors: ['#3b82f6'],
+                plotOptions: {
+                    bar: {
+                        borderRadius: 4,
+                        horizontal: true
+                    }
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                xaxis: {
+                    categories: ['Smartphones', 'Smart Home', 'AR/VR Devices', 'Smart Wearables', 'Electric Vehicles', 'Robot Assistants'],
+                    labels: {
+                        style: {
+                            fontSize: '12px'
+                        }
+                    }
+                },
+                grid: {
+                    borderColor: '#f1f1f1'
+                },
+                tooltip: {
+                    y: {
+                        formatter: function(val) {
+                            return val + "%";
+                        }
+                    }
+                }
+            };
+
+            const techAdoptionChart = new ApexCharts(document.querySelector("#tech-adoption-chart"), options);
+            techAdoptionChart.render();
+        }
+
+        function initializeProductLifecycleChart() {
+            const options = {
+                series: [
+                    {
+                        name: "Introduction",
+                        data: [[1, 'Robot Assistants'], [1, 'Brain-Computer Interfaces'], [1, 'Quantum Computing Devices']]
+                    },
+                    {
+                        name: "Growth",
+                        data: [[2, 'Mixed Reality Headsets'], [2, 'Electric Vehicles'], [2, 'Plant-Based Foods']]
+                    },
+                    {
+                        name: "Maturity",
+                        data: [[3, 'Smart Speakers'], [3, 'Renewable Energy Systems'], [3, 'Wearable Tech']]
+                    },
+                    {
+                        name: "Decline",
+                        data: [[4, 'Traditional PCs'], [4, 'Cable TV'], [4, 'Printed Media']]
+                    }
+                ],
+                chart: {
+                    height: 300,
+                    type: 'scatter',
+                    toolbar: {
+                        show: false
+                    }
+                },
+                colors: ['#8b5cf6', '#10b981', '#f59e0b', '#ef4444'],
+                grid: {
+                    xaxis: {
+                        lines: {
+                            show: true
+                        }
+                    },
+                    yaxis: {
+                        lines: {
+                            show: false
+                        }
+                    },
+                },
+                xaxis: {
+                    type: 'category',
+                    categories: ['Introduction', 'Growth', 'Maturity', 'Decline'],
+                    tickAmount: 4,
+                    labels: {
+                        style: {
+                            fontSize: '12px'
+                        }
+                    }
+                },
+                yaxis: {
+                    show: false
+                },
+                legend: {
+                    position: 'top'
+                },
+                tooltip: {
+                    custom: function({series, seriesIndex, dataPointIndex, w}) {
+                        return '<div class="p-2">' +
+                            '<div class="font-bold">' + w.globals.seriesNames[seriesIndex] + '</div>' +
+                            '<div>' + w.config.series[seriesIndex].data[dataPointIndex][1] + '</div>' +
+                            '</div>';
+                    }
+                }
+            };
+
+            const productLifecycleChart = new ApexCharts(document.querySelector("#product-lifecycle-chart"), options);
+            productLifecycleChart.render();
+        }
+
+        function initializeSubscriptionChart() {
+            const options = {
+                series: [
+                    {
+                        name: 'Entertainment',
+                        data: [132, 156, 185, 224, 286]
+                    },
+                    {
+                        name: 'Food & Grocery',
+                        data: [68, 92, 128, 156, 184]
+                    },
+                    {
+                        name: 'Digital Tools',
+                        data: [85, 98, 112, 124, 137]
+                    },
+                    {
+                        name: 'Wellness Services',
+                        data: [42, 58, 72, 84, 98]
+                    }
+                ],
+                chart: {
+                    type: 'area',
+                    height: 300,
+                    stacked: true,
+                    toolbar: {
+                        show: false
+                    }
+                },
+                colors: ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b'],
+                dataLabels: {
+                    enabled: false
+                },
+                stroke: {
+                    curve: 'smooth',
+                    width: 2
+                },
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        opacityFrom: 0.6,
+                        opacityTo: 0.1
+                    }
+                },
+                legend: {
+                    position: 'bottom',
+                    horizontalAlign: 'center',
+                    fontSize: '12px'
+                },
+                xaxis: {
+                    categories: ['2021', '2022', '2023', '2024', '2025'],
+                    labels: {
+                        style: {
+                            fontSize: '12px'
+                        }
+                    }
+                },
+                yaxis: {
+                    title: {
+                        text: 'Market Size ($B)',
+                        style: {
+                            fontSize: '12px'
+                        }
+                    }
+                },
+                tooltip: {
+                    y: {
+                        formatter: function (val) {
+                            return "$" + val + "B";
+                        }
+                    }
+                }
+            };
+
+            const subscriptionChart = new ApexCharts(document.querySelector("#subscription-chart"), options);
+            subscriptionChart.render();
+        }
+
+        function initializeCryptoPerformanceChart() {
+            const options = {
+                series: [
+                    {
+                        name: 'Bitcoin',
+                        data: [56000, 62000, 58000, 68000, 78000, 92000]
+                    },
+                    {
+                        name: 'Ethereum',
+                        data: [4200, 4800, 5200, 6100, 7300, 7800]
+                    },
+                    {
+                        name: 'Solana',
+                        data: [180, 210, 280, 340, 420, 480]
+                    }
+                ],
+                chart: {
+                    type: 'line',
+                    height: 300,
+                    toolbar: {
+                        show: false
+                    }
+                },
+                colors: ['#f59e0b', '#3b82f6', '#8b5cf6'],
+                dataLabels: {
+                    enabled: false
+                },
+                stroke: {
+                    curve: 'smooth',
+                    width: 3
+                },
+                grid: {
+                    borderColor: '#f1f1f1'
+                },
+                markers: {
+                    size: 4
+                },
+                xaxis: {
+                    categories: ['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr'],
+                    labels: {
+                        style: {
+                            fontSize: '12px'
+                        }
+                    }
+                },
+                yaxis: {
+                    title: {
+                        text: 'Price (USD)',
+                        style: {
+                            fontSize: '12px'
+                        }
+                    },
+                    labels: {
+                        formatter: function (value) {
+                            return value >= 1000 ? (value / 1000) + 'K' : value;
+                        }
+                    }
+                },
+                legend: {
+                    position: 'top',
+                    horizontalAlign: 'right',
+                    fontSize: '12px'
+                },
+                tooltip: {
+                    shared: true,
+                    intersect: false,
+                    y: {
+                        formatter: function (val) {
+                            return "$" + val;
+                        }
+                    }
+                }
+            };
+
+            const cryptoPerformanceChart = new ApexCharts(document.querySelector("#crypto-performance-chart"), options);
+            cryptoPerformanceChart.render();
+        }
+
+        function initializeCryptoDominanceChart() {
+            const options = {
+                series: [48, 19, 8, 5, 20],
+                chart: {
+                    type: 'donut',
+                    height: 300,
+                    toolbar: {
+                        show: false
+                    }
+                },
+                labels: ['Bitcoin', 'Ethereum', 'Solana', 'Cardano', 'Others'],
+                colors: ['#f59e0b', '#3b82f6', '#8b5cf6', '#10b981', '#6b7280'],
+                plotOptions: {
+                    pie: {
+                        donut: {
+                            size: '60%'
+                        }
+                    }
+                },
+                legend: {
+                    position: 'bottom',
+                    fontSize: '12px'
+                },
+                responsive: [{
+                    breakpoint: 480,
+                    options: {
+                        chart: {
+                            width: 200
+                        },
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }],
+                tooltip: {
+                    y: {
+                        formatter: function(val) {
+                            return val + "%";
+                        }
+                    }
+                }
+            };
+
+            const cryptoDominanceChart = new ApexCharts(document.querySelector("#crypto-dominance-chart"), options);
+            cryptoDominanceChart.render();
+        }
+
+        function initializeIndicesPerformanceChart() {
+            const options = {
+                series: [
+                    {
+                        name: 'S&P 500',
+                        data: [4800, 5200, 5600, 6100, 6400, 6800]
+                    },
+                    {
+                        name: 'NASDAQ',
+                        data: [16000, 17200, 18400, 19600, 21000, 22400]
+                    },
+                    {
+                        name: 'FTSE 100',
+                        data: [7800, 8200, 8600, 9000, 9200, 9400]
+                    }
+                ],
+                chart: {
+                    type: 'line',
+                    height: 300,
+                    toolbar: {
+                        show: false
+                    }
+                },
+                colors: ['#3b82f6', '#10b981', '#f59e0b'],
+                dataLabels: {
+                    enabled: false
+                },
+                stroke: {
+                    curve: 'straight',
+                    width: 3
+                },
+                grid: {
+                    borderColor: '#f1f1f1',
+                    row: {
+                        colors: ['#f3f3f3', 'transparent'],
+                        opacity: 0.5
+                    }
+                },
+                markers: {
+                    size: 4
+                },
+                xaxis: {
+                    categories: ['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr'],
+                    labels: {
+                        style: {
+                            fontSize: '12px'
+                        }
+                    }
+                },
+                yaxis: {
+                    title: {
+                        text: 'Index Value',
+                        style: {
+                            fontSize: '12px'
+                        }
+                    },
+                    labels: {
+                        formatter: function (value) {
+                            return value >= 1000 ? (value / 1000) + 'K' : value;
+                        }
+                    }
+                },
+                legend: {
+                    position: 'top',
+                    horizontalAlign: 'right',
+                    fontSize: '12px'
+                },
+                tooltip: {
+                    shared: true
+                }
+            };
+
+            const indicesPerformanceChart = new ApexCharts(document.querySelector("#indices-performance-chart"), options);
+            indicesPerformanceChart.render();
+        }
+
+        function initializeSectorPerformanceChart() {
+            const options = {
+                series: [{
+                    name: 'YTD Performance',
+                    data: [28, 22, 18, 12, 8, 6, 2, -4, -8, -12]
+                }],
+                chart: {
+                    type: 'bar',
+                    height: 300,
+                    toolbar: {
+                        show: false
+                    }
+                },
+                plotOptions: {
+                    bar: {
+                        borderRadius: 4,
+                        horizontal: true,
+                        barHeight: '80%',
+                        distributed: true
+                    }
+                },
+                colors: function({ value, seriesIndex, w }) {
+                    if (value < 0) {
+                        return '#ef4444'
+                    } else if (value > 20) {
+                        return '#10b981'
+                    } else if (value > 10) {
+                        return '#3b82f6'
+                    } else {
+                        return '#f59e0b'
+                    }
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                xaxis: {
+                    categories: [
+                        'Technology', 
+                        'Clean Energy', 
+                        'Healthcare', 
+                        'Consumer Discretionary', 
+                        'Financials', 
+                        'Industrials', 
+                        'Materials', 
+                        'Utilities', 
+                        'Consumer Staples', 
+                        'Traditional Energy'
+                    ],
+                    labels: {
+                        style: {
+                            fontSize: '12px'
+                        }
+                    }
+                },
+                yaxis: {
+                    labels: {
+                        formatter: function (val) {
+                            return val + "%";
+                        }
+                    }
+                },
+                tooltip: {
+                    y: {
+                        formatter: function(val) {
+                            return val + "%";
+                        }
+                    }
+                }
+            };
+
+            const sectorPerformanceChart = new ApexCharts(document.querySelector("#sector-performance-chart"), options);
+            sectorPerformanceChart.render();
+        }
+
+        function initializeVolatilityChart() {
+            const options = {
+                series: [{
+                    name: 'VIX Index',
+                    data: [26, 24, 28, 22, 20, 18]
+                }],
+                chart: {
+                    height: 200,
+                    type: 'area',
+                    toolbar: {
+                        show: false
+                    }
+                },
+                colors: ['#ef4444'],
+                dataLabels: {
+                    enabled: false
+                },
+                stroke: {
+                    curve: 'smooth',
+                    width: 2
+                },
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shadeIntensity: 1,
+                        opacityFrom: 0.7,
+                        opacityTo: 0.3,
+                        stops: [0, 90, 100]
+                    }
+                },
+                xaxis: {
+                    categories: ['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr'],
+                    labels: {
+                        style: {
+                            fontSize: '10px'
+                        }
+                    }
+                },
+                yaxis: {
+                    labels: {
+                        style: {
+                            fontSize: '10px'
+                        }
+                    }
+                },
+                tooltip: {
+                    x: {
+                        format: 'MM yyyy'
+                    }
+                }
+            };
+
+            const volatilityChart = new ApexCharts(document.querySelector("#volatility-chart"), options);
+            volatilityChart.render();
+        }
+    </script>
+</body>
+</html>
