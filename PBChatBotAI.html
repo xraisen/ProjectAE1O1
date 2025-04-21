@@ -12,7 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/lazysizes@5.3.2/lazysizes.min.js" async></script>
     <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script> <!-- Added Papaparse for CSV parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
     <script>
@@ -355,10 +355,10 @@
     <script>
         // --- Configuration ---
         const GEMINI_API_KEY = 'AIzaSyCpI-eNfqWk_ZiK2qHOj_tD2NzeAJ_U398';
-        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`; // Placeholder; currently using gemini-1.5-flash
+        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
         const API_TIMEOUT = 15000;
         const IMAGE_TIMEOUT = 5000;
-        const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRX4zvphZLKZmYtDv2NC5RXHlgEl7pb7pzt91FhgCKi7NiDaeoYCvcXQ0zZt74BR5aTFc4ZVrAWi41x/pub?gid=875103365&single=true&output=csv'; // Replace with actual published CSV link from https://docs.google.com/spreadsheets/d/12wNendKIPoK5DnzL4oOdxyx5lAvSldwtZ0KJNO2cbG0/edit?usp=sharing
+        const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRX4zvphZLKZmYtDv2NC5RXHlgEl7pb7pzt91FhgCKi7NiDaeoYCvcXQ0zZt74BR5aTFc4ZVrAWi41x/pub?gid=875103365&single=true&output=csv'; // Replace with your actual CSV link
 
         // --- Fallback Questions ---
         const FALLBACK_QUESTIONS = [
@@ -373,8 +373,8 @@
         let conversationHistory = [];
         const MAX_HISTORY = 6;
         const imageCache = JSON.parse(localStorage.getItem('imageCache')) || {};
-        let products = []; // Dynamic product list
-        let productCategories = {}; // Dynamic categories
+        let products = [];
+        let productCategories = {};
         const backupImages = {
             default: 'https://via.placeholder.com/600x400/E91e63/FFFFFF?text=Planet+Beauty',
         };
@@ -392,7 +392,8 @@
             exfoliant: ['exfoliant', 'scrub', 'peel', 'smooth skin'],
             styling: ['styling', 'hairspray', 'texture', 'volume', 'hold'],
             skincare: ['skincare', 'face care', 'complexion', 'skin health'],
-            haircare: ['haircare', 'hair product', 'mane']
+            haircare: ['haircare', 'hair product', 'mane'],
+            sunscreen: ['sunscreen', 'spf', 'uv', 'protection']
         };
 
         // --- DOM Elements ---
@@ -437,14 +438,20 @@
             try {
                 const res = await axios.get(csvUrl);
                 const data = Papa.parse(res.data, { header: true });
-                products = data.data.map((row, index) => ({
-                    id: `p${index + 1}`,
-                    name: row['title'],
-                    price: row['price'],
-                    description: row['description'],
-                    image: row['image link'],
-                    url: row['link']
-                })).filter(p => p.name && p.url); // Filter out invalid entries
+                products = data.data.map((row, index) => {
+                    let imageUrl = row['image link'];
+                    if (imageUrl && imageUrl.startsWith('http://')) {
+                        imageUrl = imageUrl.replace('http://', 'https://'); // Enforce HTTPS
+                    }
+                    return {
+                        id: `p${index + 1}`,
+                        name: row['title'],
+                        price: row['price'],
+                        description: row['description'],
+                        image: imageUrl,
+                        url: row['link']
+                    };
+                }).filter(p => p.name && p.url);
                 return products;
             } catch (error) {
                 console.error('Failed to fetch products:', error);
@@ -599,12 +606,12 @@
                     .replace(/-+/g, '-');
         }
 
-        function getBackupImage(query) {
+        function getBackupImage(query, productCategories) {
             const queryLower = query.toLowerCase();
             for (const [category, keywords] of Object.entries(categoryKeywords)) {
                 if (keywords.some(keyword => queryLower.includes(keyword))) {
-                    const imageArray = backupImages[category];
-                    if (imageArray && imageArray.length > 0) {
+                    const imageArray = backupImages[category] || [];
+                    if (imageArray.length > 0) {
                         return imageArray[Math.floor(Math.random() * imageArray.length)];
                     }
                 }
@@ -613,7 +620,7 @@
         }
 
         function preloadImages() {
-            const preloadImages = products.map(p => p.image).filter(Boolean);
+            const preloadImages = products.slice(0, 3).map(p => p.image).filter(Boolean);
             preloadImages.forEach(src => {
                 const link = document.createElement('link');
                 link.rel = 'preload';
@@ -938,7 +945,7 @@ Assistant: {"text": "Hi! For oily hair, try these shampoos: ✨", "query_type": 
             let currentAttempt = 0;
             const tryLoadNextImage = async () => {
                 if (currentAttempt >= imageSources.length) {
-                    console.warn(`Failed to load any image for product: ${p.name}`);
+                    console.warn(`No valid image available for product: ${p.name}`);
                     imageContainer.innerHTML = `
                         <div class="image-placeholder">
                             <span>Image Unavailable</span>
@@ -992,10 +999,26 @@ Assistant: {"text": "Hi! For oily hair, try these shampoos: ✨", "query_type": 
 
         function updateUserProfile(botResponseText) {
             const textLower = botResponseText.toLowerCase();
-            if (textLower.includes('dry skin')) userProfile.skinType = 'Dry';
-            if (textLower.includes('oily skin')) userProfile.skinType = 'Oily';
-            if (textLower.includes('acne')) userProfile.concerns.push('Acne');
-            console.log('Updated Profile:', userProfile);
+            let updated = false;
+            const newProfile = { ...userProfile };
+
+            if (textLower.includes('dry skin') && newProfile.skinType !== 'Dry') {
+                newProfile.skinType = 'Dry';
+                updated = true;
+            }
+            if (textLower.includes('oily skin') && newProfile.skinType !== 'Oily') {
+                newProfile.skinType = 'Oily';
+                updated = true;
+            }
+            if (textLower.includes('acne') && !newProfile.concerns.includes('Acne')) {
+                newProfile.concerns.push('Acne');
+                updated = true;
+            }
+
+            if (updated) {
+                Object.assign(userProfile, newProfile);
+                console.log(`Profile updated - Skin Type: ${userProfile.skinType}, Concerns: ${userProfile.concerns.join(', ')}`);
+            }
         }
     </script>
 </body>
