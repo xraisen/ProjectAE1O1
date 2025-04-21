@@ -122,6 +122,7 @@
         const PERCENTAGE_ANIMATION_DURATION = 2000;
         const PLANET_BEAUTY_DOMAIN = 'https://www.planetbeauty.com';
         const DEBUG_MODE = true; // Enabled to diagnose issues
+        const MAX_STORAGE_SIZE = 4 * 1024 * 1024; // 4MB limit for localStorage
 
         // --- Fallback Definitions ---
         const FALLBACK_QUESTIONS = [
@@ -207,6 +208,35 @@
             debugPanel.style.display = 'none';
         });
 
+        // --- Utility: Check Storage Availability ---
+        function canStoreData(data) {
+            try {
+                const testKey = '__test__';
+                localStorage.setItem(testKey, 'test');
+                localStorage.removeItem(testKey);
+                const jsonString = JSON.stringify(data);
+                if (jsonString.length > MAX_STORAGE_SIZE) {
+                    debugLog('Data too large for localStorage', { size: jsonString.length });
+                    return false;
+                }
+                return true;
+            } catch (e) {
+                debugLog('Storage unavailable or quota exceeded', { error: e.message });
+                return false;
+            }
+        }
+
+        // --- Utility: Clear Storage ---
+        function clearStorage() {
+            try {
+                localStorage.removeItem('cachedProducts');
+                localStorage.removeItem('imageCache');
+                debugLog('Cleared localStorage');
+            } catch (e) {
+                debugLog('Failed to clear localStorage', { error: e.message });
+            }
+        }
+
         // --- Initialization ---
         document.addEventListener('DOMContentLoaded', async () => {
             let percentage = 0;
@@ -230,15 +260,30 @@
             const minDurationPromise = new Promise(resolve => setTimeout(resolve, PRELOADER_MIN_DURATION));
             const maxDurationPromise = new Promise(resolve => setTimeout(resolve, PRELOADER_MAX_DURATION));
             const animationPromise = animatePercentage();
+            let initializationSuccess = true;
 
             try {
                 debugLog('Initializing Planet Beauty AI Assistant');
                 // Add delay to allow Cloudflare challenge to complete
                 await new Promise(resolve => setTimeout(resolve, 1000));
-                products = await fetchProductsWithRetry();
+                products = await fetchProducts();
+                debugLog('Products loaded', { count: products.length });
                 organizeProducts();
-                await generateSuggestedQuestions();
-                await Promise.all([minDurationPromise, animationPromise]);
+            } catch (error) {
+                console.error('Initialization error:', error);
+                debugLog('Initialization error', error);
+                percentageElement.textContent = 'Error';
+                percentageElement.style.color = '#c62828';
+                addMessage("Sorry, I couldn't load the product catalog. Using limited recommendations.", 'bot');
+                initializationSuccess = false;
+            } finally {
+                try {
+                    await generateSuggestedQuestions();
+                } catch (error) {
+                    debugLog('Failed to generate suggested questions during init', error);
+                }
+                // Ensure preloader is removed
+                await Promise.race([Promise.all([minDurationPromise, animationPromise]), maxDurationPromise]);
                 await anime({
                     targets: { value: percentage },
                     value: 100,
@@ -248,22 +293,13 @@
                         percentageElement.textContent = `${Math.round(anim.animatables[0].target.value)}%`;
                     }
                 }).finished;
-            } catch (error) {
-                console.error('Initialization error:', error);
-                debugLog('Initialization error', error);
-                percentageElement.textContent = 'Error';
-                percentageElement.style.color = '#c62828';
-                addMessage("Sorry, I couldn't load the product catalog. Showing general recommendations.", 'bot');
-            } finally {
-                // Ensure preloader is removed after max duration or completion
-                await Promise.race([Promise.all([minDurationPromise, animationPromise]), maxDurationPromise]);
                 preloader.style.opacity = '0';
                 setTimeout(() => {
                     if (preloader && preloader.parentNode) {
                         preloader.remove();
+                        debugLog('Preloader removed', { timedOut: !initializationSuccess });
                     }
                 }, 500);
-                debugLog('Preloader removed');
             }
 
             anime({
@@ -286,73 +322,70 @@
             updateSendButtonState();
         });
 
-        // --- Fetch Products with Retry ---
-        async function fetchProductsWithRetry(retries = 2, delay = 1000) {
-            for (let attempt = 1; attempt <= retries; attempt++) {
-                try {
-                    const cachedProducts = localStorage.getItem('cachedProducts');
-                    if (cachedProducts) {
-                        debugLog('Using cached products');
-                        return JSON.parse(cachedProducts);
-                    }
+        // --- Fetch Products ---
+        async function fetchProducts() {
+            try {
+                const cachedProducts = localStorage.getItem('cachedProducts');
+                if (cachedProducts) {
+                    debugLog('Using cached products');
+                    return JSON.parse(cachedProducts);
+                }
 
-                    const res = await axios.get(`${WEB_APP_URL}?action=getProducts`, {
-                        timeout: API_TIMEOUT,
-                        headers: { 'User-Agent': 'PlanetBeautyChatbot/1.0' }
+                const res = await axios.get(`${WEB_APP_URL}?action=getProducts`, {
+                    timeout: API_TIMEOUT
+                });
+
+                if (res.data && Array.isArray(res.data.products)) {
+                    const validatedProducts = res.data.products.map((p, index) => {
+                        let productUrl = p.url || formatProductUrl(p.name);
+                        if (productUrl && typeof productUrl === 'string') {
+                            try {
+                                const parsedUrl = new URL(productUrl);
+                                if (!parsedUrl.hostname.endsWith('planetbeauty.com')) {
+                                    productUrl = formatProductUrl(p.name);
+                                } else {
+                                    productUrl = productUrl.replace(/^http:/, 'https:');
+                                }
+                            } catch (e) {
+                                productUrl = formatProductUrl(p.name);
+                            }
+                        }
+
+                        return {
+                            ...p,
+                            id: p.id || `p${index + 1}`,
+                            name: p.name || 'Unnamed Product',
+                            description: p.description || 'No description available',
+                            price: p.price || '',
+                            image: p.image || getBackupImage(''),
+                            url: productUrl,
+                            brand: p.brand || '',
+                            categories: [],
+                            descriptionTags: []
+                        };
                     });
 
-                    if (res.data && Array.isArray(res.data.products)) {
-                        const validatedProducts = res.data.products.map((p, index) => {
-                            let productUrl = p.url || formatProductUrl(p.name);
-                            if (productUrl && typeof productUrl === 'string') {
-                                try {
-                                    const parsedUrl = new URL(productUrl);
-                                    if (!parsedUrl.hostname.endsWith('planetbeauty.com')) {
-                                        productUrl = formatProductUrl(p.name);
-                                    } else {
-                                        productUrl = productUrl.replace(/^http:/, 'https:');
-                                    }
-                                } catch (e) {
-                                    productUrl = formatProductUrl(p.name);
-                                }
-                            }
-
-                            return {
-                                ...p,
-                                id: p.id || `p${index + 1}`,
-                                name: p.name || 'Unnamed Product',
-                                description: p.description || 'No description available',
-                                price: p.price || '',
-                                image: p.image || getBackupImage(''),
-                                url: productUrl,
-                                brand: p.brand || '',
-                                categories: [],
-                                descriptionTags: []
-                            };
-                        });
-
+                    if (canStoreData(validatedProducts)) {
+                        clearStorage();
                         localStorage.setItem('cachedProducts', JSON.stringify(validatedProducts));
-                        debugLog('Products fetched and cached', { count: validatedProducts.length });
-                        return validatedProducts;
+                        debugLog('Products cached', { count: validatedProducts.length, size: JSON.stringify(validatedProducts).length });
                     } else {
-                        throw new Error('Invalid data format from Web App');
+                        debugLog('Skipped caching products due to size or quota');
                     }
-                } catch (error) {
-                    console.error(`Fetch products attempt ${attempt} failed:`, error);
-                    debugLog('Fetch products error', { attempt, error: error.message });
-                    if (attempt < retries) {
-                        debugLog(`Retrying fetch products in ${delay}ms`);
-                        await new Promise(resolve => setTimeout(resolve, delay));
-                    } else {
-                        const cachedProducts = localStorage.getItem('cachedProducts');
-                        if (cachedProducts) {
-                            debugLog('Falling back to cached products');
-                            return JSON.parse(cachedProducts);
-                        }
-                        debugLog('Using fallback products');
-                        return fallbackProducts;
-                    }
+                    return validatedProducts;
+                } else {
+                    throw new Error('Invalid data format from Web App');
                 }
+            } catch (error) {
+                console.error('Failed to fetch products:', error);
+                debugLog('Fetch products error', error);
+                const cachedProducts = localStorage.getItem('cachedProducts');
+                if (cachedProducts) {
+                    debugLog('Falling back to cached products');
+                    return JSON.parse(cachedProducts);
+                }
+                debugLog('Using fallback products');
+                return fallbackProducts;
             }
         }
 
@@ -495,10 +528,7 @@ Example valid JSON output:
 
             try {
                 const res = await axios.post(GEMINI_API_URL, prompt, {
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'User-Agent': 'PlanetBeautyChatbot/1.0'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     timeout: API_TIMEOUT
                 });
 
@@ -733,8 +763,7 @@ Example valid JSON output:
             try {
                 const res = await axios.get(`${WEB_APP_URL}?action=getPrompt`, {
                     params: { conversationHistory: JSON.stringify(conversationHistory) },
-                    timeout: API_TIMEOUT,
-                    headers: { 'User-Agent': 'PlanetBeautyChatbot/1.0' }
+                    timeout: API_TIMEOUT
                 });
                 const prompt = res.data.prompt;
 
@@ -757,10 +786,7 @@ Example valid JSON output:
 
                 debugLog('Calling Gemini API');
                 const apiRes = await axios.post(GEMINI_API_URL, payload, {
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'User-Agent': 'PlanetBeautyChatbot/1.0'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     timeout: API_TIMEOUT
                 });
 
@@ -861,12 +887,11 @@ Example valid JSON output:
                 } else {
                     imageHtml = `<div class="image-loading"><div class="spinner"></div></div>`;
                     try {
-                        const imgRes = await axios.get(product.image, { 
-                            timeout: IMAGE_TIMEOUT,
-                            headers: { 'User-Agent': 'PlanetBeautyChatbot/1.0' }
-                        });
+                        const imgRes = await axios.get(product.image, { timeout: IMAGE_TIMEOUT });
                         imageCache[product.image] = product.image;
-                        localStorage.setItem('imageCache', JSON.stringify(imageCache));
+                        if (canStoreData(imageCache)) {
+                            localStorage.setItem('imageCache', JSON.stringify(imageCache));
+                        }
                         imageHtml = `<img src="${product.image}" alt="${product.name}" class="product-image lazyload">`;
                     } catch (error) {
                         console.warn(`Failed to load image for ${product.name}:`, error);
