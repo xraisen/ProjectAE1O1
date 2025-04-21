@@ -1190,7 +1190,7 @@ Example valid JSON output:
                 }
             } catch (error) {
                 // Handle network errors or timeouts, potentially retry once for timeouts
-                if (!retry && (error.code === 'ECONNABORTED' || (error.response && error.response.status === 408)))) {
+                if (!retry && (error.code === 'ECONNABORTED' || (error.response && error.response.status === 408))) {
                     console.warn('API/Proxy call timed out, retrying once...');
                     return await callGeminiAPI(true); // Retry once
                 }
