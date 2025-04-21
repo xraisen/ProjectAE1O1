@@ -295,6 +295,34 @@
         .animate-fade-in {
             animation: fadeIn 0.5s ease-out;
         }
+        #debug-panel {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            background: rgba(30, 30, 30, 0.85);
+            color: white;
+            padding: 1rem;
+            max-width: 300px;
+            max-height: 300px;
+            overflow: auto;
+            font-size: 0.8rem;
+            z-index: 1000;
+            border-top-left-radius: 8px;
+            display: none;
+        }
+        .debug-entry {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .debug-button {
+            background: #e91e63;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+            cursor: pointer;
+        }
         @media (max-width: 640px) {
             body {
                 padding: 0;
@@ -329,6 +357,9 @@
             #preloader .percentage {
                 font-size: 1.2rem;
             }
+            #debug-panel {
+                max-width: 80%;
+            }
         }
     </style>
 </head>
@@ -361,53 +392,116 @@
         <a href="https://www.linkedin.com/in/joseespinosa" target="_blank" rel="noopener noreferrer">Jose Espinosa</a>
     </footer>
 
+    <!-- Debug Panel (hidden by default) -->
+    <div id="debug-panel">
+        <h3 class="font-bold mb-2">Debug Information</h3>
+        <div id="debug-content"></div>
+        <button id="debug-clear" class="debug-button">Clear</button>
+        <button id="debug-close" class="debug-button ml-2">Close</button>
+    </div>
+
     <script>
         // --- Configuration ---
         const GEMINI_API_KEY = 'AIzaSyCpI-eNfqWk_ZiK2qHOj_tD2NzeAJ_U398'; // Replace with your Gemini API key
         const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`; // Updated model
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzzp5mD6Nu3RZmYvjzDFXvCNC5MhJyfNMvs_MJDYLqZ8Uad1BJE-cO1WWg7BpoYO62_/exec'; // Replace with your deployed Web App URL
-        const API_TIMEOUT = 20000; // Increased timeout slightly
+        const API_TIMEOUT = 25000; // Increased timeout
         const IMAGE_TIMEOUT = 15000;
         const PRELOADER_MIN_DURATION = 1000;
         const PERCENTAGE_ANIMATION_DURATION = 2000;
         const PLANET_BEAUTY_DOMAIN = 'https://www.planetbeauty.com'; // Define domain constant
+        const DEBUG_MODE = false; // Set to true to enable debug panel and logging
 
         // --- Fallback Questions ---
         const FALLBACK_QUESTIONS = [
-            "What products are best for sensitive skin at Planet Beauty?",
-            "Can you recommend a conditioner for curly hair from Planet Beauty?",
-            "What's a good cleanser for combination skin available at Planet Beauty?",
-            "Which makeup is ideal for a natural look from Planet Beauty?"
+            "What acne treatment products available at Planet Beauty would you recommend for sensitive skin?",
+            "Can you suggest a hydrating shampoo and conditioner set from Planet Beauty for color-treated hair?",
+            "What are some top-rated makeup primers at Planet Beauty for achieving a long-lasting, matte look?",
+            "I'm looking for a retinol serum at Planet Beauty. Which one would be best for someone new to retinol and concerned about minimizing irritation?"
         ];
 
         // --- State ---
         const userProfile = { skinType: null, skinTone: null, concerns: [] };
         let conversationHistory = [];
-        const MAX_HISTORY = 10; // Retain 5 user-model pairs
+        const MAX_HISTORY = 10; // Retain user-model pairs
         const imageCache = JSON.parse(localStorage.getItem('imageCache')) || {};
         let products = []; // Holds the catalog fetched from the Web App
         let productCategories = {};
-        let lastQueryContext = { productType: null, preferences: [] }; // Track user intent
+        let productBrands = {}; // New: organized by brand
+        let lastQueryContext = { 
+            productType: null, 
+            preferences: [],
+            brand: null,
+            productLine: null
+        }; // Enhanced context tracking
         const backupImages = {
             default: 'https://via.placeholder.com/600x400/E91e63/FFFFFF?text=Planet+Beauty',
         };
 
-        // --- Category Keywords ---
+        // --- Enhanced Category Keywords ---
         const categoryKeywords = {
+            // Skin Concerns
             acne: ['acne', 'blemish', 'pimple', 'breakout', 'clear skin', 'oily'],
+            aging: ['anti-aging', 'wrinkle', 'fine lines', 'mature skin', 'firming'],
+            hydration: ['hydration', 'dry skin', 'dehydrated', 'moisture', 'moisturize'],
+            sensitive: ['sensitive', 'redness', 'irritation', 'rosacea', 'gentle'],
+            
+            // Product Types
             moisturizer: ['moisturizer', 'hydrating', 'dry skin', 'hydration', 'cream', 'lotion'],
-            shampoo: ['shampoo', 'hair wash', 'clean hair'],
-            conditioner: ['conditioner', 'soften hair', 'detangle'],
-            hairmask: ['hair mask', 'treatment', 'damaged hair', 'repair hair'],
-            foundation: ['foundation', 'makeup base', 'cover', 'complexion', 'tone'],
             serum: ['serum', 'treatment', 'concentrate', 'anti-aging', 'brightening'],
             cleanser: ['cleanser', 'face wash', 'wash'],
             exfoliant: ['exfoliant', 'scrub', 'peel', 'smooth skin'],
+            sunscreen: ['sunscreen', 'spf', 'uv', 'protection'],
+            mask: ['mask', 'sheet mask', 'face mask', 'clay mask', 'overnight mask'],
+            
+            // Haircare
+            shampoo: ['shampoo', 'hair wash', 'clean hair'],
+            conditioner: ['conditioner', 'soften hair', 'detangle'],
+            hairmask: ['hair mask', 'treatment', 'damaged hair', 'repair hair'],
             styling: ['styling', 'hairspray', 'texture', 'volume', 'hold', 'gel', 'mousse'],
-            // Ensure 'skincare' covers terms relevant to alternatives for niche requests
-            skincare: ['skincare', 'face care', 'complexion', 'skin health', 'red light', 'therapy', 'anti-aging', 'brightening', 'firming'],
-            haircare: ['haircare', 'hair product', 'mane'],
-            sunscreen: ['sunscreen', 'spf', 'uv', 'protection']
+            
+            // Makeup
+            foundation: ['foundation', 'makeup base', 'cover', 'complexion', 'tone'],
+            concealer: ['concealer', 'cover up', 'blemish cover', 'dark circles'],
+            lipstick: ['lipstick', 'lip color', 'lip stain', 'lip gloss'],
+            mascara: ['mascara', 'lashes', 'eyelashes', 'volume'],
+            eyeshadow: ['eyeshadow', 'eye color', 'eye makeup', 'palette'],
+            primer: ['primer', 'base', 'long-lasting', 'makeup prep'],
+            
+            // Devices and Tools
+            devices: ['device', 'tool', 'gadget', 'tech', 'led', 'light therapy', 'microcurrent', 'facial tool', 'spectralite', 'red light', 'blue light', 'mask device', 'light mask'],
+            
+            // Broader Categories
+            skincare: ['skincare', 'face care', 'complexion', 'skin health', 'anti-aging', 'brightening', 'firming'],
+            haircare: ['haircare', 'hair product', 'mane', 'scalp', 'hair treatment'],
+            makeup: ['makeup', 'cosmetics', 'beauty', 'glam', 'look']
+        };
+
+        // --- Brand Recognition ---
+        const brandKeywords = {
+            'dr_dennis_gross': ['dr. dennis gross', 'dr dennis gross', 'dr dennis', 'dennis gross', 'dr. dennis', 'drx', 'spectralite'],
+            'dermalogica': ['dermalogica'],
+            'kiehls': ['kiehl\'s', 'kiehls'],
+            'la_roche_posay': ['la roche posay', 'la roche-posay', 'la roche'],
+            'murad': ['murad'],
+            'olaplex': ['olaplex'],
+            'paulas_choice': ['paula\'s choice', 'paulas choice'],
+            'skinceuticals': ['skinceuticals'],
+            'tatcha': ['tatcha'],
+            'drunk_elephant': ['drunk elephant'],
+            'sunday_riley': ['sunday riley'],
+            'fenty': ['fenty', 'rihanna'],
+            'charlotte_tilbury': ['charlotte tilbury'],
+            'bumble_and_bumble': ['bumble and bumble', 'bumble & bumble'],
+            'moroccanoil': ['moroccanoil', 'moroccan oil']
+        };
+
+        // --- Product Line Recognition ---
+        const productLineKeywords = {
+            'spectralite': ['spectralite', 'spectra lite', 'faceware', 'led mask', 'light therapy mask'],
+            'alpha_beta': ['alpha beta', 'peel pad', 'exfoliating'],
+            'ferulic': ['ferulic', 'retinol', 'vitamin c'],
+            'ultraviolette': ['ultraviolette', 'sunscreen']
         };
 
         // --- DOM Elements ---
@@ -416,6 +510,51 @@
         const sendBtn = document.getElementById('send-btn');
         const preloader = document.getElementById('preloader');
         const examplesContainer = document.getElementById('examples-container');
+        const debugPanel = document.getElementById('debug-panel');
+        const debugContent = document.getElementById('debug-content');
+
+        // --- Debug Functions ---
+        function debugLog(message, data) {
+            if (!DEBUG_MODE) return;
+            
+            console.log(message, data);
+            
+            const entry = document.createElement('div');
+            entry.className = 'debug-entry';
+            
+            const timestamp = new Date().toLocaleTimeString();
+            let content = `<strong>[${timestamp}]</strong> ${message}`;
+            
+            if (data !== undefined) {
+                if (typeof data === 'object') {
+                    try {
+                        content += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                    } catch (e) {
+                        content += `<pre>[Object]</pre>`;
+                    }
+                } else {
+                    content += ` ${data}`;
+                }
+            }
+            
+            entry.innerHTML = content;
+            debugContent.appendChild(entry);
+            debugPanel.scrollTop = debugPanel.scrollHeight;
+            
+            // Show debug panel if hidden
+            if (DEBUG_MODE && debugPanel.style.display === 'none') {
+                debugPanel.style.display = 'block';
+            }
+        }
+
+        // Debug panel controls
+        document.getElementById('debug-clear').addEventListener('click', () => {
+            debugContent.innerHTML = '';
+        });
+        
+        document.getElementById('debug-close').addEventListener('click', () => {
+            debugPanel.style.display = 'none';
+        });
 
         // --- Initialization ---
         document.addEventListener('DOMContentLoaded', async () => {
@@ -440,8 +579,9 @@
             const minDurationPromise = new Promise(resolve => setTimeout(resolve, PRELOADER_MIN_DURATION));
             const animationPromise = animatePercentage();
             try {
+                debugLog('Initializing Planet Beauty AI Assistant');
                 products = await fetchProducts(); // Fetch and validate products
-                categorizeProducts();
+                organizeProducts(); // Enhanced product organization
                 await generateSuggestedQuestions();
                 await Promise.all([minDurationPromise, animationPromise]);
                 await anime({
@@ -455,8 +595,14 @@
                 }).finished;
                 preloader.style.opacity = '0';
                 setTimeout(() => preloader.remove(), 500);
+                debugLog('Initialization complete', {
+                    productCount: products.length,
+                    categoryCount: Object.keys(productCategories).length,
+                    brandCount: Object.keys(productBrands).length
+                });
             } catch (error) {
                 console.error('Initialization error:', error);
+                debugLog('Initialization error', error);
                 percentageElement.textContent = 'Error';
                 percentageElement.style.color = '#c62828';
                 await Promise.all([minDurationPromise, animationPromise]); // Wait even on error
@@ -525,10 +671,13 @@
                             description: p.description || "No description available.", // Default description
                             price: p.price || "", // Default price
                             image: imageUrl,
-                            url: productUrl // Use the validated/generated URL
+                            url: productUrl, // Use the validated/generated URL
+                            categories: [], // Will be populated in organizeProducts
+                            brand: null, // Will be populated in organizeProducts
+                            productLine: null // Will be populated in organizeProducts
                         };
                     });
-                    console.log("Products loaded and validated from Web App:", validatedProducts.length);
+                    debugLog("Products loaded and validated from Web App:", validatedProducts.length);
                     if (validatedProducts.length === 0) {
                          console.warn("Warning: Fetched product list is empty.");
                     }
@@ -540,40 +689,101 @@
                 }
             } catch (error) {
                 console.error('Failed to fetch or validate products:', error);
+                debugLog('Failed to fetch products', error);
                 // Don't throw here, allow the app to load but show an error message later
                 return []; // Return empty array on failure
             }
         }
 
-        // --- Categorize Products ---
-        function categorizeProducts() {
+        // --- Organize Products (Enhanced) ---
+        function organizeProducts() {
             if (!products || products.length === 0) {
-                console.warn("Cannot categorize products: Product list is empty.");
+                console.warn("Cannot organize products: Product list is empty.");
                 return;
             }
+            
+            // Initialize product organization stores
+            productCategories = {};
+            productBrands = {};
+            
+            // Process each product
             products.forEach(product => {
-                product.categories = [];
                 const nameLower = (product.name || "").toLowerCase();
                 const descLower = (product.description || "").toLowerCase();
+                const combinedText = `${nameLower} ${descLower}`;
+                
+                // 1. Categorize by product type/concern
+                product.categories = [];
                 for (const [category, keywords] of Object.entries(categoryKeywords)) {
-                    if (keywords.some(keyword => nameLower.includes(keyword) || descLower.includes(keyword))) {
+                    if (keywords.some(keyword => combinedText.includes(keyword))) {
                         product.categories.push(category);
+                        
+                        // Initialize category array if needed
+                        if (!productCategories[category]) {
+                            productCategories[category] = [];
+                        }
+                        productCategories[category].push(product);
+                    }
+                }
+                
+                // 2. Identify brand
+                for (const [brandKey, brandKeywords] of Object.entries(brandKeywords)) {
+                    if (brandKeywords.some(keyword => combinedText.includes(keyword))) {
+                        product.brand = brandKey;
+                        
+                        // Initialize brand array if needed
+                        if (!productBrands[brandKey]) {
+                            productBrands[brandKey] = [];
+                        }
+                        productBrands[brandKey].push(product);
+                        break; // Assign only one brand
+                    }
+                }
+                
+                // 3. Identify product line
+                for (const [lineKey, lineKeywords] of Object.entries(productLineKeywords)) {
+                    if (lineKeywords.some(keyword => combinedText.includes(keyword))) {
+                        product.productLine = lineKey;
+                        break; // Assign only one product line
+                    }
+                }
+                
+                // Ensure every product has at least one category
+                if (product.categories.length === 0) {
+                    // Determine default category based on name/description
+                    if (combinedText.includes('hair')) {
+                        product.categories.push('haircare');
+                        if (!productCategories['haircare']) productCategories['haircare'] = [];
+                        productCategories['haircare'].push(product);
+                    } else if (combinedText.includes('lip') || combinedText.includes('eye') || combinedText.includes('foundation') || combinedText.includes('makeup')) {
+                        product.categories.push('makeup');
+                        if (!productCategories['makeup']) productCategories['makeup'] = [];
+                        productCategories['makeup'].push(product);
+                    } else {
+                        // Default to skincare for anything else
+                        product.categories.push('skincare');
+                        if (!productCategories['skincare']) productCategories['skincare'] = [];
+                        productCategories['skincare'].push(product);
                     }
                 }
             });
-            // Create map of categories to products
-            productCategories = Object.fromEntries(
-                Object.keys(categoryKeywords).map(category => [
-                    category,
-                    products.filter(p => p.categories && p.categories.includes(category))
-                ])
-            );
+            
             // Populate backup images per category
             for (const category of Object.keys(productCategories)) {
                 backupImages[category] = productCategories[category]
                     .map(p => p.image)
                     .filter(img => img && typeof img === 'string');
             }
+            
+            // Log organization results
+            debugLog('Product organization complete', {
+                categories: Object.keys(productCategories).map(cat => 
+                    `${cat}: ${productCategories[cat].length} products`
+                ),
+                brands: Object.keys(productBrands).map(brand => 
+                    `${brand}: ${productBrands[brand].length} products`
+                )
+            });
         }
 
         // --- Suggested Questions ---
@@ -593,18 +803,37 @@
         }
 
         async function fetchSuggestedQuestions() {
-            // Use a simpler prompt focusing on available categories if possible
-            const availableCategories = Object.keys(productCategories).filter(cat => productCategories[cat].length > 0);
-            const focusCategories = availableCategories.length > 3 ? availableCategories.slice(0, 3).join(', ') : 'skincare, haircare, makeup';
+            // Get top categories and brands for more personalized suggestions
+            const availableCategories = Object.keys(productCategories)
+                .filter(cat => productCategories[cat].length > 0)
+                .sort((a, b) => productCategories[b].length - productCategories[a].length)
+                .slice(0, 5);
+                
+            const availableBrands = Object.keys(productBrands)
+                .filter(brand => productBrands[brand].length > 0)
+                .sort((a, b) => productBrands[b].length - productBrands[a].length)
+                .slice(0, 5);
+
+            const focusCategories = availableCategories.length > 3 ? 
+                availableCategories.slice(0, 3).join(', ') : 
+                'skincare, haircare, makeup';
+                
+            const focusBrands = availableBrands.length > 0 ?
+                `and popular brands like ${availableBrands.slice(0, 3).join(', ')}` :
+                '';
 
             const prompt = {
                 contents: [{
                     role: 'user',
                     parts: [{
-                        text: `Generate 4 concise, varied, and helpful beauty-related questions for a chatbot exclusive to Planet Beauty (${PLANET_BEAUTY_DOMAIN}). Questions MUST focus on products likely available in the Planet Beauty catalog (e.g., focus on ${focusCategories}). Address common user needs like recommendations for specific skin types, hair concerns, or makeup looks. Ensure questions explicitly mention Planet Beauty. Return the response ONLY as a valid JSON array of 4 strings.
+                        text: `Generate 4 concise, varied, and helpful beauty-related questions for a chatbot exclusive to Planet Beauty (${PLANET_BEAUTY_DOMAIN}). 
+                        
+Questions MUST focus on products likely available in the Planet Beauty catalog (e.g., focus on ${focusCategories} ${focusBrands}). 
 
-                        Example valid JSON output:
-                        ["What's the best moisturizer for oily skin at Planet Beauty?", "Can you recommend a shampoo for dry hair from Planet Beauty?", "What foundation suits sensitive skin at Planet Beauty?", "Which serum helps with fine lines available at Planet Beauty?"]`
+Address common user needs like recommendations for specific skin types, hair concerns, or makeup looks. Ensure questions explicitly mention Planet Beauty. Return the response ONLY as a valid JSON array of 4 strings.
+
+Example valid JSON output:
+["What acne treatment products available at Planet Beauty would you recommend for sensitive skin?", "Can you suggest a hydrating shampoo and conditioner set from Planet Beauty for color-treated hair?", "What are some top-rated makeup primers at Planet Beauty for achieving a long-lasting, matte look?", "I'm looking for a retinol serum at Planet Beauty. Which one would be best for someone new to retinol and concerned about minimizing irritation?"]`
                     }]
                 }],
                 generationConfig: {
@@ -703,6 +932,36 @@
 
         function getBackupImage(query) {
             const queryLower = (query || "").toLowerCase();
+            // First try to match based on detected brand/category from query
+            const queryContext = analyzeQuery(queryLower);
+            
+            // Try brand-specific images first if available
+            if (queryContext.brand && productBrands[queryContext.brand]) {
+                const brandImages = productBrands[queryContext.brand]
+                    .map(p => p.image)
+                    .filter(img => img && typeof img === 'string');
+                    
+                if (brandImages.length > 0) {
+                    return brandImages[Math.floor(Math.random() * brandImages.length)];
+                }
+            }
+            
+            // Try category-specific images next
+            if (queryContext.categories.length > 0) {
+                for (const category of queryContext.categories) {
+                    if (productCategories[category]) {
+                        const catImages = productCategories[category]
+                            .map(p => p.image)
+                            .filter(img => img && typeof img === 'string');
+                            
+                        if (catImages.length > 0) {
+                            return catImages[Math.floor(Math.random() * catImages.length)];
+                        }
+                    }
+                }
+            }
+            
+            // Fallback to traditional category matching if no context matches
             for (const [category, keywords] of Object.entries(categoryKeywords)) {
                 if (keywords.some(keyword => queryLower.includes(keyword))) {
                     const imageArray = backupImages[category] || [];
@@ -712,8 +971,43 @@
                     }
                 }
             }
+            
             // Default backup if no category match
             return backupImages.default;
+        }
+
+        // Analyze query for brand, product line and categories
+        function analyzeQuery(query) {
+            const result = {
+                brand: null,
+                productLine: null,
+                categories: []
+            };
+            
+            // Check for brand mentions
+            for (const [brandKey, keywords] of Object.entries(brandKeywords)) {
+                if (keywords.some(kw => query.includes(kw))) {
+                    result.brand = brandKey;
+                    break;
+                }
+            }
+            
+            // Check for product line mentions  
+            for (const [lineKey, keywords] of Object.entries(productLineKeywords)) {
+                if (keywords.some(kw => query.includes(kw))) {
+                    result.productLine = lineKey;
+                    break;
+                }
+            }
+            
+            // Check for category mentions
+            for (const [category, keywords] of Object.entries(categoryKeywords)) {
+                if (keywords.some(kw => query.includes(kw))) {
+                    result.categories.push(category);
+                }
+            }
+            
+            return result;
         }
 
         // --- Event Handlers ---
@@ -763,7 +1057,6 @@
                  conversationHistory = conversationHistory.slice(-MAX_HISTORY * 2);
             }
 
-
             // Update context based on the *sanitized* message
             updateQueryContext(message);
 
@@ -796,7 +1089,7 @@
 
                 // Attempt fallback search even on API error, if products are loaded
                 if (products.length > 0) {
-                    const fallbackProducts = fallbackSearch(message);
+                    const fallbackProducts = findRelevantProducts(message);
                     if (fallbackProducts.length > 0) {
                         addMessage("I had trouble with the AI search, but here are some products from our catalog that might match:", 'bot');
                         await Promise.all(fallbackProducts.map(p => addProductCard(p, message)));
@@ -832,6 +1125,7 @@
                     ]
                 };
 
+                debugLog('Calling Gemini API');
                 const res = await axios.post(GEMINI_API_URL, payload, {
                     headers: { 'Content-Type': 'application/json' },
                     timeout: API_TIMEOUT // Use configured timeout
@@ -856,10 +1150,15 @@
 
                         // Add valid model response to history
                         conversationHistory.push({ role: 'model', parts: [{ text: cleanedText }] });
+                        debugLog('API response received', {
+                            queryType: parsedResponse.query_type,
+                            productCount: parsedResponse.products.length
+                        });
                         return parsedResponse; // Return the valid, parsed response
 
                     } catch (parseError) {
                         console.error('JSON Parse Error in API response:', parseError, 'Raw text:', responseText);
+                        debugLog('JSON Parse Error', { error: parseError.message, text: responseText });
                         // If parsing fails, treat it as an error but maybe provide a generic text response
                          return { text: "I received a response, but couldn't fully understand it. Let me try to find products based on your query.", query_type: 'other', products: [] };
                     }
@@ -901,33 +1200,30 @@
 
 **VERY IMPORTANT RULES:**
 1.  **Strictly Planet Beauty:** ONLY recommend products available at Planet Beauty. ABSOLUTELY DO NOT suggest products or provide information/links for websites outside of ${PLANET_BEAUTY_DOMAIN}.
-2.  **Catalog Focus:** Base recommendations on typical beauty products (skincare, haircare, makeup).
+2.  **Catalog Focus:** Base recommendations on typical beauty products (skincare, haircare, makeup) and beauty devices/tools (LED masks, facial devices, etc).
 3.  **JSON Output:** ALWAYS respond with a valid JSON object containing three keys: "text" (your conversational reply, max 150 words), "query_type" (string: "greeting", "product", "other"), and "products" (array of product objects OR an empty array []).
 4.  **Product Object Format:** When recommending products, the "products" array must contain objects with ONLY a "name" key, matching a Planet Beauty product name exactly. Example: \`{"name": "Specific Product Name Here"}\`
-5.  **Handling Not Found:** If a user asks for a specific product type (e.g., "red light therapy device") that is NOT typically sold by Planet Beauty or likely not in the catalog:
+5.  **Brand Awareness:** When a user asks for a specific brand (e.g., "Dr. Dennis Gross") or product line (e.g., "Spectralite"), try to find products from that exact brand/line BEFORE suggesting alternatives.
+6.  **Device and Tool Recognition:** Recognize that Planet Beauty sells beauty devices and tools like LED masks, light therapy devices, and facial tools. Don't automatically assume these are unavailable.
+7.  **Thorough Search Before "Not Available":** NEVER state that a product is unavailable at Planet Beauty unless you've thoroughly checked all possible variations (e.g., check "Dr Dennis Gross Spectralite", "DRx SpectraLite", etc). Be VERY careful before claiming a product isn't available.
+8.  **Handling Not Found:** Only if a user asks for a product type that is truly NOT typically sold by beauty retailers or likely not in the catalog:
     *   Set "query_type": "product".
     *   In the "text", clearly state it's not available *at Planet Beauty*.
-    *   Suggest 1-2 relevant *alternative* product types available at Planet Beauty (e.g., "anti-aging serums" or "brightening treatments").
-    *   Include the names of 1-2 specific alternative products from the catalog in the "products" array. Example: \`{"products": [{"name": "Alternative Serum A"}, {"name": "Alternative Cream B"}]}\`
+    *   Suggest 1-2 relevant *alternative* product types available at Planet Beauty.
+    *   Include the names of 1-2 specific alternative products from the catalog in the "products" array.
     *   If no suitable alternatives exist, return an empty "products" array.
-6.  **Query Types:**
+9.  **Query Types:**
     *   "greeting": For simple hellos, how are you, etc. Respond warmly, "products": [].
-    *   "product": For requests about specific products, categories, concerns (e.g., "dry skin moisturizer", "shampoo for colored hair", "red light therapy"). Provide text response and matching "products" array (or alternatives if not found).
+    *   "product": For requests about specific products, categories, concerns. Provide text response and matching "products" array (or alternatives if not found).
     *   "other": For thanks, goodbyes, questions about store hours (which you don't know - politely state that), or unclear queries. Respond appropriately, "products": [].
-7.  **Context:** Use the conversation history (${contextSummary}) to understand follow-up questions (e.g., if user asks for "cheapest" after a product recommendation, refine the previous suggestion if possible).
+10. **Context:** Use the conversation history to understand follow-up questions and provide consistent responses.
 
 **Example Scenarios:**
 
-*   User: Hi there
-    Assistant JSON: \`{"text": "Hello! Welcome to Planet Beauty's assistant. How can I help you find the perfect beauty product today?", "query_type": "greeting", "products": []}\`
-*   User: I need a good moisturizer for very dry skin
-    Assistant JSON: \`{"text": "Hydration is key for very dry skin! Here are a couple of great options from Planet Beauty:", "query_type": "product", "products": [{"name": "Dermalogica Intensive Moisture Balance"}, {"name": "SkinCeuticals Triple Lipid Restore 2:4:2"}]}\`
-*   User: which one is cheaper? (Follow-up)
-    Assistant JSON: \`{"text": "Let me check the pricing... The Dermalogica Intensive Moisture Balance is generally more budget-friendly.", "query_type": "product", "products": [{"name": "Dermalogica Intensive Moisture Balance"}]}\` (Assumes system can check price or makes educated guess)
-*   User: Do you sell red light therapy masks?
-    Assistant JSON: \`{"text": "Planet Beauty doesn't currently carry red light therapy masks. However, if you're interested in anti-aging or skin rejuvenation, we have excellent serums and treatments. Would you like to explore those?", "query_type": "product", "products": [{"name": "Peter Thomas Roth Peptide 21 Wrinkle Resist Serum"}, {"name": " Murad Retinol Youth Renewal Night Cream"}]}\`
-*   User: Thanks!
-    Assistant JSON: \`{"text": "You're very welcome! Let me know if anything else comes up.", "query_type": "other", "products": []}\`
+*   User: I'm looking for the Dr. Dennis Gross Spectralite mask
+    Assistant JSON: \`{"text": "Yes, Planet Beauty carries the Dr. Dennis Gross DRx SpectraLite Faceware Pro! This LED mask uses red and blue light therapy to reduce wrinkles and acne. It's a premium device that delivers professional-quality results at home.", "query_type": "product", "products": [{"name": "Dr. Dennis Gross DRx Skincare SpectraLite Faceware Pro - White"}]}\`
+*   User: Does Planet Beauty sell Spectralite products?
+    Assistant JSON: \`{"text": "Yes! Planet Beauty carries Dr. Dennis Gross Spectralite products, including the popular DRx SpectraLite FaceWare Pro. This LED light therapy mask helps reduce wrinkles and acne with regular use.", "query_type": "product", "products": [{"name": "Dr. Dennis Gross DRx Skincare SpectraLite Faceware Pro - White"}, {"name": "Dr. Dennis Gross DRx SpectraLite LipWare Pro"}]}\`
 
 Now, respond to the latest user message based on these rules and the conversation history.`
                 }]
@@ -943,101 +1239,260 @@ Now, respond to the latest user message based on these rules and the conversatio
             return [systemInstruction, ...validHistory];
         }
 
-
-        function fallbackSearch(query, context = lastQueryContext) {
+        // Enhanced product search with brand and context awareness
+        function findRelevantProducts(query, context = lastQueryContext, maxResults = 3) {
             const queryLower = (query || "").toLowerCase();
             if (!queryLower || products.length === 0) return []; // Need query and products
+            
+            debugLog('Starting enhanced product search', { 
+                query: queryLower, 
+                context: context 
+            });
 
-            // Basic keyword extraction (improved slightly)
+            // 1. Try to understand query better
+            const queryAnalysis = analyzeQuery(queryLower);
+            debugLog('Query analysis', queryAnalysis);
+            
+            // 2. Detect if query is a refinement (e.g., "cheapest", "best")
+            const refinements = {
+                price_low: ['cheapest', 'cheaper', 'affordable', 'lowest price', 'budget', 'inexpensive'],
+                price_high: ['luxury', 'high-end', 'premium', 'expensive', 'best'],
+                rating: ['top-rated', 'highest rated', 'best rated', 'most popular'],
+                new: ['newest', 'latest', 'new', 'just released']
+            };
+            
+            let activeRefinements = [];
+            for (const [refinementType, keywords] of Object.entries(refinements)) {
+                if (keywords.some(kw => queryLower.includes(kw))) {
+                    activeRefinements.push(refinementType);
+                }
+            }
+            
+            // 3. Special case: refining previous results
+            if (activeRefinements.length > 0 && context.productType) {
+                debugLog('Refinement detected', { 
+                    refinements: activeRefinements, 
+                    previousType: context.productType 
+                });
+                
+                // Get products from the previous category
+                let productsToRefine = [];
+                if (context.brand && productBrands[context.brand]) {
+                    // If previous query had a brand, get products from that brand within category
+                    productsToRefine = productBrands[context.brand].filter(p => 
+                        p.categories && p.categories.includes(context.productType)
+                    );
+                } else if (productCategories[context.productType]) {
+                    // Otherwise just get category products
+                    productsToRefine = [...productCategories[context.productType]];
+                }
+                
+                if (productsToRefine.length > 0) {
+                    // Apply refinements
+                    if (activeRefinements.includes('price_low')) {
+                        productsToRefine.sort((a, b) => {
+                            const priceA = parseFloat(a.price?.replace(/[^0-9.]/g, '')) || Infinity;
+                            const priceB = parseFloat(b.price?.replace(/[^0-9.]/g, '')) || Infinity;
+                            return priceA - priceB;
+                        });
+                        return productsToRefine.slice(0, maxResults);
+                    } 
+                    else if (activeRefinements.includes('price_high')) {
+                        productsToRefine.sort((a, b) => {
+                            const priceA = parseFloat(a.price?.replace(/[^0-9.]/g, '')) || 0;
+                            const priceB = parseFloat(b.price?.replace(/[^0-9.]/g, '')) || 0;
+                            return priceB - priceA;
+                        });
+                        return productsToRefine.slice(0, maxResults);
+                    }
+                    // Add other refinement types as needed
+                }
+            }
+            
+            // 4. Brand-specific search
+            if (queryAnalysis.brand) {
+                debugLog('Brand-specific search', { brand: queryAnalysis.brand });
+                
+                // Filter to brand products
+                let brandProducts = productBrands[queryAnalysis.brand] || [];
+                
+                // If specific product line mentioned, further filter
+                if (queryAnalysis.productLine && brandProducts.length > 0) {
+                    debugLog('Product line filter', { line: queryAnalysis.productLine });
+                    const lineProducts = brandProducts.filter(p => 
+                        p.name && (
+                            p.name.toLowerCase().includes(queryAnalysis.productLine) || 
+                            (p.productLine === queryAnalysis.productLine)
+                        )
+                    );
+                    
+                    if (lineProducts.length > 0) {
+                        // Found specific line products
+                        return lineProducts.slice(0, maxResults);
+                    }
+                }
+                
+                // If categories mentioned, filter by those
+                if (queryAnalysis.categories.length > 0 && brandProducts.length > 0) {
+                    debugLog('Category filter within brand', { categories: queryAnalysis.categories });
+                    const categoryFiltered = brandProducts.filter(p => 
+                        p.categories && p.categories.some(cat => queryAnalysis.categories.includes(cat))
+                    );
+                    
+                    if (categoryFiltered.length > 0) {
+                        return categoryFiltered.slice(0, maxResults);
+                    }
+                }
+                
+                // If we have brand products but no specific filters matched, return top brand products
+                if (brandProducts.length > 0) {
+                    debugLog('Returning general brand products');
+                    return brandProducts.slice(0, maxResults);
+                }
+            }
+            
+            // 5. Specialized device search (for LED masks, tools, etc.)
+            if (queryLower.includes('led') || queryLower.includes('mask') || 
+                queryLower.includes('device') || queryLower.includes('tool') ||
+                queryLower.includes('spectralite') || queryLower.includes('light therapy')) {
+                
+                debugLog('Specialized device search');
+                
+                // Check for specific device types
+                const deviceProducts = products.filter(p => 
+                    p.categories && p.categories.includes('devices')
+                );
+                
+                // Further refine by specific terms
+                if (queryLower.includes('spectralite') || 
+                    (queryLower.includes('dennis') && (queryLower.includes('led') || queryLower.includes('mask')))) {
+                    
+                    const spectraliteProducts = deviceProducts.filter(p => 
+                        p.name && (
+                            p.name.toLowerCase().includes('spectralite') ||
+                            p.name.toLowerCase().includes('faceware') ||
+                            (p.name.toLowerCase().includes('dr. dennis') && 
+                             (p.name.toLowerCase().includes('led') || p.name.toLowerCase().includes('mask')))
+                        )
+                    );
+                    
+                    if (spectraliteProducts.length > 0) {
+                        return spectraliteProducts.slice(0, maxResults);
+                    }
+                }
+                
+                // General LED/light therapy devices
+                if (queryLower.includes('led') || queryLower.includes('light therapy')) {
+                    const ledProducts = deviceProducts.filter(p => 
+                        p.name && (
+                            p.name.toLowerCase().includes('led') ||
+                            p.name.toLowerCase().includes('light') 
+                        )
+                    );
+                    
+                    if (ledProducts.length > 0) {
+                        return ledProducts.slice(0, maxResults);
+                    }
+                }
+                
+                // If we found device products, return them
+                if (deviceProducts.length > 0) {
+                    return deviceProducts.slice(0, maxResults);
+                }
+            }
+            
+            // 6. Advanced keyword scoring
+            debugLog('Performing keyword scoring search');
+            
+            // Basic keyword extraction (improved)
             const stopWords = new Set(['the', 'a', 'an', 'is', 'for', 'what', 'can', 'you', 'recommend', 'find', 'me', 'i', 'need', 'with', 'of', 'my', 'skin', 'hair', 'product', 'products', 'at', 'from', 'planet', 'beauty']);
             const keywords = queryLower.split(/[\s,.;!?-]+/) // Split by common delimiters
                 .filter(word => word.length > 2 && !stopWords.has(word));
-
-            let matchedProducts = [];
-            const isRefinement = keywords.some(k => ['cheapest', 'cheaper', 'affordable', 'lowest', 'price', 'cost'].includes(k));
-
-            // --- Refinement Handling (e.g., "cheapest") ---
-            if (isRefinement && context.productType) {
-                console.log(`Fallback: Refining search for cheapest '${context.productType}'`);
-                matchedProducts = products.filter(p =>
-                    p.categories && p.categories.includes(context.productType) &&
-                    p.price && typeof p.price === 'string' && p.price.includes('$') // Ensure price exists
-                ).sort((a, b) => {
-                    // Robust price parsing
-                    const priceA = parseFloat(a.price.replace(/[^0-9.]/g, '')) || Infinity;
-                    const priceB = parseFloat(b.price.replace(/[^0-9.]/g, '')) || Infinity;
-                    return priceA - priceB;
-                });
-                return matchedProducts.slice(0, 3); // Return top 3 cheapest
-            }
-
-            // --- Standard Fallback Search ---
-            // 1. Category Matching: Find products in categories mentioned in the query
-            let categoryMatches = new Set();
-            let matchedCategory = null;
-            for (const [category, catKeywords] of Object.entries(categoryKeywords)) {
-                if (catKeywords.some(kw => queryLower.includes(kw))) {
-                    matchedCategory = category; // Store the primary matched category
-                    const categoryProducts = productCategories[category] || [];
-                    categoryProducts.forEach(product => categoryMatches.add(product));
-                    // Prioritize the first strong category match for relevance
-                    break;
+                
+            debugLog('Extracted keywords', keywords);
+            
+            // If no keywords found, try category matching
+            if (keywords.length === 0 && queryAnalysis.categories.length > 0) {
+                let categoryProducts = [];
+                for (const category of queryAnalysis.categories) {
+                    if (productCategories[category] && productCategories[category].length > 0) {
+                        categoryProducts = [...categoryProducts, ...productCategories[category]];
+                    }
+                }
+                
+                if (categoryProducts.length > 0) {
+                    // Remove duplicates
+                    const uniqueProducts = Array.from(new Map(
+                        categoryProducts.map(p => [p.id || p.name, p])
+                    ).values());
+                    
+                    return uniqueProducts.slice(0, maxResults);
                 }
             }
-             // If no strong category match, check keywords against all categories
-             if (!matchedCategory) {
-                 for (const [category, catKeywords] of Object.entries(categoryKeywords)) {
-                     if (keywords.some(kw => catKeywords.includes(kw))) {
-                         const categoryProducts = productCategories[category] || [];
-                         categoryProducts.forEach(product => categoryMatches.add(product));
-                     }
-                 }
-             }
-
-
-            // 2. Keyword Scoring: Score all products based on keyword presence in name/desc
+            
+            // Score all products based on query relevance
             const scoredProducts = products.map(product => {
                 let score = 0;
                 const nameLower = (product.name || "").toLowerCase();
                 const descLower = (product.description || "").toLowerCase();
-
-                // Boost score if product is in a matched category
-                if (categoryMatches.has(product)) score += 5;
-
-                // Score based on keyword matches
+                const combinedText = `${nameLower} ${descLower}`;
+                
+                // Brand match gives high score
+                if (queryAnalysis.brand && product.brand === queryAnalysis.brand) {
+                    score += 20;
+                }
+                
+                // Product line match gives high score
+                if (queryAnalysis.productLine && product.productLine === queryAnalysis.productLine) {
+                    score += 15;
+                }
+                
+                // Category matches
+                if (queryAnalysis.categories.length > 0) {
+                    const catMatchCount = queryAnalysis.categories.filter(cat => 
+                        product.categories && product.categories.includes(cat)
+                    ).length;
+                    
+                    score += catMatchCount * 5;
+                }
+                
+                // Keyword matches
                 keywords.forEach(term => {
                     if (nameLower.includes(term)) score += 3; // Higher score for name match
                     if (descLower.includes(term)) score += 1; // Lower score for description match
                 });
-                 // Bonus for exact phrase match in name
-                 if (nameLower.includes(queryLower)) score += 10;
-
-
+                
+                // Bonus for exact phrase match
+                if (nameLower.includes(queryLower)) score += 10;
+                
+                // Special case for specific product types that might be misrecognized
+                if ((queryLower.includes('spectralite') || queryLower.includes('led mask')) && 
+                    (nameLower.includes('spectralite') || 
+                     (nameLower.includes('led') && nameLower.includes('mask')))) {
+                    score += 25; // Very high score for exact specialty items
+                }
+                
                 return { product, score };
             });
-
-            // 3. Combine and Rank: Filter out zero-score, sort by score, remove duplicates
+            
+            // Filter, sort and return top matches
             const relevantProducts = scoredProducts
-                .filter(item => item.score > 0) // Only include products with a score
-                .sort((a, b) => b.score - a.score) // Sort descending by score
+                .filter(item => item.score > 0)
+                .sort((a, b) => b.score - a.score)
                 .map(item => item.product);
-
-            // Use a Map to ensure uniqueness based on ID or Name
-            const combinedResults = new Map();
-            // Add category matches first (they are generally more relevant)
-            Array.from(categoryMatches).forEach(p => combinedResults.set(p.id || p.name, p));
-            // Add other relevant products, avoiding duplicates
-            relevantProducts.forEach(p => {
-                if (!combinedResults.has(p.id || p.name)) {
-                    combinedResults.set(p.id || p.name, p);
-                }
+                
+            debugLog('Search complete', { 
+                relevantCount: relevantProducts.length,
+                topScores: scoredProducts
+                    .filter(item => item.score > 0)
+                    .sort((a, b) => b.score - a.score)
+                    .slice(0, 3)
+                    .map(item => `${item.product.name}: ${item.score}`)
             });
-
-            console.log(`Fallback: Found ${combinedResults.size} potential matches for "${query}"`);
-            // Return top 3 results from the combined list
-            return Array.from(combinedResults.values()).slice(0, 3);
+            
+            // Return top results
+            return relevantProducts.slice(0, maxResults);
         }
-
 
         async function processResponse(response, userQuery) {
             hideTypingIndicator();
@@ -1062,7 +1517,7 @@ Now, respond to the latest user message based on these rules and the conversatio
 
             // --- Process Products Suggested by API ---
             if (queryType === 'product' && response.products && Array.isArray(response.products) && response.products.length > 0) {
-                console.log("API suggested products:", response.products.map(p => p?.name || 'Invalid Product Object'));
+                debugLog("API suggested products", response.products.map(p => p?.name || 'Invalid Product Object'));
 
                 for (const suggestedProduct of response.products) {
                     // Validate the suggested product object structure
@@ -1072,82 +1527,87 @@ Now, respond to the latest user message based on these rules and the conversatio
                     }
 
                     const nameToFind = suggestedProduct.name.trim().toLowerCase();
-                    // Find product in local catalog (case-insensitive exact match first)
-                    let foundProduct = products.find(p => p.name && p.name.toLowerCase() === nameToFind);
-
-                    // If no exact match, try partial match (more lenient)
-                    if (!foundProduct) {
-                        foundProduct = products.find(p =>
-                            p.name && (p.name.toLowerCase().includes(nameToFind) || nameToFind.includes(p.name.toLowerCase()))
-                        );
-                    }
+                    // Enhanced product matching with better brand awareness
+                    let foundProduct = findBestProductMatch(nameToFind, userQuery);
 
                     if (foundProduct) {
                         // Avoid adding duplicates
                         if (!productsToShow.some(p => (p.id || p.name) === (foundProduct.id || foundProduct.name))) {
-                            console.log(`Matched API suggestion "${suggestedProduct.name}" to catalog product: ${foundProduct.name}`);
-                            // Add the full product details from our catalog
+                            debugLog(`Matched API suggestion "${suggestedProduct.name}" to catalog product: ${foundProduct.name}`);
                             productsToShow.push({
                                 ...foundProduct, // Spread operator copies all properties
-                                // Ensure essential fields have defaults (already done in fetchProducts, but good practice)
                                 name: foundProduct.name || "Unnamed Product",
                                 description: foundProduct.description || "Description not available.",
                                 price: foundProduct.price || "",
-                                image: foundProduct.image, // Already HTTPSified in fetchProducts
-                                url: foundProduct.url // Already validated/formatted in fetchProducts
+                                image: foundProduct.image,
+                                url: foundProduct.url
                             });
                         }
                     } else {
-                        console.log(`API suggestion "${suggestedProduct.name}" not found in local Planet Beauty catalog.`);
-                        // Optionally: Could add a message here if many suggestions fail?
+                        debugLog(`API suggestion "${suggestedProduct.name}" not found in catalog. Trying aggressive matching...`);
+                        
+                        // Try aggressive matching for specialized products
+                        const aggressiveMatch = findAggressiveProductMatch(nameToFind, userQuery);
+                        if (aggressiveMatch) {
+                            if (!productsToShow.some(p => (p.id || p.name) === (aggressiveMatch.id || aggressiveMatch.name))) {
+                                debugLog(`Found aggressive match for "${suggestedProduct.name}": ${aggressiveMatch.name}`);
+                                productsToShow.push({
+                                    ...aggressiveMatch,
+                                    name: aggressiveMatch.name || "Unnamed Product",
+                                    description: aggressiveMatch.description || "Description not available.",
+                                    price: aggressiveMatch.price || "",
+                                    image: aggressiveMatch.image,
+                                    url: aggressiveMatch.url
+                                });
+                            }
+                        }
                     }
                 }
             }
 
             // --- Handle Cases Where API Found No Products or Query Was Niche ---
-            const queryLower = userQuery.toLowerCase();
-            // Define niche terms that might not be in catalog
-            const nicheTerms = ['red light', 'therapy', 'laser hair removal', 'microcurrent device'];
-            const isNicheQuery = nicheTerms.some(term => queryLower.includes(term));
-
             if (productsToShow.length === 0 && queryType === 'product') {
-                console.log("API returned no matching products or query was niche/unmatched. Running fallback search.");
-                const fallbackProducts = fallbackSearch(userQuery); // Run local fallback
+                debugLog("API returned no matching products. Running enhanced search.");
+                const enhancedSearchProducts = findRelevantProducts(userQuery);
 
-                if (fallbackProducts.length > 0) {
-                    // If fallback finds products
-                    if (isNicheQuery) {
-                         // If it was a niche query, frame the results as alternatives
-                         addMessage(`While Planet Beauty doesn't carry ${userQuery}, here are some related skincare products you might like: ✨`, 'bot');
+                if (enhancedSearchProducts.length > 0) {
+                    // If our enhanced search finds products
+                    const queryAnalysis = analyzeQuery(userQuery.toLowerCase());
+                    
+                    // Check if this was a specific product search that should have been found
+                    const isSpecificProductSearch = 
+                        queryAnalysis.brand && queryAnalysis.productLine || 
+                        userQuery.toLowerCase().includes('spectralite') ||
+                        (userQuery.toLowerCase().includes('dr dennis') && userQuery.toLowerCase().includes('mask'));
+                    
+                    if (isSpecificProductSearch) {
+                        // If it was a specific product, frame the results correctly
+                        addMessage(`Yes, Planet Beauty does carry ${queryAnalysis.brand ? 'products from ' + formatBrandName(queryAnalysis.brand) : 'these products'}. Here's what I found:`, 'bot');
                     } else {
                         // Otherwise, present them as general recommendations
-                        addMessage("Okay, I found these Planet Beauty products based on your request:", 'bot');
+                        addMessage("Here are some Planet Beauty products based on your request:", 'bot');
                     }
-                    // Map fallback results to the structure needed for display
-                    productsToShow = fallbackProducts.map(p => ({
+                    
+                    // Map search results to the structure needed for display
+                    productsToShow = enhancedSearchProducts.map(p => ({
                         ...p,
                         name: p.name || "Unnamed Product",
                         description: p.description || "Description not available.",
                         price: p.price || "",
                         image: p.image,
-                        url: p.url // Assumes URL is already validated from fetchProducts
+                        url: p.url
                     }));
                 } else {
-                    // If fallback *also* finds nothing
-                    if (isNicheQuery) {
-                        addMessage(`Sorry, Planet Beauty doesn't seem to carry ${userQuery} or closely related alternatives currently. Can I help find something else, like anti-aging serums or moisturizers?`, 'bot');
-                    } else {
-                        addMessage("I couldn't find specific products matching your request in the Planet Beauty catalog right now. Could you try rephrasing, or ask about a different type of product?", 'bot');
-                    }
+                    // If search finds nothing
+                    addMessage("I couldn't find specific products matching your request in the Planet Beauty catalog. Could you try rephrasing, or ask about a different type of product?", 'bot');
                 }
             }
 
             // --- Apply Refinements (e.g., "cheapest") ---
-            // Check if the last query context indicated a preference for 'cheapest'
             if (productsToShow.length > 1 && lastQueryContext.preferences.includes('cheapest')) {
-                console.log("Applying 'cheapest' refinement to results.");
+                debugLog("Applying 'cheapest' refinement to results.");
                 const sortedByPrice = productsToShow
-                    .filter(p => p.price && typeof p.price === 'string' && p.price.match(/\d/)) // Ensure price exists and has digits
+                    .filter(p => p.price && typeof p.price === 'string' && p.price.match(/\d/))
                     .sort((a, b) => {
                         const priceA = parseFloat(a.price.replace(/[^0-9.]/g, '')) || Infinity;
                         const priceB = parseFloat(b.price.replace(/[^0-9.]/g, '')) || Infinity;
@@ -1155,15 +1615,9 @@ Now, respond to the latest user message based on these rules and the conversatio
                     });
 
                 if (sortedByPrice.length > 0) {
-                    // If sorting was possible, potentially update the message and limit results
-                    // addMessage("Here are the most affordable options based on your request:", 'bot'); // Optional clarifying message
                     productsToShow = sortedByPrice.slice(0, 1); // Show only the cheapest one after refinement
-                } else {
-                    console.log("Could not apply 'cheapest' refinement (missing prices or no products left).");
-                     // Maybe add a message indicating price info wasn't available for sorting
                 }
             }
-
 
             // --- Display Product Cards ---
             if (productsToShow.length > 0) {
@@ -1171,7 +1625,155 @@ Now, respond to the latest user message based on these rules and the conversatio
                 await Promise.all(productsToShow.slice(0, maxCards).map(p => addProductCard(p, userQuery)));
             }
         }
-
+        
+        // Enhanced product matching function with brand and line awareness
+        function findBestProductMatch(nameToFind, userQuery) {
+            // Exact match
+            let foundProduct = products.find(p => p.name && p.name.toLowerCase() === nameToFind);
+            
+            // If no exact match, try progressively looser matches
+            if (!foundProduct) {
+                const queryLower = userQuery.toLowerCase();
+                const queryAnalysis = analyzeQuery(queryLower);
+                
+                // If brand is detected in query, prioritize that brand's products
+                if (queryAnalysis.brand) {
+                    const brandProducts = productBrands[queryAnalysis.brand] || [];
+                    
+                    // Try to find a match within this brand's products
+                    if (brandProducts.length > 0) {
+                        // Exact name match within brand
+                        foundProduct = brandProducts.find(p => 
+                            p.name && p.name.toLowerCase() === nameToFind
+                        );
+                        
+                        // Contains name within brand
+                        if (!foundProduct) {
+                            foundProduct = brandProducts.find(p => 
+                                p.name && (
+                                    p.name.toLowerCase().includes(nameToFind) || 
+                                    nameToFind.includes(p.name.toLowerCase())
+                                )
+                            );
+                        }
+                        
+                        // Product line match within brand (e.g., "Spectralite")
+                        if (!foundProduct && queryAnalysis.productLine) {
+                            foundProduct = brandProducts.find(p => 
+                                p.name && (
+                                    p.name.toLowerCase().includes(queryAnalysis.productLine) ||
+                                    (p.productLine === queryAnalysis.productLine)
+                                )
+                            );
+                        }
+                    }
+                }
+                
+                // If no brand-specific match, try partial match across all products
+                if (!foundProduct) {
+                    foundProduct = products.find(p =>
+                        p.name && (
+                            p.name.toLowerCase().includes(nameToFind) || 
+                            nameToFind.includes(p.name.toLowerCase())
+                        )
+                    );
+                }
+                
+                // Special case for specific hard-to-match products
+                if (!foundProduct && (nameToFind.includes('spectralite') || nameToFind.includes('led mask'))) {
+                    foundProduct = products.find(p =>
+                        p.name && (
+                            p.name.toLowerCase().includes('spectralite') ||
+                            p.name.toLowerCase().includes('faceware') ||
+                            (p.name.toLowerCase().includes('led') && p.name.toLowerCase().includes('mask'))
+                        )
+                    );
+                }
+            }
+            
+            return foundProduct;
+        }
+        
+        // Aggressive matching for special cases
+        function findAggressiveProductMatch(nameToFind, userQuery) {
+            const queryLower = userQuery.toLowerCase();
+            
+            // Special case for Spectralite/LED masks
+            if ((nameToFind.includes('spectralite') || 
+                 nameToFind.includes('faceware') ||
+                 (nameToFind.includes('led') && nameToFind.includes('mask')) ||
+                 (queryLower.includes('spectralite') || 
+                  queryLower.includes('led mask') ||
+                  (queryLower.includes('dr dennis') && queryLower.includes('mask'))
+                 ))) {
+                
+                // Look for any Spectralite or LED mask product
+                const spectraliteProducts = products.filter(p =>
+                    p.name && (
+                        p.name.toLowerCase().includes('spectralite') ||
+                        p.name.toLowerCase().includes('faceware') ||
+                        (p.name.toLowerCase().includes('led') && p.name.toLowerCase().includes('mask')) ||
+                        (p.name.toLowerCase().includes('dr. dennis') && p.name.toLowerCase().includes('drx'))
+                    )
+                );
+                
+                if (spectraliteProducts.length > 0) {
+                    return spectraliteProducts[0]; // Return the first match
+                }
+            }
+            
+            // Check for Dr. Dennis Gross products generally if mentioned
+            if (nameToFind.includes('dr. dennis') || 
+                nameToFind.includes('dr dennis') ||
+                queryLower.includes('dr. dennis') ||
+                queryLower.includes('dr dennis')) {
+                
+                const drDennisProducts = products.filter(p =>
+                    p.name && (
+                        p.name.toLowerCase().includes('dr. dennis') ||
+                        p.name.toLowerCase().includes('dr dennis')
+                    )
+                );
+                
+                if (drDennisProducts.length > 0) {
+                    // Try to find one that best matches the rest of the query
+                    const keywords = queryLower
+                        .replace('dr. dennis gross', '')
+                        .replace('dr dennis gross', '')
+                        .replace('dr. dennis', '')
+                        .replace('dr dennis', '')
+                        .trim()
+                        .split(/\s+/);
+                        
+                    if (keywords.length > 0) {
+                        // Score each product by keyword matches
+                        const scoredProducts = drDennisProducts.map(product => {
+                            const nameLower = product.name.toLowerCase();
+                            let score = 0;
+                            
+                            keywords.forEach(keyword => {
+                                if (keyword.length > 2 && nameLower.includes(keyword)) {
+                                    score += 1;
+                                }
+                            });
+                            
+                            return { product, score };
+                        });
+                        
+                        // Sort by score and return best match
+                        scoredProducts.sort((a, b) => b.score - a.score);
+                        if (scoredProducts.length > 0 && scoredProducts[0].score > 0) {
+                            return scoredProducts[0].product;
+                        }
+                    }
+                    
+                    // If no keyword match, return any product from this brand
+                    return drDennisProducts[0];
+                }
+            }
+            
+            return null;
+        }
 
         // --- UI Functions ---
         function addMessage(text, sender) {
@@ -1438,36 +2040,69 @@ Now, respond to the latest user message based on these rules and the conversatio
 
             if (updated) {
                 Object.assign(userProfile, newProfile); // Update the global profile state
-                console.log(`User profile inferred - Skin Type: ${userProfile.skinType || 'N/A'}, Concerns: ${userProfile.concerns.join(', ') || 'None'}`);
+                debugLog(`User profile inferred`, {
+                    skinType: userProfile.skinType || 'N/A', 
+                    concerns: userProfile.concerns.join(', ') || 'None'
+                });
             }
         }
 
         function updateQueryContext(query) {
             const queryLower = query.toLowerCase();
-            let foundCategory = null;
-            // Detect primary product type/category from the query
-            for (const [category, keywords] of Object.entries(categoryKeywords)) {
-                if (keywords.some(keyword => queryLower.includes(keyword))) {
-                    foundCategory = category;
-                    break; // Use the first matched category as primary context
-                }
+            const queryAnalysis = analyzeQuery(queryLower);
+            
+            // Update context with detected brand
+            if (queryAnalysis.brand) {
+                lastQueryContext.brand = queryAnalysis.brand;
             }
-            // Only update productType if a new one is detected, otherwise keep the old one for refinement context
-            if (foundCategory) {
-                 lastQueryContext.productType = foundCategory;
+            
+            // Update context with detected product line
+            if (queryAnalysis.productLine) {
+                lastQueryContext.productLine = queryAnalysis.productLine;
             }
-
+            
+            // Update context with detected product type/category
+            if (queryAnalysis.categories.length > 0) {
+                lastQueryContext.productType = queryAnalysis.categories[0]; // Use first matched category
+            }
 
             // Detect preferences (like 'cheapest')
             if (queryLower.includes('cheapest') || queryLower.includes('cheaper') || queryLower.includes('affordable') || queryLower.includes('lowest price')) {
                 lastQueryContext.preferences = ['cheapest'];
+            } else if (queryLower.includes('best') || queryLower.includes('highest quality') || queryLower.includes('premium')) {
+                lastQueryContext.preferences = ['best'];
+            } else if (queryLower.includes('newest') || queryLower.includes('latest')) {
+                lastQueryContext.preferences = ['newest'];
             } else {
-                // Reset preferences if the query doesn't indicate one (or handle other preferences)
+                // Reset preferences if the query doesn't indicate one
                 lastQueryContext.preferences = [];
             }
-            console.log('Updated query context:', lastQueryContext);
+            
+            debugLog('Updated query context', lastQueryContext);
         }
-
+        
+        // Format brand name for display
+        function formatBrandName(brandKey) {
+            const brandMap = {
+                'dr_dennis_gross': 'Dr. Dennis Gross',
+                'dermalogica': 'Dermalogica',
+                'kiehls': 'Kiehl\'s',
+                'la_roche_posay': 'La Roche-Posay',
+                'murad': 'Murad',
+                'olaplex': 'Olaplex',
+                'paulas_choice': 'Paula\'s Choice',
+                'skinceuticals': 'SkinCeuticals',
+                'tatcha': 'Tatcha',
+                'drunk_elephant': 'Drunk Elephant',
+                'sunday_riley': 'Sunday Riley',
+                'fenty': 'Fenty Beauty',
+                'charlotte_tilbury': 'Charlotte Tilbury',
+                'bumble_and_bumble': 'Bumble and bumble',
+                'moroccanoil': 'Moroccanoil'
+            };
+            
+            return brandMap[brandKey] || brandKey.replace(/_/g, ' ');
+        }
     </script>
 </body>
 </html>
