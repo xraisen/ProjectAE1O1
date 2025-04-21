@@ -373,8 +373,8 @@
 
         // --- Fallback Questions ---
         const FALLBACK_QUESTIONS = [
-            "What products are best for sensitive skin?",
-            "Can you recommend a conditioner for curly hair?",
+            "What are the best anti-aging serums for dry skin?",
+            "Can you recommend a hydrating serum for sensitive skin?",
             "What's a good cleanser for combination skin?",
             "Which makeup is ideal for a natural look?"
         ];
@@ -382,14 +382,14 @@
         // --- Niche Queries Handling ---
         const nicheQueries = {
             'red light therapy': {
-                message: "I couldn't find red light therapy devices in Planet Beauty's catalog. Here are some skincare products for skin rejuvenation: ✨",
-                fallbackCategory: 'skincare',
-                relatedConcerns: ['Aging', 'Dullness']
+                message: "Planet Beauty doesn't carry red light therapy devices. Here are some anti-aging serums for skin rejuvenation, ideal for dry skin: ✨",
+                fallbackCategory: 'serum',
+                relatedConcerns: ['Aging', 'Dullness', 'Dryness']
             },
             'led therapy': {
-                message: "I couldn't find LED therapy devices in Planet Beauty's catalog. Try these skincare alternatives for brightening: ✨",
-                fallbackCategory: 'skincare',
-                relatedConcerns: ['Dullness', 'Aging']
+                message: "Planet Beauty doesn't carry LED therapy devices. Try these anti-aging serums for brightening and hydration: ✨",
+                fallbackCategory: 'serum',
+                relatedConcerns: ['Dullness', 'Aging', 'Dryness']
             }
         };
 
@@ -413,11 +413,11 @@
             conditioner: ['conditioner', 'soften hair', 'detangle'],
             hairmask: ['hair mask', 'treatment', 'damaged hair', 'repair hair'],
             foundation: ['foundation', 'makeup base', 'cover', 'complexion', 'tone'],
-            serum: ['serum', 'treatment', 'concentrate', 'anti-aging', 'rejuvenation'],
+            serum: ['serum', 'essence', 'concentrate', 'anti-aging', 'hydrating', 'rejuvenation', 'vitamin c', 'retinol', 'hyaluronic acid'],
             cleanser: ['cleanser', 'face wash', 'wash'],
             exfoliant: ['exfoliant', 'scrub', 'peel', 'smooth skin'],
             styling: ['styling', 'hairspray', 'texture', 'volume', 'hold'],
-            skincare: ['skincare', 'face care', 'complexion', 'skin health', 'rejuvenation', 'spectralite', 'faceware'],
+            skincare: ['skincare', 'face care', 'complexion', 'skin health', 'rejuvenation'],
             haircare: ['haircare', 'hair product', 'mane'],
             sunscreen: ['sunscreen', 'spf', 'uv', 'protection']
         };
@@ -493,6 +493,26 @@
             }
 
             return foundProduct;
+        }
+
+        function validateProductCategory(product, desiredCategory, skinType = null) {
+            if (!product || !desiredCategory) return false;
+            const nameLower = (product.name || "").toLowerCase();
+            const descLower = (product.description || "").toLowerCase();
+            const categories = product.categories || [];
+
+            // Check if product matches the desired category
+            if (!categories.includes(desiredCategory) && !categoryKeywords[desiredCategory].some(kw => nameLower.includes(kw) || descLower.includes(kw))) {
+                return false;
+            }
+
+            // Additional validation for skin type (e.g., dry skin)
+            if (skinType === 'dry') {
+                const drySkinKeywords = ['hydrating', 'moisturizing', 'dry skin', 'hyaluronic acid', 'non-irritating', 'gentle'];
+                return drySkinKeywords.some(kw => nameLower.includes(kw) || descLower.includes(kw));
+            }
+
+            return true;
         }
 
         // --- Initialization ---
@@ -632,7 +652,7 @@
                     role: 'user',
                     parts: [{
                         text: `Generate 4 concise, varied, and helpful beauty-related questions for a chatbot exclusive to Planet Beauty (https://www.planetbeauty.com/). Questions must focus on skincare, haircare, or makeup products available in the Planet Beauty catalog, addressing common user needs (e.g., recommendations for specific skin types or hair concerns). Return the response as a JSON array of strings. Example:
-                        ["What's the best moisturizer for oily skin at Planet Beauty?", "Can you recommend a shampoo for dry hair from Planet Beauty?", "What foundation suits sensitive skin at Planet Beauty?", "Which serum helps with fine lines at Planet Beauty?"]`
+                        ["What's the best anti-aging serum for dry skin at Planet Beauty?", "Can you recommend a hydrating serum for sensitive skin from Planet Beauty?", "What foundation suits combination skin at Planet Beauty?", "Which shampoo helps with dry hair at Planet Beauty?"]`
                     }]
                 }],
                 generationConfig: {
@@ -885,27 +905,26 @@
                     text: `You are a friendly AI assistant for Planet Beauty (https://www.planetbeauty.com/). Your goal is to assist users with beauty product queries using ONLY products from the Planet Beauty catalog provided via Google Sheet. All product recommendations must have URLs under https://www.planetbeauty.com/. Engage in natural, companion-like conversation, maintaining context from recent queries. For each user message, determine the query type and respond accordingly.
 
 - If the user provides a specific product name or URL (e.g., "Dr. Dennis Gross Skincare Spectralite Faceware Pro" or "https://www.planetbeauty.com/products/dr-dennis-gross-skincare-spectralite-faceware-pro"), set "query_type": "specific_product" and focus on that product. Confirm its presence in the catalog, describe its intended use (e.g., benefits, skin type), and return it in the "products" array with exact "name" matching the catalog. If not found, return an empty products array and suggest relevant catalog alternatives.
+- If the user asks for a specific product category like "serums" (e.g., "anti-aging serums for dry skin"), set "query_type": "product" and ONLY recommend products categorized as serums (names or descriptions containing "serum" or "essence"). Filter for skin type (e.g., dry skin: hydrating, moisturizing, non-irritating) and concerns (e.g., anti-aging: retinol, vitamin C, hyaluronic acid).
+- If the user mentions red light therapy or LED therapy, set "query_type": "product" and note that Planet Beauty does not carry red light therapy devices. Suggest anti-aging serums that promote skin rejuvenation and hydration, suitable for the specified skin type (e.g., dry skin).
 - If the user greets or engages casually (e.g., "hi," "hello"), set "query_type": "greeting" and respond friendly without products.
-- If the user asks for general product recommendations or mentions a beauty concern (e.g., "moisturizer for dry skin"), set "query_type": "product" and provide a concise response (max 150 words) with 1-3 product recommendations from the Planet Beauty catalog ONLY. Each product in the "products" array must have a "name" key matching a catalog entry exactly.
-- For niche queries (e.g., "red light therapy") not tied to a specific product, check the catalog. If no match, return an empty products array and suggest relevant Planet Beauty skincare products (e.g., serums for rejuvenation).
+- For general product recommendations or beauty concerns (e.g., "products for dry skin"), set "query_type": "product" and provide a concise response (max 150 words) with 1-3 product recommendations from the Planet Beauty catalog ONLY. Each product in the "products" array must have a "name" key matching a catalog entry exactly.
 - For other messages (e.g., "thank you," store hours), set "query_type": "other" and respond appropriately without products.
-- If the user refines a previous request (e.g., "cheapest" after asking for a product), use the conversation history to filter recommendations (e.g., lowest price for the same product type).
+- If the user refines a previous request (e.g., "cheapest" after asking for serums), use the conversation history to filter recommendations (e.g., lowest price for serums).
 - Ensure all product URLs are under https://www.planetbeauty.com/.
 
-Always return a JSON object with "text" (your reply), "query_type" (specific_product, greeting, product, other), and "products" (array of product objects or empty). Use the conversation history and context: ${contextSummary}.
+Always return a JSON object with "text" (your reply, including why products are recommended), "query_type" (specific_product, greeting, product, other), and "products" (array of product objects or empty). Use the conversation history and context: ${contextSummary}.
 
 Examples:
-1. User: Find this product and tell me what is best for? https://www.planetbeauty.com/products/dr-dennis-gross-skincare-spectralite-faceware-pro
-Assistant: {"text": "The Dr. Dennis Gross Skincare Spectralite Faceware Pro is best for targeting fine lines, wrinkles, and acne. Its red light setting stimulates collagen for anti-aging, while blue light kills acne-causing bacteria. Ideal for skin rejuvenation.", "query_type": "specific_product", "products": [{"name": "Dr. Dennis Gross Skincare Spectralite Faceware Pro"}]}
-2. User: Hi
+1. User: Which anti-aging serums does Planet Beauty carry that are effective for dry skin?
+Assistant: {"text": "For anti-aging and dry skin, I recommend these hydrating serums from Planet Beauty: ✨ The Murad Retinol Youth Renewal Serum reduces fine lines with retinol while being gentle for dry skin. The Dermalogica Biolumin-C Serum boosts radiance with vitamin C and hydrates without irritation.", "query_type": "product", "products": [{"name": "Murad Retinol Youth Renewal Serum"}, {"name": "Dermalogica Biolumin-C Serum"}]}
+2. User: Red light therapy
+Assistant: {"text": "Planet Beauty doesn't carry red light therapy devices. For similar anti-aging and rejuvenation benefits, try these serums: ✨ The Murad Retinol Youth Renewal Serum minimizes wrinkles and hydrates dry skin. The Dermalogica Biolumin-C Serum brightens and moisturizes.", "query_type": "product", "products": [{"name": "Murad Retinol Youth Renewal Serum"}, {"name": "Dermalogica Biolumin-C Serum"}]}
+3. User: Hi
 Assistant: {"text": "Hello! How can I assist you with Planet Beauty products today?", "query_type": "greeting", "products": []}
-3. User: I need a moisturizer for dry skin
-Assistant: {"text": "For dry skin, hydration is key! Here are some Planet Beauty options: ✨", "query_type": "product", "products": [{"name": "Product Name"}]}
-4. User: Only cheapest
-Assistant: {"text": "Here’s the most affordable moisturizer for dry skin from Planet Beauty:", "query_type": "product", "products": [{"name": "Product Name"}]}
-5. User: Red light therapy
-Assistant: {"text": "I couldn't find red light therapy devices in Planet Beauty's catalog. Try these skincare alternatives for rejuvenation: ✨", "query_type": "product", "products": [{"name": "Product Name"}]}
-6. User: Thank you!
+4. User: Cheapest serum
+Assistant: {"text": "Here’s the most affordable anti-aging serum for dry skin from Planet Beauty:", "query_type": "product", "products": [{"name": "Product Name"}]}
+5. User: Thank you!
 Assistant: {"text": "You're welcome! Need help with more Planet Beauty products?", "query_type": "other", "products": []}`
                 }]
             };
@@ -920,7 +939,9 @@ Assistant: {"text": "You're welcome! Need help with more Planet Beauty products?
             const { productName, productUrl } = extractProductInfo(query);
             if (productName || productUrl) {
                 const foundProduct = findProductByNameOrUrl(productName, productUrl);
-                if (foundProduct) return [foundProduct];
+                if (foundProduct && validateProductCategory(foundProduct, context.productType || 'serum', context.skinType)) {
+                    return [foundProduct];
+                }
             }
 
             const keywords = queryLower.split(/\s+/)
@@ -935,7 +956,8 @@ Assistant: {"text": "You're welcome! Need help with more Planet Beauty products?
                     const categoryProducts = productCategories[config.fallbackCategory] || [];
                     if (categoryProducts.length > 0) {
                         return categoryProducts
-                            .filter(p => config.relatedConcerns.some(concern => userProfile.concerns.includes(concern)) || true)
+                            .filter(p => validateProductCategory(p, 'serum', 'dry') &&
+                                config.relatedConcerns.some(concern => userProfile.concerns.includes(concern) || true))
                             .slice(0, 3);
                     }
                     return [];
@@ -945,7 +967,8 @@ Assistant: {"text": "You're welcome! Need help with more Planet Beauty products?
             // Refinement (e.g., cheapest)
             if (isRefinement && context.productType) {
                 matchedProducts = products
-                    .filter(p => p.categories && p.categories.includes(context.productType) && p.price && typeof p.price === 'string' && p.price.includes('$'))
+                    .filter(p => validateProductCategory(p, context.productType, context.skinType) &&
+                        p.price && typeof p.price === 'string' && p.price.includes('$'))
                     .sort((a, b) => {
                         const priceA = parseFloat(a.price.replace('$', '')) || Infinity;
                         const priceB = parseFloat(b.price.replace('$', '')) || Infinity;
@@ -960,6 +983,11 @@ Assistant: {"text": "You're welcome! Need help with more Planet Beauty products?
                 const nameLower = (product.name || "").toLowerCase();
                 const descLower = (product.description || "").toLowerCase();
 
+                // Validate category and skin type
+                if (!validateProductCategory(product, context.productType || 'serum', context.skinType)) {
+                    return { product, score: 0 };
+                }
+
                 // Exact and fuzzy matches
                 const nameScore = simpleFuzzyMatch(queryLower, nameLower);
                 const descScore = simpleFuzzyMatch(queryLower, descLower);
@@ -971,12 +999,15 @@ Assistant: {"text": "You're welcome! Need help with more Planet Beauty products?
                     if (descLower.includes(term)) score += 1;
                 });
 
-                // Category boost
-                for (const [category, catKeywords] of Object.entries(categoryKeywords)) {
-                    if (catKeywords.some(kw => queryLower.includes(kw)) && product.categories.includes(category)) {
-                        score += 5;
-                    }
-                }
+                // Anti-aging and dry skin boost
+                const antiAgingKeywords = ['anti-aging', 'retinol', 'vitamin c', 'hyaluronic acid', 'wrinkles', 'fine lines'];
+                const drySkinKeywords = ['hydrating', 'moisturizing', 'dry skin', 'gentle'];
+                antiAgingKeywords.forEach(kw => {
+                    if (nameLower.includes(kw) || descLower.includes(kw)) score += 5;
+                });
+                drySkinKeywords.forEach(kw => {
+                    if (nameLower.includes(kw) || descLower.includes(kw)) score += 5;
+                });
 
                 // Context boost
                 if (context.productType && product.categories.includes(context.productType)) {
@@ -1016,16 +1047,15 @@ Assistant: {"text": "You're welcome! Need help with more Planet Beauty products?
             const queryLower = userQuery.toLowerCase();
             let productsToShow = [];
             const queryType = response.query_type || 'other';
+            const skinType = queryLower.includes('dry skin') ? 'dry' : null;
 
             // Check for specific product query
-            const { productName, productUrl } = extractProductInfo(userQuery);
+            const { productName, productUrl } = extractProductInfo(query);
             let specificProduct = null;
             if (productName || productUrl) {
                 specificProduct = findProductByNameOrUrl(productName, productUrl);
-                if (specificProduct) {
-                    const productDescription = specificProduct.description && specificProduct.description.toLowerCase().includes('spectralite')
-                        ? "The Dr. Dennis Gross Skincare Spectralite Faceware Pro is best for targeting fine lines, wrinkles, and acne. Its red light setting stimulates collagen for anti-aging, while blue light kills acne-causing bacteria. Ideal for skin rejuvenation."
-                        : `The ${specificProduct.name} is ideal for ${specificProduct.categories.join(' and ')} needs. Check the product page for more details.`;
+                if (specificProduct && validateProductCategory(specificProduct, 'serum', skinType)) {
+                    const productDescription = `The ${specificProduct.name} is ideal for anti-aging and dry skin, offering hydration and rejuvenation. Check the product page for more details.`;
                     addMessage(productDescription, 'bot');
                     productsToShow.push({
                         ...specificProduct,
@@ -1036,7 +1066,7 @@ Assistant: {"text": "You're welcome! Need help with more Planet Beauty products?
                         url: specificProduct.url && specificProduct.url.includes('planetbeauty.com') ? specificProduct.url : formatProductUrl(specificProduct.name)
                     });
                 } else {
-                    addMessage(`I couldn't find "${productName || productUrl}" in Planet Beauty's catalog. Here are some similar products:`, 'bot');
+                    addMessage(`I couldn't find "${productName || productUrl}" in Planet Beauty's serum catalog. Here are some anti-aging serums for dry skin:`, 'bot');
                 }
             }
 
@@ -1077,7 +1107,7 @@ Assistant: {"text": "You're welcome! Need help with more Planet Beauty products?
                         }
                     }
 
-                    if (foundProduct) {
+                    if (foundProduct && validateProductCategory(foundProduct, 'serum', skinType)) {
                         if (!productsToShow.some(p => (p.id || p.name) === (foundProduct.id || foundProduct.name))) {
                             console.log(`Matched "${suggestedProduct.name}" to: ${foundProduct.name}`);
                             productsToShow.push({
@@ -1090,7 +1120,7 @@ Assistant: {"text": "You're welcome! Need help with more Planet Beauty products?
                             });
                         }
                     } else {
-                        console.log(`No match for "${suggestedProduct.name}" in catalog.`);
+                        console.log(`No valid serum match for "${suggestedProduct.name}" in catalog.`);
                     }
                 }
             }
@@ -1113,7 +1143,7 @@ Assistant: {"text": "You're welcome! Need help with more Planet Beauty products?
                         addMessage(`${nicheConfig.message.replace('Here are some', 'I couldn’t find')} Can I help with another beauty product?`, 'bot');
                     }
                 } else if (fallbackProducts.length > 0) {
-                    addMessage("Based on your query, here are some Planet Beauty products that might work:", 'bot');
+                    addMessage("Based on your query, here are some anti-aging serums suitable for dry skin from Planet Beauty:", 'bot');
                     productsToShow = fallbackProducts.map(p => ({
                         ...p,
                         name: p.name || "Unnamed Product",
@@ -1123,7 +1153,7 @@ Assistant: {"text": "You're welcome! Need help with more Planet Beauty products?
                         url: p.url && p.url.includes('planetbeauty.com') ? p.url : formatProductUrl(p.name)
                     }));
                 } else {
-                    addMessage("I couldn't find matching products in Planet Beauty's catalog. Try rephrasing or ask about another beauty product!", 'bot');
+                    addMessage("I couldn't find matching anti-aging serums for dry skin in Planet Beauty's catalog. Try rephrasing or ask about another beauty product!", 'bot');
                 }
             }
 
@@ -1138,7 +1168,7 @@ Assistant: {"text": "You're welcome! Need help with more Planet Beauty products?
                     })
                     .slice(0, 3);
                 if (productsToShow.length > 0) {
-                    addMessage("Here are the most affordable options for your request:", 'bot');
+                    addMessage("Here are the most affordable anti-aging serums for dry skin:", 'bot');
                 }
             }
 
@@ -1405,6 +1435,9 @@ Assistant: {"text": "You're welcome! Need help with more Planet Beauty products?
                     break;
                 }
             }
+
+            // Detect skin type
+            lastQueryContext.skinType = queryLower.includes('dry skin') ? 'dry' : null;
 
             // Detect preferences
             if (queryLower.includes('cheapest') || queryLower.includes('cheaper') || queryLower.includes('affordable') || queryLower.includes('lowest')) {
