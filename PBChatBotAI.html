@@ -402,8 +402,10 @@
 
     <script>
         // --- Configuration ---
-        const GEMINI_API_KEY = 'AIzaSyCpI-eNfqWk_ZiK2qHOj_tD2NzeAJ_U398'; // Replace with your Gemini API key
-        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`; // Updated model
+        // CRITICAL SECURITY WARNING: DO NOT HARDCODE API KEYS IN CLIENT-SIDE CODE.
+        // This key is exposed and will be compromised. Use a backend proxy.
+        const GEMINI_API_KEY = 'AIzaSyCpI-eNfqWk_ZiK2qHOj_tD2NzeAJ_U398'; // <-- REMOVE THIS FROM CLIENT-SIDE
+        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`; // <-- API URL structure depends on your backend proxy
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzzp5mD6Nu3RZmYvjzDFXvCNC5MhJyfNMvs_MJDYLqZ8Uad1BJE-cO1WWg7BpoYO62_/exec'; // Replace with your deployed Web App URL
         const API_TIMEOUT = 25000; // Increased timeout
         const IMAGE_TIMEOUT = 15000;
@@ -428,8 +430,8 @@
         let products = []; // Holds the catalog fetched from the Web App
         let productCategories = {};
         let productBrands = {}; // New: organized by brand
-        let lastQueryContext = { 
-            productType: null, 
+        let lastQueryContext = {
+            productType: null,
             preferences: [],
             brand: null,
             productLine: null
@@ -445,7 +447,7 @@
             aging: ['anti-aging', 'wrinkle', 'fine lines', 'mature skin', 'firming'],
             hydration: ['hydration', 'dry skin', 'dehydrated', 'moisture', 'moisturize'],
             sensitive: ['sensitive', 'redness', 'irritation', 'rosacea', 'gentle'],
-            
+
             // Product Types
             moisturizer: ['moisturizer', 'hydrating', 'dry skin', 'hydration', 'cream', 'lotion'],
             serum: ['serum', 'treatment', 'concentrate', 'anti-aging', 'brightening'],
@@ -453,13 +455,13 @@
             exfoliant: ['exfoliant', 'scrub', 'peel', 'smooth skin'],
             sunscreen: ['sunscreen', 'spf', 'uv', 'protection'],
             mask: ['mask', 'sheet mask', 'face mask', 'clay mask', 'overnight mask'],
-            
+
             // Haircare
             shampoo: ['shampoo', 'hair wash', 'clean hair'],
             conditioner: ['conditioner', 'soften hair', 'detangle'],
             hairmask: ['hair mask', 'treatment', 'damaged hair', 'repair hair'],
             styling: ['styling', 'hairspray', 'texture', 'volume', 'hold', 'gel', 'mousse'],
-            
+
             // Makeup
             foundation: ['foundation', 'makeup base', 'cover', 'complexion', 'tone'],
             concealer: ['concealer', 'cover up', 'blemish cover', 'dark circles'],
@@ -467,10 +469,10 @@
             mascara: ['mascara', 'lashes', 'eyelashes', 'volume'],
             eyeshadow: ['eyeshadow', 'eye color', 'eye makeup', 'palette'],
             primer: ['primer', 'base', 'long-lasting', 'makeup prep'],
-            
+
             // Devices and Tools
             devices: ['device', 'tool', 'gadget', 'tech', 'led', 'light therapy', 'microcurrent', 'facial tool', 'spectralite', 'red light', 'blue light', 'mask device', 'light mask'],
-            
+
             // Broader Categories
             skincare: ['skincare', 'face care', 'complexion', 'skin health', 'anti-aging', 'brightening', 'firming'],
             haircare: ['haircare', 'hair product', 'mane', 'scalp', 'hair treatment'],
@@ -494,6 +496,7 @@
             'charlotte_tilbury': ['charlotte tilbury'],
             'bumble_and_bumble': ['bumble and bumble', 'bumble & bumble'],
             'moroccanoil': ['moroccanoil', 'moroccan oil']
+            // Add more brands as needed
         };
 
         // --- Product Line Recognition ---
@@ -502,6 +505,7 @@
             'alpha_beta': ['alpha beta', 'peel pad', 'exfoliating'],
             'ferulic': ['ferulic', 'retinol', 'vitamin c'],
             'ultraviolette': ['ultraviolette', 'sunscreen']
+            // Add more product lines as needed
         };
 
         // --- DOM Elements ---
@@ -516,15 +520,15 @@
         // --- Debug Functions ---
         function debugLog(message, data) {
             if (!DEBUG_MODE) return;
-            
+
             console.log(message, data);
-            
+
             const entry = document.createElement('div');
             entry.className = 'debug-entry';
-            
+
             const timestamp = new Date().toLocaleTimeString();
             let content = `<strong>[${timestamp}]</strong> ${message}`;
-            
+
             if (data !== undefined) {
                 if (typeof data === 'object') {
                     try {
@@ -536,11 +540,11 @@
                     content += ` ${data}`;
                 }
             }
-            
+
             entry.innerHTML = content;
             debugContent.appendChild(entry);
             debugPanel.scrollTop = debugPanel.scrollHeight;
-            
+
             // Show debug panel if hidden
             if (DEBUG_MODE && debugPanel.style.display === 'none') {
                 debugPanel.style.display = 'block';
@@ -551,7 +555,7 @@
         document.getElementById('debug-clear').addEventListener('click', () => {
             debugContent.innerHTML = '';
         });
-        
+
         document.getElementById('debug-close').addEventListener('click', () => {
             debugPanel.style.display = 'none';
         });
@@ -695,29 +699,29 @@
             }
         }
 
-        // --- Organize Products (Enhanced) ---
+        // --- Organize Products (Enhanced & Fixed) ---
         function organizeProducts() {
             if (!products || products.length === 0) {
                 console.warn("Cannot organize products: Product list is empty.");
                 return;
             }
-            
+
             // Initialize product organization stores
             productCategories = {};
             productBrands = {};
-            
+
             // Process each product
             products.forEach(product => {
                 const nameLower = (product.name || "").toLowerCase();
                 const descLower = (product.description || "").toLowerCase();
                 const combinedText = `${nameLower} ${descLower}`;
-                
+
                 // 1. Categorize by product type/concern
                 product.categories = [];
                 for (const [category, keywords] of Object.entries(categoryKeywords)) {
                     if (keywords.some(keyword => combinedText.includes(keyword))) {
                         product.categories.push(category);
-                        
+
                         // Initialize category array if needed
                         if (!productCategories[category]) {
                             productCategories[category] = [];
@@ -725,12 +729,12 @@
                         productCategories[category].push(product);
                     }
                 }
-                
-                // 2. Identify brand
-                for (const [brandKey, brandKeywords] of Object.entries(brandKeywords)) {
-                    if (brandKeywords.some(keyword => combinedText.includes(keyword))) {
+
+                // 2. Identify brand --- FIX APPLIED HERE ---
+                for (const [brandKey, keywordsForBrand] of Object.entries(brandKeywords)) { // Renamed loop variable
+                    if (keywordsForBrand.some(keyword => combinedText.includes(keyword))) { // Use the new variable name
                         product.brand = brandKey;
-                        
+
                         // Initialize brand array if needed
                         if (!productBrands[brandKey]) {
                             productBrands[brandKey] = [];
@@ -739,7 +743,8 @@
                         break; // Assign only one brand
                     }
                 }
-                
+                // --- END FIX ---
+
                 // 3. Identify product line
                 for (const [lineKey, lineKeywords] of Object.entries(productLineKeywords)) {
                     if (lineKeywords.some(keyword => combinedText.includes(keyword))) {
@@ -747,7 +752,7 @@
                         break; // Assign only one product line
                     }
                 }
-                
+
                 // Ensure every product has at least one category
                 if (product.categories.length === 0) {
                     // Determine default category based on name/description
@@ -767,24 +772,25 @@
                     }
                 }
             });
-            
+
             // Populate backup images per category
             for (const category of Object.keys(productCategories)) {
                 backupImages[category] = productCategories[category]
                     .map(p => p.image)
                     .filter(img => img && typeof img === 'string');
             }
-            
+
             // Log organization results
             debugLog('Product organization complete', {
-                categories: Object.keys(productCategories).map(cat => 
+                categories: Object.keys(productCategories).map(cat =>
                     `${cat}: ${productCategories[cat].length} products`
                 ),
-                brands: Object.keys(productBrands).map(brand => 
+                brands: Object.keys(productBrands).map(brand =>
                     `${brand}: ${productBrands[brand].length} products`
                 )
             });
         }
+
 
         // --- Suggested Questions ---
         async function generateSuggestedQuestions() {
@@ -808,16 +814,16 @@
                 .filter(cat => productCategories[cat].length > 0)
                 .sort((a, b) => productCategories[b].length - productCategories[a].length)
                 .slice(0, 5);
-                
+
             const availableBrands = Object.keys(productBrands)
                 .filter(brand => productBrands[brand].length > 0)
                 .sort((a, b) => productBrands[b].length - productBrands[a].length)
                 .slice(0, 5);
 
-            const focusCategories = availableCategories.length > 3 ? 
-                availableCategories.slice(0, 3).join(', ') : 
+            const focusCategories = availableCategories.length > 3 ?
+                availableCategories.slice(0, 3).join(', ') :
                 'skincare, haircare, makeup';
-                
+
             const focusBrands = availableBrands.length > 0 ?
                 `and popular brands like ${availableBrands.slice(0, 3).join(', ')}` :
                 '';
@@ -826,9 +832,9 @@
                 contents: [{
                     role: 'user',
                     parts: [{
-                        text: `Generate 4 concise, varied, and helpful beauty-related questions for a chatbot exclusive to Planet Beauty (${PLANET_BEAUTY_DOMAIN}). 
-                        
-Questions MUST focus on products likely available in the Planet Beauty catalog (e.g., focus on ${focusCategories} ${focusBrands}). 
+                        text: `Generate 4 concise, varied, and helpful beauty-related questions for a chatbot exclusive to Planet Beauty (${PLANET_BEAUTY_DOMAIN}).
+
+Questions MUST focus on products likely available in the Planet Beauty catalog (e.g., focus on ${focusCategories} ${focusBrands}).
 
 Address common user needs like recommendations for specific skin types, hair concerns, or makeup looks. Ensure questions explicitly mention Planet Beauty. Return the response ONLY as a valid JSON array of 4 strings.
 
@@ -851,10 +857,12 @@ Example valid JSON output:
                 ]
             };
 
+            // IMPORTANT: Replace this direct call with a call to your backend proxy
             const res = await axios.post(GEMINI_API_URL, prompt, {
                 headers: { 'Content-Type': 'application/json' },
                 timeout: API_TIMEOUT
             });
+            // const res = await axios.post('/api/generate-suggestions', prompt, { timeout: API_TIMEOUT }); // Example proxy call
 
             if (res.data?.candidates?.[0]?.content?.parts?.[0]?.text) {
                 const responseText = res.data.candidates[0].content.parts[0].text;
@@ -934,18 +942,18 @@ Example valid JSON output:
             const queryLower = (query || "").toLowerCase();
             // First try to match based on detected brand/category from query
             const queryContext = analyzeQuery(queryLower);
-            
+
             // Try brand-specific images first if available
             if (queryContext.brand && productBrands[queryContext.brand]) {
                 const brandImages = productBrands[queryContext.brand]
                     .map(p => p.image)
                     .filter(img => img && typeof img === 'string');
-                    
+
                 if (brandImages.length > 0) {
                     return brandImages[Math.floor(Math.random() * brandImages.length)];
                 }
             }
-            
+
             // Try category-specific images next
             if (queryContext.categories.length > 0) {
                 for (const category of queryContext.categories) {
@@ -953,14 +961,14 @@ Example valid JSON output:
                         const catImages = productCategories[category]
                             .map(p => p.image)
                             .filter(img => img && typeof img === 'string');
-                            
+
                         if (catImages.length > 0) {
                             return catImages[Math.floor(Math.random() * catImages.length)];
                         }
                     }
                 }
             }
-            
+
             // Fallback to traditional category matching if no context matches
             for (const [category, keywords] of Object.entries(categoryKeywords)) {
                 if (keywords.some(keyword => queryLower.includes(keyword))) {
@@ -971,7 +979,7 @@ Example valid JSON output:
                     }
                 }
             }
-            
+
             // Default backup if no category match
             return backupImages.default;
         }
@@ -983,7 +991,7 @@ Example valid JSON output:
                 productLine: null,
                 categories: []
             };
-            
+
             // Check for brand mentions
             for (const [brandKey, keywords] of Object.entries(brandKeywords)) {
                 if (keywords.some(kw => query.includes(kw))) {
@@ -991,22 +999,22 @@ Example valid JSON output:
                     break;
                 }
             }
-            
-            // Check for product line mentions  
+
+            // Check for product line mentions
             for (const [lineKey, keywords] of Object.entries(productLineKeywords)) {
                 if (keywords.some(kw => query.includes(kw))) {
                     result.productLine = lineKey;
                     break;
                 }
             }
-            
+
             // Check for category mentions
             for (const [category, keywords] of Object.entries(categoryKeywords)) {
                 if (keywords.some(kw => query.includes(kw))) {
                     result.categories.push(category);
                 }
             }
-            
+
             return result;
         }
 
@@ -1084,6 +1092,8 @@ Example valid JSON output:
                     errorMessage = "Sorry, I can't search for products right now as the catalog isn't loaded. Please try refreshing the page.";
                 } else if (error.message.includes("blocked")) {
                     errorMessage = `Request blocked due to safety settings (${error.message}). Please rephrase your query.`;
+                } else if (error.message.includes("API key")) { // Add check for potential backend proxy errors related to keys
+                    errorMessage = "There was an issue authenticating the request. Please contact support if this persists.";
                 }
                 displayError(errorMessage); // Show user-friendly error
 
@@ -1125,13 +1135,20 @@ Example valid JSON output:
                     ]
                 };
 
-                debugLog('Calling Gemini API');
-                const res = await axios.post(GEMINI_API_URL, payload, {
+                debugLog('Calling Gemini API'); // Or 'Calling Backend Proxy'
+
+                // IMPORTANT: Replace this direct call with a call to your backend proxy
+                const res = await axios.post(GEMINI_API_URL, payload, { // Replace GEMINI_API_URL with your proxy endpoint
                     headers: { 'Content-Type': 'application/json' },
                     timeout: API_TIMEOUT // Use configured timeout
                 });
+                // Example proxy call:
+                // const res = await axios.post('/api/generate-content', payload, {
+                //     headers: { 'Content-Type': 'application/json' },
+                //     timeout: API_TIMEOUT
+                // });
 
-                // Validate response structure
+                // Validate response structure (assuming proxy returns the Gemini structure)
                 if (res.data?.candidates?.[0]?.content?.parts?.[0]?.text) {
                     const responseText = res.data.candidates[0].content.parts[0].text;
                     try {
@@ -1144,44 +1161,49 @@ Example valid JSON output:
                             typeof parsedResponse.text !== 'string' ||
                             typeof parsedResponse.query_type !== 'string' ||
                             !Array.isArray(parsedResponse.products)) {
-                            console.error('Invalid JSON structure received from API:', parsedResponse);
-                            throw new Error('Invalid response structure from API.');
+                            console.error('Invalid JSON structure received from API/Proxy:', parsedResponse);
+                            throw new Error('Invalid response structure from API/Proxy.');
                         }
 
                         // Add valid model response to history
                         conversationHistory.push({ role: 'model', parts: [{ text: cleanedText }] });
-                        debugLog('API response received', {
+                        debugLog('API/Proxy response received', {
                             queryType: parsedResponse.query_type,
                             productCount: parsedResponse.products.length
                         });
                         return parsedResponse; // Return the valid, parsed response
 
                     } catch (parseError) {
-                        console.error('JSON Parse Error in API response:', parseError, 'Raw text:', responseText);
+                        console.error('JSON Parse Error in API/Proxy response:', parseError, 'Raw text:', responseText);
                         debugLog('JSON Parse Error', { error: parseError.message, text: responseText });
                         // If parsing fails, treat it as an error but maybe provide a generic text response
                          return { text: "I received a response, but couldn't fully understand it. Let me try to find products based on your query.", query_type: 'other', products: [] };
                     }
                 } else if (res.data?.promptFeedback?.blockReason) {
                     // Handle blocked requests explicitly
-                    console.error(`API request blocked: ${res.data.promptFeedback.blockReason}`);
+                    console.error(`API/Proxy request blocked: ${res.data.promptFeedback.blockReason}`);
                     throw new Error(`Request blocked: ${res.data.promptFeedback.blockReason}`);
                 } else {
                     // Handle other unexpected response formats
-                    console.error('Unexpected API response format:', res.data);
-                    throw new Error('Unexpected response format from API.');
+                    console.error('Unexpected API/Proxy response format:', res.data);
+                    throw new Error('Unexpected response format from API/Proxy.');
                 }
             } catch (error) {
                 // Handle network errors or timeouts, potentially retry once for timeouts
-                if (!retry && error.code === 'ECONNABORTED' || (error.response && error.response.status === 408)) {
-                    console.warn('API call timed out, retrying once...');
+                if (!retry && (error.code === 'ECONNABORTED' || (error.response && error.response.status === 408)))) {
+                    console.warn('API/Proxy call timed out, retrying once...');
                     return await callGeminiAPI(true); // Retry once
                 }
-                 console.error('Error calling Gemini API:', error);
+                 console.error('Error calling API/Proxy:', error);
+                 // Check for specific backend proxy errors (e.g., authentication failure)
+                 if (error.response && error.response.status === 401) {
+                     throw new Error("API key authentication failed.");
+                 }
                 // Re-throw other errors to be caught by sendMessage
                 throw error;
             }
         }
+
 
         function createPrompt() {
             // Summarize recent user queries for context, ensuring parts[0].text exists
@@ -1216,7 +1238,7 @@ Example valid JSON output:
     *   "greeting": For simple hellos, how are you, etc. Respond warmly, "products": [].
     *   "product": For requests about specific products, categories, concerns. Provide text response and matching "products" array (or alternatives if not found).
     *   "other": For thanks, goodbyes, questions about store hours (which you don't know - politely state that), or unclear queries. Respond appropriately, "products": [].
-10. **Context:** Use the conversation history to understand follow-up questions and provide consistent responses.
+10. **Context:** Use the conversation history to understand follow-up questions and provide consistent responses. ${contextSummary}
 
 **Example Scenarios:**
 
@@ -1236,23 +1258,25 @@ Now, respond to the latest user message based on these rules and the conversatio
             );
 
             // Combine system instruction with valid conversation history
+            // The last entry in validHistory is the current user message we need the AI to respond to.
             return [systemInstruction, ...validHistory];
         }
+
 
         // Enhanced product search with brand and context awareness
         function findRelevantProducts(query, context = lastQueryContext, maxResults = 3) {
             const queryLower = (query || "").toLowerCase();
             if (!queryLower || products.length === 0) return []; // Need query and products
-            
-            debugLog('Starting enhanced product search', { 
-                query: queryLower, 
-                context: context 
+
+            debugLog('Starting enhanced product search', {
+                query: queryLower,
+                context: context
             });
 
             // 1. Try to understand query better
             const queryAnalysis = analyzeQuery(queryLower);
             debugLog('Query analysis', queryAnalysis);
-            
+
             // 2. Detect if query is a refinement (e.g., "cheapest", "best")
             const refinements = {
                 price_low: ['cheapest', 'cheaper', 'affordable', 'lowest price', 'budget', 'inexpensive'],
@@ -1260,33 +1284,33 @@ Now, respond to the latest user message based on these rules and the conversatio
                 rating: ['top-rated', 'highest rated', 'best rated', 'most popular'],
                 new: ['newest', 'latest', 'new', 'just released']
             };
-            
+
             let activeRefinements = [];
             for (const [refinementType, keywords] of Object.entries(refinements)) {
                 if (keywords.some(kw => queryLower.includes(kw))) {
                     activeRefinements.push(refinementType);
                 }
             }
-            
+
             // 3. Special case: refining previous results
             if (activeRefinements.length > 0 && context.productType) {
-                debugLog('Refinement detected', { 
-                    refinements: activeRefinements, 
-                    previousType: context.productType 
+                debugLog('Refinement detected', {
+                    refinements: activeRefinements,
+                    previousType: context.productType
                 });
-                
+
                 // Get products from the previous category
                 let productsToRefine = [];
                 if (context.brand && productBrands[context.brand]) {
                     // If previous query had a brand, get products from that brand within category
-                    productsToRefine = productBrands[context.brand].filter(p => 
+                    productsToRefine = productBrands[context.brand].filter(p =>
                         p.categories && p.categories.includes(context.productType)
                     );
                 } else if (productCategories[context.productType]) {
                     // Otherwise just get category products
                     productsToRefine = [...productCategories[context.productType]];
                 }
-                
+
                 if (productsToRefine.length > 0) {
                     // Apply refinements
                     if (activeRefinements.includes('price_low')) {
@@ -1296,7 +1320,7 @@ Now, respond to the latest user message based on these rules and the conversatio
                             return priceA - priceB;
                         });
                         return productsToRefine.slice(0, maxResults);
-                    } 
+                    }
                     else if (activeRefinements.includes('price_high')) {
                         productsToRefine.sort((a, b) => {
                             const priceA = parseFloat(a.price?.replace(/[^0-9.]/g, '')) || 0;
@@ -1305,112 +1329,112 @@ Now, respond to the latest user message based on these rules and the conversatio
                         });
                         return productsToRefine.slice(0, maxResults);
                     }
-                    // Add other refinement types as needed
+                    // Add other refinement types as needed (rating, newness - requires data)
                 }
             }
-            
+
             // 4. Brand-specific search
             if (queryAnalysis.brand) {
                 debugLog('Brand-specific search', { brand: queryAnalysis.brand });
-                
+
                 // Filter to brand products
                 let brandProducts = productBrands[queryAnalysis.brand] || [];
-                
+
                 // If specific product line mentioned, further filter
                 if (queryAnalysis.productLine && brandProducts.length > 0) {
                     debugLog('Product line filter', { line: queryAnalysis.productLine });
-                    const lineProducts = brandProducts.filter(p => 
+                    const lineProducts = brandProducts.filter(p =>
                         p.name && (
-                            p.name.toLowerCase().includes(queryAnalysis.productLine) || 
+                            p.name.toLowerCase().includes(queryAnalysis.productLine) ||
                             (p.productLine === queryAnalysis.productLine)
                         )
                     );
-                    
+
                     if (lineProducts.length > 0) {
                         // Found specific line products
                         return lineProducts.slice(0, maxResults);
                     }
                 }
-                
+
                 // If categories mentioned, filter by those
                 if (queryAnalysis.categories.length > 0 && brandProducts.length > 0) {
                     debugLog('Category filter within brand', { categories: queryAnalysis.categories });
-                    const categoryFiltered = brandProducts.filter(p => 
+                    const categoryFiltered = brandProducts.filter(p =>
                         p.categories && p.categories.some(cat => queryAnalysis.categories.includes(cat))
                     );
-                    
+
                     if (categoryFiltered.length > 0) {
                         return categoryFiltered.slice(0, maxResults);
                     }
                 }
-                
+
                 // If we have brand products but no specific filters matched, return top brand products
                 if (brandProducts.length > 0) {
                     debugLog('Returning general brand products');
                     return brandProducts.slice(0, maxResults);
                 }
             }
-            
+
             // 5. Specialized device search (for LED masks, tools, etc.)
-            if (queryLower.includes('led') || queryLower.includes('mask') || 
+            if (queryLower.includes('led') || queryLower.includes('mask') ||
                 queryLower.includes('device') || queryLower.includes('tool') ||
                 queryLower.includes('spectralite') || queryLower.includes('light therapy')) {
-                
+
                 debugLog('Specialized device search');
-                
+
                 // Check for specific device types
-                const deviceProducts = products.filter(p => 
+                const deviceProducts = products.filter(p =>
                     p.categories && p.categories.includes('devices')
                 );
-                
+
                 // Further refine by specific terms
-                if (queryLower.includes('spectralite') || 
+                if (queryLower.includes('spectralite') ||
                     (queryLower.includes('dennis') && (queryLower.includes('led') || queryLower.includes('mask')))) {
-                    
-                    const spectraliteProducts = deviceProducts.filter(p => 
+
+                    const spectraliteProducts = deviceProducts.filter(p =>
                         p.name && (
                             p.name.toLowerCase().includes('spectralite') ||
                             p.name.toLowerCase().includes('faceware') ||
-                            (p.name.toLowerCase().includes('dr. dennis') && 
+                            (p.name.toLowerCase().includes('dr. dennis') &&
                              (p.name.toLowerCase().includes('led') || p.name.toLowerCase().includes('mask')))
                         )
                     );
-                    
+
                     if (spectraliteProducts.length > 0) {
                         return spectraliteProducts.slice(0, maxResults);
                     }
                 }
-                
+
                 // General LED/light therapy devices
                 if (queryLower.includes('led') || queryLower.includes('light therapy')) {
-                    const ledProducts = deviceProducts.filter(p => 
+                    const ledProducts = deviceProducts.filter(p =>
                         p.name && (
                             p.name.toLowerCase().includes('led') ||
-                            p.name.toLowerCase().includes('light') 
+                            p.name.toLowerCase().includes('light')
                         )
                     );
-                    
+
                     if (ledProducts.length > 0) {
                         return ledProducts.slice(0, maxResults);
                     }
                 }
-                
+
                 // If we found device products, return them
                 if (deviceProducts.length > 0) {
                     return deviceProducts.slice(0, maxResults);
                 }
             }
-            
+
             // 6. Advanced keyword scoring
             debugLog('Performing keyword scoring search');
-            
+
             // Basic keyword extraction (improved)
             const stopWords = new Set(['the', 'a', 'an', 'is', 'for', 'what', 'can', 'you', 'recommend', 'find', 'me', 'i', 'need', 'with', 'of', 'my', 'skin', 'hair', 'product', 'products', 'at', 'from', 'planet', 'beauty']);
             const keywords = queryLower.split(/[\s,.;!?-]+/) // Split by common delimiters
                 .filter(word => word.length > 2 && !stopWords.has(word));
-                
+
             debugLog('Extracted keywords', keywords);
-            
+
             // If no keywords found, try category matching
             if (keywords.length === 0 && queryAnalysis.categories.length > 0) {
                 let categoryProducts = [];
@@ -1419,69 +1443,69 @@ Now, respond to the latest user message based on these rules and the conversatio
                         categoryProducts = [...categoryProducts, ...productCategories[category]];
                     }
                 }
-                
+
                 if (categoryProducts.length > 0) {
                     // Remove duplicates
                     const uniqueProducts = Array.from(new Map(
                         categoryProducts.map(p => [p.id || p.name, p])
                     ).values());
-                    
+
                     return uniqueProducts.slice(0, maxResults);
                 }
             }
-            
+
             // Score all products based on query relevance
             const scoredProducts = products.map(product => {
                 let score = 0;
                 const nameLower = (product.name || "").toLowerCase();
                 const descLower = (product.description || "").toLowerCase();
                 const combinedText = `${nameLower} ${descLower}`;
-                
+
                 // Brand match gives high score
                 if (queryAnalysis.brand && product.brand === queryAnalysis.brand) {
                     score += 20;
                 }
-                
+
                 // Product line match gives high score
                 if (queryAnalysis.productLine && product.productLine === queryAnalysis.productLine) {
                     score += 15;
                 }
-                
+
                 // Category matches
                 if (queryAnalysis.categories.length > 0) {
-                    const catMatchCount = queryAnalysis.categories.filter(cat => 
+                    const catMatchCount = queryAnalysis.categories.filter(cat =>
                         product.categories && product.categories.includes(cat)
                     ).length;
-                    
+
                     score += catMatchCount * 5;
                 }
-                
+
                 // Keyword matches
                 keywords.forEach(term => {
                     if (nameLower.includes(term)) score += 3; // Higher score for name match
                     if (descLower.includes(term)) score += 1; // Lower score for description match
                 });
-                
-                // Bonus for exact phrase match
+
+                // Bonus for exact phrase match in name
                 if (nameLower.includes(queryLower)) score += 10;
-                
+
                 // Special case for specific product types that might be misrecognized
-                if ((queryLower.includes('spectralite') || queryLower.includes('led mask')) && 
-                    (nameLower.includes('spectralite') || 
+                if ((queryLower.includes('spectralite') || queryLower.includes('led mask')) &&
+                    (nameLower.includes('spectralite') ||
                      (nameLower.includes('led') && nameLower.includes('mask')))) {
                     score += 25; // Very high score for exact specialty items
                 }
-                
+
                 return { product, score };
             });
-            
+
             // Filter, sort and return top matches
             const relevantProducts = scoredProducts
                 .filter(item => item.score > 0)
                 .sort((a, b) => b.score - a.score)
                 .map(item => item.product);
-                
-            debugLog('Search complete', { 
+
+            debugLog('Search complete', {
                 relevantCount: relevantProducts.length,
                 topScores: scoredProducts
                     .filter(item => item.score > 0)
@@ -1489,10 +1513,11 @@ Now, respond to the latest user message based on these rules and the conversatio
                     .slice(0, 3)
                     .map(item => `${item.product.name}: ${item.score}`)
             });
-            
+
             // Return top results
             return relevantProducts.slice(0, maxResults);
         }
+
 
         async function processResponse(response, userQuery) {
             hideTypingIndicator();
@@ -1545,7 +1570,7 @@ Now, respond to the latest user message based on these rules and the conversatio
                         }
                     } else {
                         debugLog(`API suggestion "${suggestedProduct.name}" not found in catalog. Trying aggressive matching...`);
-                        
+
                         // Try aggressive matching for specialized products
                         const aggressiveMatch = findAggressiveProductMatch(nameToFind, userQuery);
                         if (aggressiveMatch) {
@@ -1560,6 +1585,8 @@ Now, respond to the latest user message based on these rules and the conversatio
                                     url: aggressiveMatch.url
                                 });
                             }
+                        } else {
+                             debugLog(`No match found for API suggestion "${suggestedProduct.name}" even with aggressive search.`);
                         }
                     }
                 }
@@ -1573,21 +1600,21 @@ Now, respond to the latest user message based on these rules and the conversatio
                 if (enhancedSearchProducts.length > 0) {
                     // If our enhanced search finds products
                     const queryAnalysis = analyzeQuery(userQuery.toLowerCase());
-                    
+
                     // Check if this was a specific product search that should have been found
-                    const isSpecificProductSearch = 
-                        queryAnalysis.brand && queryAnalysis.productLine || 
+                    const isSpecificProductSearch =
+                        queryAnalysis.brand && queryAnalysis.productLine ||
                         userQuery.toLowerCase().includes('spectralite') ||
                         (userQuery.toLowerCase().includes('dr dennis') && userQuery.toLowerCase().includes('mask'));
-                    
-                    if (isSpecificProductSearch) {
+
+                    if (isSpecificProductSearch && !response.text?.toLowerCase().includes("carry")) { // Avoid contradicting if API already said yes
                         // If it was a specific product, frame the results correctly
                         addMessage(`Yes, Planet Beauty does carry ${queryAnalysis.brand ? 'products from ' + formatBrandName(queryAnalysis.brand) : 'these products'}. Here's what I found:`, 'bot');
-                    } else {
+                    } else if (!response.text?.toLowerCase().includes("couldn't find") && !response.text?.toLowerCase().includes("not available")) { // Avoid adding if API already gave results/alternatives
                         // Otherwise, present them as general recommendations
                         addMessage("Here are some Planet Beauty products based on your request:", 'bot');
                     }
-                    
+
                     // Map search results to the structure needed for display
                     productsToShow = enhancedSearchProducts.map(p => ({
                         ...p,
@@ -1598,8 +1625,10 @@ Now, respond to the latest user message based on these rules and the conversatio
                         url: p.url
                     }));
                 } else {
-                    // If search finds nothing
-                    addMessage("I couldn't find specific products matching your request in the Planet Beauty catalog. Could you try rephrasing, or ask about a different type of product?", 'bot');
+                    // If search finds nothing and API didn't already say so
+                    if (!response.text?.toLowerCase().includes("couldn't find") && !response.text?.toLowerCase().includes("not available")) {
+                        addMessage("I couldn't find specific products matching your request in the Planet Beauty catalog. Could you try rephrasing, or ask about a different type of product?", 'bot');
+                    }
                 }
             }
 
@@ -1625,41 +1654,42 @@ Now, respond to the latest user message based on these rules and the conversatio
                 await Promise.all(productsToShow.slice(0, maxCards).map(p => addProductCard(p, userQuery)));
             }
         }
-        
+
+
         // Enhanced product matching function with brand and line awareness
         function findBestProductMatch(nameToFind, userQuery) {
-            // Exact match
+            // Exact match first
             let foundProduct = products.find(p => p.name && p.name.toLowerCase() === nameToFind);
-            
+
             // If no exact match, try progressively looser matches
             if (!foundProduct) {
                 const queryLower = userQuery.toLowerCase();
                 const queryAnalysis = analyzeQuery(queryLower);
-                
+
                 // If brand is detected in query, prioritize that brand's products
                 if (queryAnalysis.brand) {
                     const brandProducts = productBrands[queryAnalysis.brand] || [];
-                    
+
                     // Try to find a match within this brand's products
                     if (brandProducts.length > 0) {
-                        // Exact name match within brand
-                        foundProduct = brandProducts.find(p => 
+                        // Exact name match within brand (redundant check, but safe)
+                        foundProduct = brandProducts.find(p =>
                             p.name && p.name.toLowerCase() === nameToFind
                         );
-                        
+
                         // Contains name within brand
                         if (!foundProduct) {
-                            foundProduct = brandProducts.find(p => 
+                            foundProduct = brandProducts.find(p =>
                                 p.name && (
-                                    p.name.toLowerCase().includes(nameToFind) || 
-                                    nameToFind.includes(p.name.toLowerCase())
+                                    p.name.toLowerCase().includes(nameToFind) ||
+                                    nameToFind.includes(p.name.toLowerCase()) // Check if API name is substring of catalog name
                                 )
                             );
                         }
-                        
+
                         // Product line match within brand (e.g., "Spectralite")
                         if (!foundProduct && queryAnalysis.productLine) {
-                            foundProduct = brandProducts.find(p => 
+                            foundProduct = brandProducts.find(p =>
                                 p.name && (
                                     p.name.toLowerCase().includes(queryAnalysis.productLine) ||
                                     (p.productLine === queryAnalysis.productLine)
@@ -1668,19 +1698,19 @@ Now, respond to the latest user message based on these rules and the conversatio
                         }
                     }
                 }
-                
+
                 // If no brand-specific match, try partial match across all products
                 if (!foundProduct) {
                     foundProduct = products.find(p =>
                         p.name && (
-                            p.name.toLowerCase().includes(nameToFind) || 
+                            p.name.toLowerCase().includes(nameToFind) ||
                             nameToFind.includes(p.name.toLowerCase())
                         )
                     );
                 }
-                
-                // Special case for specific hard-to-match products
-                if (!foundProduct && (nameToFind.includes('spectralite') || nameToFind.includes('led mask'))) {
+
+                // Special case for specific hard-to-match products like LED masks
+                if (!foundProduct && (nameToFind.includes('spectralite') || nameToFind.includes('led mask') || nameToFind.includes('faceware'))) {
                     foundProduct = products.find(p =>
                         p.name && (
                             p.name.toLowerCase().includes('spectralite') ||
@@ -1690,90 +1720,98 @@ Now, respond to the latest user message based on these rules and the conversatio
                     );
                 }
             }
-            
+
             return foundProduct;
         }
-        
+
+
         // Aggressive matching for special cases
         function findAggressiveProductMatch(nameToFind, userQuery) {
             const queryLower = userQuery.toLowerCase();
-            
+
             // Special case for Spectralite/LED masks
-            if ((nameToFind.includes('spectralite') || 
+            if ((nameToFind.includes('spectralite') ||
                  nameToFind.includes('faceware') ||
                  (nameToFind.includes('led') && nameToFind.includes('mask')) ||
-                 (queryLower.includes('spectralite') || 
+                 (queryLower.includes('spectralite') ||
                   queryLower.includes('led mask') ||
                   (queryLower.includes('dr dennis') && queryLower.includes('mask'))
                  ))) {
-                
-                // Look for any Spectralite or LED mask product
-                const spectraliteProducts = products.filter(p =>
+
+                // Look for any Spectralite or LED mask product from Dr. Dennis Gross first
+                 let spectraliteProducts = products.filter(p =>
+                    p.brand === 'dr_dennis_gross' &&
                     p.name && (
                         p.name.toLowerCase().includes('spectralite') ||
                         p.name.toLowerCase().includes('faceware') ||
                         (p.name.toLowerCase().includes('led') && p.name.toLowerCase().includes('mask')) ||
-                        (p.name.toLowerCase().includes('dr. dennis') && p.name.toLowerCase().includes('drx'))
+                        (p.name.toLowerCase().includes('dr. dennis') && p.name.toLowerCase().includes('drx')) // Broader DRX check
                     )
                 );
-                
+
+                // If none found from DDG, check other brands for LED masks
+                if (spectraliteProducts.length === 0) {
+                    spectraliteProducts = products.filter(p =>
+                        p.categories?.includes('devices') &&
+                        p.name && (
+                            p.name.toLowerCase().includes('led') ||
+                            p.name.toLowerCase().includes('light')
+                        ) && p.name.toLowerCase().includes('mask') // Ensure it's a mask
+                    );
+                }
+
                 if (spectraliteProducts.length > 0) {
                     return spectraliteProducts[0]; // Return the first match
                 }
             }
-            
+
             // Check for Dr. Dennis Gross products generally if mentioned
-            if (nameToFind.includes('dr. dennis') || 
+            if (nameToFind.includes('dr. dennis') ||
                 nameToFind.includes('dr dennis') ||
                 queryLower.includes('dr. dennis') ||
                 queryLower.includes('dr dennis')) {
-                
-                const drDennisProducts = products.filter(p =>
-                    p.name && (
-                        p.name.toLowerCase().includes('dr. dennis') ||
-                        p.name.toLowerCase().includes('dr dennis')
-                    )
-                );
-                
+
+                const drDennisProducts = productBrands['dr_dennis_gross'] || []; // Use organized list
+
                 if (drDennisProducts.length > 0) {
                     // Try to find one that best matches the rest of the query
                     const keywords = queryLower
-                        .replace('dr. dennis gross', '')
-                        .replace('dr dennis gross', '')
-                        .replace('dr. dennis', '')
-                        .replace('dr dennis', '')
+                        .replace(/dr\.?\sdennis\sgross/g, '') // Remove variations of the brand name
+                        .replace(/dr\.?\sdennis/g, '')
                         .trim()
                         .split(/\s+/);
-                        
-                    if (keywords.length > 0) {
+
+                    if (keywords.length > 0 && keywords[0] !== '') { // Ensure there are actual keywords left
                         // Score each product by keyword matches
                         const scoredProducts = drDennisProducts.map(product => {
                             const nameLower = product.name.toLowerCase();
                             let score = 0;
-                            
+
                             keywords.forEach(keyword => {
                                 if (keyword.length > 2 && nameLower.includes(keyword)) {
                                     score += 1;
                                 }
                             });
-                            
+
                             return { product, score };
                         });
-                        
+
                         // Sort by score and return best match
                         scoredProducts.sort((a, b) => b.score - a.score);
                         if (scoredProducts.length > 0 && scoredProducts[0].score > 0) {
                             return scoredProducts[0].product;
                         }
                     }
-                    
-                    // If no keyword match, return any product from this brand
-                    return drDennisProducts[0];
+
+                    // If no keyword match, return any product from this brand (maybe the Faceware Pro if available?)
+                    const faceWarePro = drDennisProducts.find(p => p.name?.toLowerCase().includes('spectralite'));
+                    return faceWarePro || drDennisProducts[0]; // Return Faceware Pro or the first product
                 }
             }
-            
+
             return null;
         }
+
 
         // --- UI Functions ---
         function addMessage(text, sender) {
@@ -1846,14 +1884,21 @@ Now, respond to the latest user message based on these rules and the conversatio
             const retryBtn = errorDiv.querySelector('.retry-btn');
             if (retryBtn) {
                 retryBtn.addEventListener('click', () => {
-                    // Find the last message sent by the user
-                    const lastUserMessage = conversationHistory.filter(m => m.role === 'user').pop();
-                    if (lastUserMessage?.parts?.[0]?.text) {
+                    // Find the last message sent by the user from history
+                    const lastUserMessageEntry = conversationHistory.filter(m => m.role === 'user').pop();
+                    if (lastUserMessageEntry?.parts?.[0]?.text) {
+                         // Remove the failed model response (if any) and the user message that caused it from history
+                         conversationHistory = conversationHistory.filter(entry => entry !== lastUserMessageEntry);
+                         const lastModelResponseIndex = conversationHistory.map(e => e.role).lastIndexOf('model');
+                         if (lastModelResponseIndex > conversationHistory.map(e => e.role).lastIndexOf('user')) {
+                             conversationHistory.splice(lastModelResponseIndex, 1);
+                         }
+
                         // Restore the last message to the input field and resend
-                        chatInput.value = lastUserMessage.parts[0].text;
+                        chatInput.value = lastUserMessageEntry.parts[0].text;
                         updateSendButtonState();
-                        sendMessage(); // Trigger send again
                         errorDiv.remove(); // Remove the error message on retry
+                        sendMessage(); // Trigger send again
                     } else {
                         // If history is lost or empty
                         addMessage("Could not retrieve the last message to retry. Please type your message again.", 'bot');
@@ -1865,6 +1910,7 @@ Now, respond to the latest user message based on these rules and the conversatio
             chatArea.appendChild(errorDiv);
             scrollToBottom();
         }
+
 
         async function addProductCard(p, queryContext) {
             // --- Strict URL Validation ---
@@ -1883,7 +1929,7 @@ Now, respond to the latest user message based on these rules and the conversatio
                  finalUrl = PLANET_BEAUTY_DOMAIN; // Default to homepage on error
             }
              // Final safety check
-             if (!finalUrl.startsWith(PLANET_BEAUTY_DOMAIN)) {
+             if (!finalUrl.startsWith('https://' + PLANET_BEAUTY_DOMAIN.replace(/^https?:\/\//,''))) { // Check base domain after protocol
                  console.error(`URL validation failed for ${p.name}. Defaulting to homepage.`);
                  finalUrl = PLANET_BEAUTY_DOMAIN;
              }
@@ -1944,17 +1990,22 @@ Now, respond to the latest user message based on these rules and the conversatio
                 }
 
                 const url = imageSources[currentAttempt];
-                console.log(`Image Load Attempt ${currentAttempt + 1} for ${p.name || 'Unknown'}: ${url}`);
+                debugLog(`Image Load Attempt ${currentAttempt + 1} for ${p.name || 'Unknown'}: ${url}`);
 
                 img.onload = null; // Clear previous handlers
                 img.onerror = null;
 
                 img.onload = () => {
-                    console.log(`Image loaded successfully: ${img.src}`);
+                    debugLog(`Image loaded successfully: ${img.src}`);
                     img.style.display = 'block'; // Show the image
                     img.classList.add('lazyloaded'); // Mark as loaded for potential CSS transitions
-                    if (imageContainer.parentNode) {
-                        imageContainer.replaceWith(img); // Replace spinner container with image
+                    if (imageContainer.parentNode === card) { // Check if spinner is still the child
+                        card.replaceChild(img, imageContainer); // Replace spinner container with image
+                    } else {
+                        // If something else replaced the spinner, just ensure the image is prepended correctly
+                        const infoDiv = card.querySelector('.product-info');
+                        if (infoDiv) card.insertBefore(img, infoDiv);
+                        else card.appendChild(img); // Fallback append
                     }
                 };
 
@@ -2041,7 +2092,7 @@ Now, respond to the latest user message based on these rules and the conversatio
             if (updated) {
                 Object.assign(userProfile, newProfile); // Update the global profile state
                 debugLog(`User profile inferred`, {
-                    skinType: userProfile.skinType || 'N/A', 
+                    skinType: userProfile.skinType || 'N/A',
                     concerns: userProfile.concerns.join(', ') || 'None'
                 });
             }
@@ -2050,59 +2101,220 @@ Now, respond to the latest user message based on these rules and the conversatio
         function updateQueryContext(query) {
             const queryLower = query.toLowerCase();
             const queryAnalysis = analyzeQuery(queryLower);
-            
+
             // Update context with detected brand
             if (queryAnalysis.brand) {
                 lastQueryContext.brand = queryAnalysis.brand;
+            } else {
+                 // Reset brand if not mentioned in this query? Or keep it sticky?
+                 // Let's keep it sticky for now unless explicitly changed.
+                 // lastQueryContext.brand = null;
             }
-            
+
             // Update context with detected product line
             if (queryAnalysis.productLine) {
                 lastQueryContext.productLine = queryAnalysis.productLine;
-            }
-            
-            // Update context with detected product type/category
-            if (queryAnalysis.categories.length > 0) {
-                lastQueryContext.productType = queryAnalysis.categories[0]; // Use first matched category
+            } else {
+                // lastQueryContext.productLine = null; // Keep sticky?
             }
 
-            // Detect preferences (like 'cheapest')
-            if (queryLower.includes('cheapest') || queryLower.includes('cheaper') || queryLower.includes('affordable') || queryLower.includes('lowest price')) {
-                lastQueryContext.preferences = ['cheapest'];
-            } else if (queryLower.includes('best') || queryLower.includes('highest quality') || queryLower.includes('premium')) {
-                lastQueryContext.preferences = ['best'];
-            } else if (queryLower.includes('newest') || queryLower.includes('latest')) {
-                lastQueryContext.preferences = ['newest'];
+            // Update context with detected product type/category
+            if (queryAnalysis.categories.length > 0) {
+                // Prioritize more specific categories if multiple match
+                const categoryPriority = ['devices', 'serum', 'foundation', 'shampoo', 'conditioner', 'mask', 'moisturizer', 'cleanser', 'sunscreen', 'exfoliant', 'primer', 'lipstick', 'mascara', 'eyeshadow', 'concealer', 'hairmask', 'styling', 'skincare', 'haircare', 'makeup', 'aging', 'acne', 'hydration', 'sensitive'];
+                let bestCategory = queryAnalysis.categories[0]; // Default to first match
+                for(const cat of categoryPriority) {
+                    if (queryAnalysis.categories.includes(cat)) {
+                        bestCategory = cat;
+                        break;
+                    }
+                }
+                lastQueryContext.productType = bestCategory;
             } else {
-                // Reset preferences if the query doesn't indicate one
-                lastQueryContext.preferences = [];
+                // Reset product type if no category keywords detected?
+                // lastQueryContext.productType = null; // Keep sticky?
             }
-            
+
+
+            // Detect preferences (like 'cheapest')
+            const newPreferences = [];
+            if (queryLower.includes('cheapest') || queryLower.includes('cheaper') || queryLower.includes('affordable') || queryLower.includes('lowest price')) {
+                newPreferences.push('cheapest');
+            }
+            if (queryLower.includes('best') || queryLower.includes('highest quality') || queryLower.includes('premium') || queryLower.includes('luxury')) {
+                 newPreferences.push('best'); // Note: 'best' is ambiguous, could mean price or rating
+            }
+            if (queryLower.includes('newest') || queryLower.includes('latest')) {
+                 newPreferences.push('newest');
+            }
+            if (queryLower.includes('top-rated') || queryLower.includes('highest rated') || queryLower.includes('most popular')) {
+                 newPreferences.push('rating');
+            }
+
+            // Only update preferences if new ones are detected, otherwise keep old ones?
+            // For now, let's reset preferences with each query unless it's clearly a refinement.
+            lastQueryContext.preferences = newPreferences;
+
+
             debugLog('Updated query context', lastQueryContext);
         }
-        
-        // Format brand name for display
-        function formatBrandName(brandKey) {
-            const brandMap = {
-                'dr_dennis_gross': 'Dr. Dennis Gross',
-                'dermalogica': 'Dermalogica',
-                'kiehls': 'Kiehl\'s',
-                'la_roche_posay': 'La Roche-Posay',
-                'murad': 'Murad',
-                'olaplex': 'Olaplex',
-                'paulas_choice': 'Paula\'s Choice',
-                'skinceuticals': 'SkinCeuticals',
-                'tatcha': 'Tatcha',
-                'drunk_elephant': 'Drunk Elephant',
-                'sunday_riley': 'Sunday Riley',
-                'fenty': 'Fenty Beauty',
-                'charlotte_tilbury': 'Charlotte Tilbury',
-                'bumble_and_bumble': 'Bumble and bumble',
-                'moroccanoil': 'Moroccanoil'
-            };
-            
-            return brandMap[brandKey] || brandKey.replace(/_/g, ' ');
-        }
+
+// Auto-generated brandMap from brands.tsv
+const brands = [
+  '"Zadro, Inc."',
+  '"Zadro, Inc.™"',
+  '12 Benefits',
+  'AHAVA',
+  'Alterna',
+  'American Crew',
+  'AMERICAN INTERNATIONAL',
+  'Amika',
+  'ANTHONY FOR MEN',
+  'Archipelago',
+  'Arcona',
+  'Arctic Fox',
+  'ARDELL',
+  'ART OF SHAVING',
+  'Atelier Cologne',
+  'Babor',
+  'Bare Escentuals',
+  'BareMinerals',
+  'Batiste',
+  'BEAUTYCOUNTER',
+  'Borghese',
+  'Bumble And Bumble',
+  'Butter London',
+  'By Terry',
+  'Caudalie',
+  'Cetaphil',
+  'Cha Cha',
+  'Charlotte Tilbury',
+  'Cheryl’s Cosmeceuticals',
+  'Chloe + Isabel',
+  'Clarisonic',
+  'Clean & Clear',
+  'Clé de Peau Beauté',
+  'Clindamycin',
+  'Clinique',
+  'Cliniscent',
+  'ColourPop',
+  'Cosmedica',
+  'Cotz',
+  'CSC DISTRIBUTOR',
+  'Davines',
+  'Denman',
+  'Dermalogica',
+  'DEVA',
+  'DEVELO PLUS',
+  'DR. BRANDT',
+  'Dr. Dennis Gross',
+  'DuWop',
+  'EC SCOTT',
+  'ELCHIM DRYER',
+  'Elta MD Skincare',
+  'Embryolisse',
+  'Enjoy',
+  'Epicuren',
+  'Erno Laszlo',
+  'Exuviance',
+  'Fekkai',
+  'Fenty Beauty',
+  'Florence By Mills',
+  'Francis Kurkdjian',
+  'Frederick Fekkai',
+  'G.M. Collin',
+  'Garnier',
+  'Glossier',
+  'Guinot',
+  'Guerlain',
+  'Herbivore',
+  'High Beauty',
+  'Hourglass',
+  'HydroPeptide',
+  'ILIA',
+  'Jane Iredale',
+  'Juice Beauty',
+  'Kérastase',
+  'Kevyn Aucoin',
+  'Kiehl\'s',
+  'La Roche-Posay',
+  'Lancer',
+  'Lancôme',
+  'Laneige',
+  'Larson',
+  'Laura Mercier',
+  'L’Oréal',
+  'MAC',
+  'Malin + Goetz',
+  'Mario Badescu',
+  'Matrix',
+  'Maybelline',
+  'Murad',
+  'NARS',
+  'Nioxin',
+  'NYX',
+  'Olaplex',
+  'Osea',
+  'Paula\'s Choice',
+  'Peter Thomas Roth',
+  'Philip B',
+  'Pixi',
+  'Poo-Pourri',
+  'REN',
+  'REVOLVE',
+  'RMS Beauty',
+  'RoC',
+  'Shani Darden',
+  'Shiseido',
+  'SkinCeuticals',
+  'Skin Gym',
+  'Skinfix',
+  'SKOP',
+  'Sol de Janeiro',
+  'Soultanicals',
+  'Sunday Riley',
+  'Supergoop!',
+  'TATCHA',
+  'Tarte',
+  'The Ordinary',
+  'THE POUTS.',
+  'Thayers',
+  'TRESemmé',
+  'Ulta Beauty',
+  'Urban Decay',
+  'Vasanti',
+  'Vivier',
+  'Voluspa',
+  'Z Skin Science'
+];
+
+const brandMap = brands.reduce((map, name) => {
+  const key = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_|_$/g, '');
+  // Title-case each word for display
+  const display = name
+    .split(/\s+/)
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ');
+  map[key] = display;
+  return map;
+}, {});
+
+// Usage examples:
+//   formatBrandName('dermalogica')      -> 'Dermalogica'
+//   formatBrandName('the_ordinary')     -> 'The Ordinary'
+//   formatBrandName('unknown_brand_key') -> 'Unknown Brand Key'
+function formatBrandName(brandKey) {
+  return (
+    brandMap[brandKey] ||
+    brandKey
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, l => l.toUpperCase())
+  );
+}
+
     </script>
 </body>
 </html>
