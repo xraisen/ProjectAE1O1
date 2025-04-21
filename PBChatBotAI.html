@@ -13,353 +13,69 @@
     <script src="https://cdn.jsdelivr.net/npm/lazysizes@5.3.2/lazysizes.min.js" async></script>
     <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
-    <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-DLVD913P7M"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-        gtag('config', 'G-DLVD913P7M'); // Replace with your GA ID
+        gtag('config', 'G-DLVD913P7M');
     </script>
     <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f8f9fa;
-            margin: 0;
-            overflow-x: hidden;
-        }
-        #preloader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #f8f9fa;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            transition: opacity 0.5s ease;
-        }
-        #preloader .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #e91e63;
-            border-top-color: transparent;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 1rem;
-        }
-        #preloader .percentage {
-            font-size: 1.5rem;
-            font-weight: 500;
-            color: #e91e63;
-        }
-        .chat-container {
-            max-width: 900px;
-            margin: 0 auto;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            border-radius: 12px;
-            background: white;
-            display: flex;
-            flex-direction: column;
-            height: calc(100vh - 140px);
-            max-height: 800px;
-        }
-        .chat-area {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 1.5rem;
-            scroll-behavior: smooth;
-            will-change: scroll-position;
-        }
-        .user-message {
-            background: #e91e63;
-            color: white;
-            padding: .75rem 1rem;
-            border-radius: 15px 15px 0 15px;
-            max-width: 80%;
-            margin-left: auto;
-            margin-bottom: 1rem;
-            word-wrap: break-word;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-        .bot-message {
-            background: #f0f0f0;
-            color: #333;
-            padding: .75rem 1rem;
-            border-radius: 15px 15px 15px 0;
-            max-width: 80%;
-            margin-right: auto;
-            margin-bottom: 1rem;
-            word-wrap: break-word;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        }
-        .product-card {
-            display: block;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
-            margin: 1rem 0;
-            text-decoration: none;
-            color: inherit;
-            background: white;
-            max-width: 80%;
-            margin-right: auto;
-        }
-        .product-card:hover {
-            transform: scale(1.03);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-        }
-        .product-image {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            display: block;
-        }
-        .lazyload, .lazyloading {
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        .lazyloaded {
-            opacity: 1;
-        }
-        .image-loading {
-            position: relative;
-            height: 200px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #f5f5f5;
-        }
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(233, 30, 99, 0.2);
-            border-top-color: #e91e63;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        .image-placeholder {
-            height: 200px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #eee;
-            color: #666;
-            font-size: 0.9em;
-            text-align: center;
-        }
-        .product-info {
-            padding: 1rem;
-        }
-        .product-name {
-            font-weight: 600;
-            margin-bottom: .25rem;
-        }
-        .product-description {
-            font-size: 0.9rem;
-            color: #555;
-            margin-bottom: .5rem;
-        }
-        .product-price {
-            font-weight: 500;
-            color: #e91e63;
-        }
-        .examples-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: .5rem;
-            margin-bottom: 1rem;
-            max-width: 80%;
-        }
-        .example-chip {
-            padding: .5rem 1rem;
-            background: #f0f0f0;
-            border: 1px solid #e0e0e0;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: transform 0.2s, background-color 0.3s, box-shadow 0.2s;
-            font-size: 0.9rem;
-        }
-        .example-chip:hover {
-            background: #e91e63;
-            color: white;
-            transform: scale(1.05);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        .example-chip:focus {
-            outline: 2px solid #e91e63;
-            outline-offset: 2px;
-        }
-        .input-area {
-            display: flex;
-            padding: 1rem;
-            border-top: 1px solid #eee;
-            background: #fff;
-        }
-        .input-row {
-            display: flex;
-            gap: 10px;
-            width: 100%;
-        }
-        input[type=text] {
-            flex: 1;
-            padding: .75rem 1rem;
-            border: 1px solid #ddd;
-            border-radius: 25px;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-        input[type=text]:focus {
-            border-color: #e91e63;
-        }
-        input[type=text]:disabled {
-            background-color: #f5f5f5;
-        }
-        .send-btn {
-            background: #e91e63;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 45px;
-            height: 45px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.2s;
-            flex-shrink: 0;
-        }
-        .send-btn:hover {
-            background: #d81b60;
-            transform: scale(1.05);
-        }
-        .send-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-        }
-        .error-message {
-            background: #ffebee;
-            color: #c62828;
-            padding: .75rem 1rem;
-            border-radius: 15px;
-            margin-bottom: 1rem;
-            max-width: 80%;
-            margin-right: auto;
-            border: 1px solid #f4c7c7;
-        }
-        .retry-btn {
-            background: none;
-            border: none;
-            color: #e91e63;
-            text-decoration: underline;
-            cursor: pointer;
-        }
-        footer {
-            position: sticky;
-            bottom: 0;
-            background: white;
-            padding: 0.5rem 1rem;
-            color: #6c757d;
-            font-size: 0.875rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-        }
-        footer a {
-            color: #e91e63;
-            text-decoration: none;
-            margin-left: 0.25rem;
-        }
-        footer a:hover {
-            text-decoration: underline;
-        }
-        #typing-indicator .typing-dots {
-            display: inline-block;
-            width: 1.5em;
-            text-align: left;
-            vertical-align: bottom;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in {
-            animation: fadeIn 0.5s ease-out;
-        }
-        #debug-panel {
-            position: fixed;
-            bottom: 0;
-            right: 0;
-            background: rgba(30, 30, 30, 0.85);
-            color: white;
-            padding: 1rem;
-            max-width: 300px;
-            max-height: 300px;
-            overflow: auto;
-            font-size: 0.8rem;
-            z-index: 1000;
-            border-top-left-radius: 8px;
-            display: none;
-        }
-        .debug-entry {
-            padding: 0.5rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .debug-button {
-            background: #e91e63;
-            color: white;
-            border: none;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            margin-top: 0.5rem;
-            cursor: pointer;
-        }
+        body { font-family: 'Poppins', sans-serif; background-color: #f8f9fa; margin: 0; overflow-x: hidden; }
+        #preloader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f8f9fa; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; transition: opacity 0.5s ease; }
+        #preloader .spinner { width: 50px; height: 50px; border: 5px solid #e91e63; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1rem; }
+        #preloader .percentage { font-size: 1.5rem; font-weight: 500; color: #e91e63; }
+        .chat-container { max-width: 900px; margin: 0 auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-radius: 12px; background: white; display: flex; flex-direction: column; height: calc(100vh - 140px); max-height: 800px; }
+        .chat-area { flex-grow: 1; overflow-y: auto; padding: 1.5rem; scroll-behavior: smooth; will-change: scroll-position; }
+        .user-message { background: #e91e63; color: white; padding: .75rem 1rem; border-radius: 15px 15px 0 15px; max-width: 80%; margin-left: auto; margin-bottom: 1rem; word-wrap: break-word; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .bot-message { background: #f0f0f0; color: #333; padding: .75rem 1rem; border-radius: 15px 15px 15px 0; max-width: 80%; margin-right: auto; margin-bottom: 1rem; word-wrap: break-word; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .product-card { display: block; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.3s, box-shadow 0.3s; margin: 1rem 0; text-decoration: none; color: inherit; background: white; max-width: 80%; margin-right: auto; }
+        .product-card:hover { transform: scale(1.03); box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
+        .product-image { width: 100%; height: 200px; object-fit: cover; display: block; }
+        .lazyload, .lazyloading { opacity: 0; transition: opacity 0.3s; }
+        .lazyloaded { opacity: 1; }
+        .image-loading { position: relative; height: 200px; display: flex; align-items: center; justify-content: center; background-color: #f5f5f5; }
+        .spinner { width: 40px; height: 40px; border: 4px solid rgba(233, 30, 99, 0.2); border-top-color: #e91e63; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .image-placeholder { height: 200px; display: flex; align-items: center; justify-content: center; background: #eee; color: #666; font-size: 0.9em; text-align: center; }
+        .product-info { padding: 1rem; }
+        .product-name { font-weight: 600; margin-bottom: .25rem; }
+        .product-description { font-size: 0.9rem; color: #555; margin-bottom: .5rem; }
+        .product-price { font-weight: 500; color: #e91e63; }
+        .examples-container { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem; max-width: 80%; }
+        .example-chip { padding: .5rem 1rem; background: #f0f0f0; border: 1px solid #e0e0e0; border-radius: 20px; cursor: pointer; transition: transform 0.2s, background-color 0.3s, box-shadow 0.2s; font-size: 0.9rem; }
+        .example-chip:hover { background: #e91e63; color: white; transform: scale(1.05); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .example-chip:focus { outline: 2px solid #e91e63; outline-offset: 2px; }
+        .input-area { display: flex; padding: 1rem; border-top: 1px solid #eee; background: #fff; }
+        .input-row { display: flex; gap: 10px; width: 100%; }
+        input[type=text] { flex: 1; padding: .75rem 1rem; border: 1px solid #ddd; border-radius: 25px; outline: none; transition: border-color 0.3s; }
+        input[type=text]:focus { border-color: #e91e63; }
+        input[type=text]:disabled { background-color: #f5f5f5; }
+        .send-btn { background: #e91e63; color: white; border: none; border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.3s, transform 0.2s; flex-shrink: 0; }
+        .send-btn:hover { background: #d81b60; transform: scale(1.05); }
+        .send-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+        .error-message { background: #ffebee; color: #c62828; padding: .75rem 1rem; border-radius: 15px; margin-bottom: 1rem; max-width: 80%; margin-right: auto; border: 1px solid #f4c7c7; }
+        .retry-btn { background: none; border: none; color: #e91e63; text-decoration: underline; cursor: pointer; }
+        footer { position: sticky; bottom: 0; background: white; padding: 0.5rem 1rem; color: #6c757d; font-size: 0.875rem; display: flex; justify-content: center; align-items: center; z-index: 10; }
+        footer a { color: #e91e63; text-decoration: none; margin-left: 0.25rem; }
+        footer a:hover { text-decoration: underline; }
+        #typing-indicator .typing-dots { display: inline-block; width: 1.5em; text-align: left; vertical-align: bottom; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out; }
+        #debug-panel { position: fixed; bottom: 0; right: 0; background: rgba(30, 30, 30, 0.85); color: white; padding: 1rem; max-width: 300px; max-height: 300px; overflow: auto; font-size: 0.8rem; z-index: 1000; border-top-left-radius: 8px; display: none; }
+        .debug-entry { padding: 0.5rem 0; border-bottom: 1px solid rgba(255, 255, 255, 0.2); }
+        .debug-button { background: #e91e63; color: white; border: none; padding: 0.25rem 0.5rem; border-radius: 4px; margin-top: 0.5rem; cursor: pointer; }
         @media (max-width: 640px) {
-            body {
-                padding: 0;
-            }
-            .chat-container {
-                border-radius: 0;
-                max-width: 100%;
-                height: 100vh;
-                max-height: none;
-                margin: 0;
-            }
-            .chat-area {
-                padding: 1rem;
-            }
-            .user-message, .bot-message, .product-card, .examples-container, .error-message {
-                max-width: 90%;
-            }
-            .input-area {
-                padding: 0.75rem;
-            }
-            input[type=text] {
-                padding: 0.6rem 0.9rem;
-            }
-            .send-btn {
-                width: 40px;
-                height: 40px;
-            }
-            footer {
-                font-size: 0.8rem;
-                padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
-            }
-            #preloader .percentage {
-                font-size: 1.2rem;
-            }
-            #debug-panel {
-                max-width: 80%;
-            }
+            body { padding: 0; }
+            .chat-container { border-radius: 0; max-width: 100%; height: 100vh; max-height: none; margin: 0; }
+            .chat-area { padding: 1rem; }
+            .user-message, .bot-message, .product-card, .examples-container, .error-message { max-width: 90%; }
+            .input-area { padding: 0.75rem; }
+            input[type=text] { padding: 0.6rem 0.9rem; }
+            .send-btn { width: 40px; height: 40px; }
+            footer { font-size: 0.8rem; padding-bottom: calc(0.5rem + env(safe-area-inset-bottom)); }
+            #preloader .percentage { font-size: 1.2rem; }
+            #debug-panel { max-width: 80%; }
         }
     </style>
 </head>
@@ -372,13 +88,11 @@
         <h1 class="text-3xl sm:text-4xl font-bold">Planet Beauty</h1>
         <p class="text-lg sm:text-xl">Your AI Beauty Assistant ✨</p>
     </header>
-
     <main class="chat-container flex-grow animate-fade-in">
         <div id="chat-area" class="chat-area">
             <div class="bot-message">Hi there! Welcome to Planet Beauty's AI Assistant. ✨ How can I help you find the perfect products today?</div>
             <div id="examples-container" class="examples-container"></div>
         </div>
-
         <div class="input-area">
             <div class="input-row">
                 <input id="chat-input" type="text" placeholder="Ask about beauty products..." autocomplete="off" aria-label="Type your beauty product question">
@@ -386,126 +100,65 @@
             </div>
         </div>
     </main>
-
     <footer>
         <span>Developed with ❤️ by</span>
         <a href="https://www.linkedin.com/in/joseespinosa" target="_blank" rel="noopener noreferrer">Jose Espinosa</a>
     </footer>
-
-    <!-- Debug Panel (hidden by default) -->
     <div id="debug-panel">
         <h3 class="font-bold mb-2">Debug Information</h3>
         <div id="debug-content"></div>
         <button id="debug-clear" class="debug-button">Clear</button>
         <button id="debug-close" class="debug-button ml-2">Close</button>
     </div>
-
     <script>
         // --- Configuration ---
-        // CRITICAL SECURITY WARNING: DO NOT HARDCODE API KEYS IN CLIENT-SIDE CODE.
-        // This key is exposed and will be compromised. Use a backend proxy.
-        const GEMINI_API_KEY = 'AIzaSyCpI-eNfqWk_ZiK2qHOj_tD2NzeAJ_U398'; // <-- REMOVE THIS FROM CLIENT-SIDE
-        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`; // <-- API URL structure depends on your backend proxy
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzzp5mD6Nu3RZmYvjzDFXvCNC5MhJyfNMvs_MJDYLqZ8Uad1BJE-cO1WWg7BpoYO62_/exec'; // Replace with your deployed Web App URL
-        const API_TIMEOUT = 25000; // Increased timeout
+        const GEMINI_API_KEY = 'AIzaSyCpI-eNfqWk_ZiK2qHOj_tD2NzeAJ_U398'; // Demo only
+        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwhKxZsmVhNGPN0e-zDpBtNliPK9JiP1Bxg7poW8dEB-y--hy6HscOrvrLMAxWk5koX/exec';
+        const API_TIMEOUT = 25000;
         const IMAGE_TIMEOUT = 15000;
         const PRELOADER_MIN_DURATION = 1000;
         const PERCENTAGE_ANIMATION_DURATION = 2000;
-        const PLANET_BEAUTY_DOMAIN = 'https://www.planetbeauty.com'; // Define domain constant
-        const DEBUG_MODE = false; // Set to true to enable debug panel and logging
+        const PLANET_BEAUTY_DOMAIN = 'https://www.planetbeauty.com';
+        const DEBUG_MODE = false;
 
-        // --- Fallback Questions ---
+        // --- Fallback Definitions ---
         const FALLBACK_QUESTIONS = [
             "What acne treatment products available at Planet Beauty would you recommend for sensitive skin?",
             "Can you suggest a hydrating shampoo and conditioner set from Planet Beauty for color-treated hair?",
             "What are some top-rated makeup primers at Planet Beauty for achieving a long-lasting, matte look?",
-            "I'm looking for a retinol serum at Planet Beauty. Which one would be best for someone new to retinol and concerned about minimizing irritation?"
+            "I'm looking for a retinol serum at Planet Beauty. Which one would be best for someone new to retinol?"
+        ];
+
+        const fallbackCategories = {
+            skincare: ['moisturizer', 'serum', 'retinol', 'cleanser', 'sunscreen'],
+            haircare: ['shampoo', 'conditioner', 'hydrating', 'hair mask'],
+            makeup: ['foundation', 'concealer', 'lipstick', 'mascara'],
+            devices: ['led mask', 'light therapy', 'facial tool']
+        };
+
+        const fallbackBrands = ['Olaplex', 'Murad', 'Dr. Dennis Gross', 'Dermalogica', 'Tatcha'];
+
+        const fallbackProducts = [
+            { id: 'fallback1', name: 'Generic Moisturizer', description: 'Hydrating cream for all skin types', price: '$30', image: 'https://via.placeholder.com/600x400', url: 'https://www.planetbeauty.com/products/generic-moisturizer', brand: 'Generic', categories: ['skincare'], descriptionTags: ['hydration'] },
+            { id: 'fallback2', name: 'Generic Shampoo', description: 'Gentle shampoo for daily use', price: '$20', image: 'https://via.placeholder.com/600x400', url: 'https://www.planetbeauty.com/products/generic-shampoo', brand: 'Generic', categories: ['haircare'], descriptionTags: [] }
         ];
 
         // --- State ---
         const userProfile = { skinType: null, skinTone: null, concerns: [] };
         let conversationHistory = [];
-        const MAX_HISTORY = 10; // Retain user-model pairs
+        const MAX_HISTORY = 10;
         const imageCache = JSON.parse(localStorage.getItem('imageCache')) || {};
-        let products = []; // Holds the catalog fetched from the Web App
+        let products = [];
         let productCategories = {};
-        let productBrands = {}; // New: organized by brand
+        let productBrands = {};
         let lastQueryContext = {
             productType: null,
             preferences: [],
-            brand: null,
-            productLine: null
-        }; // Enhanced context tracking
+            brand: null
+        };
         const backupImages = {
             default: 'https://via.placeholder.com/600x400/E91e63/FFFFFF?text=Planet+Beauty',
-        };
-
-        // --- Enhanced Category Keywords ---
-        const categoryKeywords = {
-            // Skin Concerns
-            acne: ['acne', 'blemish', 'pimple', 'breakout', 'clear skin', 'oily'],
-            aging: ['anti-aging', 'wrinkle', 'fine lines', 'mature skin', 'firming'],
-            hydration: ['hydration', 'dry skin', 'dehydrated', 'moisture', 'moisturize'],
-            sensitive: ['sensitive', 'redness', 'irritation', 'rosacea', 'gentle'],
-
-            // Product Types
-            moisturizer: ['moisturizer', 'hydrating', 'dry skin', 'hydration', 'cream', 'lotion'],
-            serum: ['serum', 'treatment', 'concentrate', 'anti-aging', 'brightening'],
-            cleanser: ['cleanser', 'face wash', 'wash'],
-            exfoliant: ['exfoliant', 'scrub', 'peel', 'smooth skin'],
-            sunscreen: ['sunscreen', 'spf', 'uv', 'protection'],
-            mask: ['mask', 'sheet mask', 'face mask', 'clay mask', 'overnight mask'],
-
-            // Haircare
-            shampoo: ['shampoo', 'hair wash', 'clean hair'],
-            conditioner: ['conditioner', 'soften hair', 'detangle'],
-            hairmask: ['hair mask', 'treatment', 'damaged hair', 'repair hair'],
-            styling: ['styling', 'hairspray', 'texture', 'volume', 'hold', 'gel', 'mousse'],
-
-            // Makeup
-            foundation: ['foundation', 'makeup base', 'cover', 'complexion', 'tone'],
-            concealer: ['concealer', 'cover up', 'blemish cover', 'dark circles'],
-            lipstick: ['lipstick', 'lip color', 'lip stain', 'lip gloss'],
-            mascara: ['mascara', 'lashes', 'eyelashes', 'volume'],
-            eyeshadow: ['eyeshadow', 'eye color', 'eye makeup', 'palette'],
-            primer: ['primer', 'base', 'long-lasting', 'makeup prep'],
-
-            // Devices and Tools
-            devices: ['device', 'tool', 'gadget', 'tech', 'led', 'light therapy', 'microcurrent', 'facial tool', 'spectralite', 'red light', 'blue light', 'mask device', 'light mask'],
-
-            // Broader Categories
-            skincare: ['skincare', 'face care', 'complexion', 'skin health', 'anti-aging', 'brightening', 'firming'],
-            haircare: ['haircare', 'hair product', 'mane', 'scalp', 'hair treatment'],
-            makeup: ['makeup', 'cosmetics', 'beauty', 'glam', 'look']
-        };
-
-        // --- Brand Recognition ---
-        const brandKeywords = {
-            'dr_dennis_gross': ['dr. dennis gross', 'dr dennis gross', 'dr dennis', 'dennis gross', 'dr. dennis', 'drx', 'spectralite'],
-            'dermalogica': ['dermalogica'],
-            'kiehls': ['kiehl\'s', 'kiehls'],
-            'la_roche_posay': ['la roche posay', 'la roche-posay', 'la roche'],
-            'murad': ['murad'],
-            'olaplex': ['olaplex'],
-            'paulas_choice': ['paula\'s choice', 'paulas choice'],
-            'skinceuticals': ['skinceuticals'],
-            'tatcha': ['tatcha'],
-            'drunk_elephant': ['drunk elephant'],
-            'sunday_riley': ['sunday riley'],
-            'fenty': ['fenty', 'rihanna'],
-            'charlotte_tilbury': ['charlotte tilbury'],
-            'bumble_and_bumble': ['bumble and bumble', 'bumble & bumble'],
-            'moroccanoil': ['moroccanoil', 'moroccan oil']
-            // Add more brands as needed
-        };
-
-        // --- Product Line Recognition ---
-        const productLineKeywords = {
-            'spectralite': ['spectralite', 'spectra lite', 'faceware', 'led mask', 'light therapy mask'],
-            'alpha_beta': ['alpha beta', 'peel pad', 'exfoliating'],
-            'ferulic': ['ferulic', 'retinol', 'vitamin c'],
-            'ultraviolette': ['ultraviolette', 'sunscreen']
-            // Add more product lines as needed
         };
 
         // --- DOM Elements ---
@@ -520,15 +173,11 @@
         // --- Debug Functions ---
         function debugLog(message, data) {
             if (!DEBUG_MODE) return;
-
             console.log(message, data);
-
             const entry = document.createElement('div');
             entry.className = 'debug-entry';
-
             const timestamp = new Date().toLocaleTimeString();
             let content = `<strong>[${timestamp}]</strong> ${message}`;
-
             if (data !== undefined) {
                 if (typeof data === 'object') {
                     try {
@@ -540,18 +189,14 @@
                     content += ` ${data}`;
                 }
             }
-
             entry.innerHTML = content;
             debugContent.appendChild(entry);
             debugPanel.scrollTop = debugPanel.scrollHeight;
-
-            // Show debug panel if hidden
             if (DEBUG_MODE && debugPanel.style.display === 'none') {
                 debugPanel.style.display = 'block';
             }
         }
 
-        // Debug panel controls
         document.getElementById('debug-clear').addEventListener('click', () => {
             debugContent.innerHTML = '';
         });
@@ -584,8 +229,8 @@
             const animationPromise = animatePercentage();
             try {
                 debugLog('Initializing Planet Beauty AI Assistant');
-                products = await fetchProducts(); // Fetch and validate products
-                organizeProducts(); // Enhanced product organization
+                products = await fetchProducts();
+                organizeProducts();
                 await generateSuggestedQuestions();
                 await Promise.all([minDurationPromise, animationPromise]);
                 await anime({
@@ -609,10 +254,10 @@
                 debugLog('Initialization error', error);
                 percentageElement.textContent = 'Error';
                 percentageElement.style.color = '#c62828';
-                await Promise.all([minDurationPromise, animationPromise]); // Wait even on error
+                await Promise.all([minDurationPromise, animationPromise]);
                 preloader.style.opacity = '0';
                 setTimeout(() => preloader.remove(), 500);
-                addMessage("Sorry, I couldn't load the Planet Beauty product catalog. Please try refreshing the page or come back later.", 'bot');
+                addMessage("Sorry, I couldn't load the product catalog. Showing general recommendations.", 'bot');
             }
 
             anime({
@@ -635,198 +280,168 @@
             updateSendButtonState();
         });
 
-        // --- Fetch Products (with Strict URL Validation) ---
+        // --- Fetch Products ---
         async function fetchProducts() {
             try {
-                const res = await axios.get(WEB_APP_URL, { timeout: API_TIMEOUT });
+                const cachedProducts = localStorage.getItem('cachedProducts');
+                if (cachedProducts) {
+                    debugLog('Using cached products as fallback');
+                    return JSON.parse(cachedProducts);
+                }
+
+                const res = await axios.get(`${WEB_APP_URL}?action=getProducts`, { timeout: API_TIMEOUT });
                 if (res.data && Array.isArray(res.data.products)) {
                     const validatedProducts = res.data.products.map((p, index) => {
-                        let productUrl = p.url;
-                        // Validate URL: Must be within planetbeauty.com
+                        let productUrl = p.url || formatProductUrl(p.name);
                         if (productUrl && typeof productUrl === 'string') {
                             try {
                                 const parsedUrl = new URL(productUrl);
                                 if (!parsedUrl.hostname.endsWith('planetbeauty.com')) {
-                                    console.warn(`Product ${p.name || index} has external URL (${productUrl}). Replacing with formatted URL.`);
-                                    productUrl = formatProductUrl(p.name); // Generate safe URL
+                                    productUrl = formatProductUrl(p.name);
                                 } else {
-                                    // Ensure HTTPS
                                     productUrl = productUrl.replace(/^http:/, 'https:');
                                 }
                             } catch (e) {
-                                console.warn(`Product ${p.name || index} has invalid URL (${productUrl}). Replacing with formatted URL.`);
-                                productUrl = formatProductUrl(p.name); // Generate safe URL on parse error
+                                productUrl = formatProductUrl(p.name);
                             }
-                        } else {
-                            // If no URL provided, generate one
-                            productUrl = formatProductUrl(p.name);
-                        }
-
-                        // Ensure image URL uses HTTPS if possible
-                        let imageUrl = p.image;
-                        if (imageUrl && typeof imageUrl === 'string' && imageUrl.startsWith('http://')) {
-                            imageUrl = imageUrl.replace('http://', 'https://');
                         }
 
                         return {
                             ...p,
-                            id: p.id || `p${index + 1}`, // Ensure unique ID
-                            name: p.name || "Unnamed Product", // Provide default name
-                            description: p.description || "No description available.", // Default description
-                            price: p.price || "", // Default price
-                            image: imageUrl,
-                            url: productUrl, // Use the validated/generated URL
-                            categories: [], // Will be populated in organizeProducts
-                            brand: null, // Will be populated in organizeProducts
-                            productLine: null // Will be populated in organizeProducts
+                            id: p.id || `p${index + 1}`,
+                            name: p.name || 'Unnamed Product',
+                            description: p.description || 'No description available',
+                            price: p.price || '',
+                            image: p.image || getBackupImage(''),
+                            url: productUrl,
+                            brand: p.brand || '',
+                            categories: [],
+                            descriptionTags: []
                         };
                     });
-                    debugLog("Products loaded and validated from Web App:", validatedProducts.length);
-                    if (validatedProducts.length === 0) {
-                         console.warn("Warning: Fetched product list is empty.");
-                    }
+
+                    localStorage.setItem('cachedProducts', JSON.stringify(validatedProducts));
+                    debugLog('Products fetched and cached', { count: validatedProducts.length });
                     return validatedProducts;
-                } else if (res.data && res.data.error) {
-                    throw new Error(`Web App Error: ${res.data.error}`);
                 } else {
-                    throw new Error("Invalid data format received from Web App (expected { products: [...] }).");
+                    throw new Error('Invalid data format from Web App');
                 }
             } catch (error) {
-                console.error('Failed to fetch or validate products:', error);
-                debugLog('Failed to fetch products', error);
-                // Don't throw here, allow the app to load but show an error message later
-                return []; // Return empty array on failure
+                console.error('Failed to fetch products:', error);
+                debugLog('Fetch products error', error);
+                const cachedProducts = localStorage.getItem('cachedProducts');
+                if (cachedProducts) {
+                    return JSON.parse(cachedProducts);
+                }
+                return fallbackProducts;
             }
         }
 
-        // --- Organize Products (Enhanced & Fixed) ---
+        // --- Organize Products ---
         function organizeProducts() {
             if (!products || products.length === 0) {
-                console.warn("Cannot organize products: Product list is empty.");
+                console.warn('Product list is empty, using fallbacks');
+                fallbackBrands.forEach(b => productBrands[b.toLowerCase()] = []);
+                Object.assign(productCategories, fallbackCategories);
+                products = fallbackProducts;
                 return;
             }
 
-            // Initialize product organization stores
-            productCategories = {};
             productBrands = {};
+            productCategories = {};
+            const defaultCategory = 'miscellaneous';
 
-            // Process each product
-            products.forEach(product => {
-                const nameLower = (product.name || "").toLowerCase();
-                const descLower = (product.description || "").toLowerCase();
-                const combinedText = `${nameLower} ${descLower}`;
+            products.forEach((p, index) => {
+                const name = (p.name || '').toLowerCase();
+                const desc = (p.description || '').toLowerCase();
+                const brand = (p.brand || '').toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+                const categories = new Set();
 
-                // 1. Categorize by product type/concern
-                product.categories = [];
-                for (const [category, keywords] of Object.entries(categoryKeywords)) {
-                    if (keywords.some(keyword => combinedText.includes(keyword))) {
-                        product.categories.push(category);
+                // Validate product
+                if (!p.id) p.id = `p${index + 1}`;
+                if (!p.name) p.name = 'Unnamed Product';
+                if (!p.description) p.description = 'No description available';
+                p.categories = [];
+                p.descriptionTags = [];
 
-                        // Initialize category array if needed
-                        if (!productCategories[category]) {
-                            productCategories[category] = [];
-                        }
-                        productCategories[category].push(product);
-                    }
+                // Assign brand
+                if (brand) {
+                    if (!productBrands[brand]) productBrands[brand] = [];
+                    productBrands[brand].push(p);
+                    p.brand = brand;
                 }
 
-                // 2. Identify brand --- FIX APPLIED HERE ---
-                for (const [brandKey, keywordsForBrand] of Object.entries(brandKeywords)) { // Renamed loop variable
-                    if (keywordsForBrand.some(keyword => combinedText.includes(keyword))) { // Use the new variable name
-                        product.brand = brandKey;
-
-                        // Initialize brand array if needed
-                        if (!productBrands[brandKey]) {
-                            productBrands[brandKey] = [];
-                        }
-                        productBrands[brandKey].push(product);
-                        break; // Assign only one brand
-                    }
+                // Infer categories
+                if (desc.includes('shampoo') || desc.includes('conditioner') || desc.includes('hair mask') || name.includes('shampoo') || name.includes('hair')) {
+                    categories.add('haircare');
                 }
-                // --- END FIX ---
-
-                // 3. Identify product line
-                for (const [lineKey, lineKeywords] of Object.entries(productLineKeywords)) {
-                    if (lineKeywords.some(keyword => combinedText.includes(keyword))) {
-                        product.productLine = lineKey;
-                        break; // Assign only one product line
-                    }
+                if (desc.includes('moisturizer') || desc.includes('serum') || desc.includes('retinol') || desc.includes('cleanser') || desc.includes('cream') || desc.includes('lotion') || desc.includes('anti-aging') || desc.includes('sunscreen')) {
+                    categories.add('skincare');
+                }
+                if (desc.includes('foundation') || desc.includes('concealer') || desc.includes('lipstick') || desc.includes('mascara') || desc.includes('eyeshadow') || name.includes('makeup')) {
+                    categories.add('makeup');
+                }
+                if (desc.includes('led') || desc.includes('mask') || desc.includes('light therapy') || desc.includes('spectralite') || desc.includes('device') || name.includes('device')) {
+                    categories.add('devices');
                 }
 
-                // Ensure every product has at least one category
-                if (product.categories.length === 0) {
-                    // Determine default category based on name/description
-                    if (combinedText.includes('hair')) {
-                        product.categories.push('haircare');
-                        if (!productCategories['haircare']) productCategories['haircare'] = [];
-                        productCategories['haircare'].push(product);
-                    } else if (combinedText.includes('lip') || combinedText.includes('eye') || combinedText.includes('foundation') || combinedText.includes('makeup')) {
-                        product.categories.push('makeup');
-                        if (!productCategories['makeup']) productCategories['makeup'] = [];
-                        productCategories['makeup'].push(product);
-                    } else {
-                        // Default to skincare for anything else
-                        product.categories.push('skincare');
-                        if (!productCategories['skincare']) productCategories['skincare'] = [];
-                        productCategories['skincare'].push(product);
-                    }
+                // Infer tags
+                if (desc.includes('hydration') || desc.includes('moisturize') || desc.includes('dry skin')) p.descriptionTags.push('hydration');
+                if (desc.includes('anti-aging') || desc.includes('wrinkle') || desc.includes('fine lines')) p.descriptionTags.push('anti_aging');
+                if (desc.includes('acne') || desc.includes('blemish') || desc.includes('breakout')) p.descriptionTags.push('acne');
+                if (desc.includes('brighten') || desc.includes('radiance') || desc.includes('glow')) p.descriptionTags.push('brightening');
+                if (desc.includes('repair') || desc.includes('damaged hair') || desc.includes('strengthen')) p.descriptionTags.push('hair_repair');
+                if (desc.includes('volume') || desc.includes('volumizing') || desc.includes('lift')) p.descriptionTags.push('volume');
+                if (desc.includes('spectralite') || desc.includes('led') || desc.includes('light therapy')) p.descriptionTags.push('light_therapy');
+
+                // Default category
+                if (categories.size === 0) {
+                    categories.add(defaultCategory);
                 }
+
+                // Assign categories
+                categories.forEach(cat => {
+                    if (!productCategories[cat]) productCategories[cat] = [];
+                    productCategories[cat].push(p);
+                    p.categories.push(cat);
+                });
             });
 
-            // Populate backup images per category
-            for (const category of Object.keys(productCategories)) {
-                backupImages[category] = productCategories[category]
-                    .map(p => p.image)
-                    .filter(img => img && typeof img === 'string');
-            }
+            if (!productCategories[defaultCategory]) productCategories[defaultCategory] = [];
 
-            // Log organization results
             debugLog('Product organization complete', {
-                categories: Object.keys(productCategories).map(cat =>
-                    `${cat}: ${productCategories[cat].length} products`
-                ),
-                brands: Object.keys(productBrands).map(brand =>
-                    `${brand}: ${productBrands[brand].length} products`
-                )
+                categories: Object.keys(productCategories).map(cat => `${cat}: ${productCategories[cat].length} products`),
+                brands: Object.keys(productBrands).map(brand => `${brand}: ${productBrands[brand].length} products`)
             });
         }
 
-
         // --- Suggested Questions ---
         async function generateSuggestedQuestions() {
-            // Only generate if products were loaded successfully
             if (products.length === 0) {
-                 displaySuggestedQuestions(FALLBACK_QUESTIONS); // Use fallbacks if no products
-                 return;
+                displaySuggestedQuestions(FALLBACK_QUESTIONS);
+                return;
             }
             try {
                 const questions = await fetchSuggestedQuestions();
                 displaySuggestedQuestions(questions);
             } catch (error) {
                 console.error('Failed to generate suggested questions:', error);
-                displaySuggestedQuestions(FALLBACK_QUESTIONS); // Use fallbacks on error
+                displaySuggestedQuestions(FALLBACK_QUESTIONS);
             }
         }
 
         async function fetchSuggestedQuestions() {
-            // Get top categories and brands for more personalized suggestions
-            const availableCategories = Object.keys(productCategories)
-                .filter(cat => productCategories[cat].length > 0)
-                .sort((a, b) => productCategories[b].length - productCategories[a].length)
-                .slice(0, 5);
+            const availableCategories = Object.keys(productCategories).length > 0
+                ? Object.keys(productCategories)
+                : Object.keys(fallbackCategories);
+            const availableBrands = Object.keys(productBrands).length > 0
+                ? Object.keys(productBrands)
+                : fallbackBrands;
 
-            const availableBrands = Object.keys(productBrands)
-                .filter(brand => productBrands[brand].length > 0)
-                .sort((a, b) => productBrands[b].length - productBrands[a].length)
-                .slice(0, 5);
-
-            const focusCategories = availableCategories.length > 3 ?
-                availableCategories.slice(0, 3).join(', ') :
-                'skincare, haircare, makeup';
-
-            const focusBrands = availableBrands.length > 0 ?
-                `and popular brands like ${availableBrands.slice(0, 3).join(', ')}` :
-                '';
+            const focusCategories = availableCategories.slice(0, 3).join(', ') || 'skincare, haircare, makeup';
+            const focusBrands = availableBrands.length > 0
+                ? `and popular brands like ${availableBrands.slice(0, 3).map(b => b.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')).join(', ')}`
+                : '';
 
             const prompt = {
                 contents: [{
@@ -834,22 +449,22 @@
                     parts: [{
                         text: `Generate 4 concise, varied, and helpful beauty-related questions for a chatbot exclusive to Planet Beauty (${PLANET_BEAUTY_DOMAIN}).
 
-Questions MUST focus on products likely available in the Planet Beauty catalog (e.g., focus on ${focusCategories} ${focusBrands}).
+Questions MUST focus on products likely available in the Planet Beauty catalog (e.g., focus on ${focusCategories} ${focusBrands}). Include keywords like moisturizer, shampoo, LED mask, or anti-aging to ensure relevance.
 
 Address common user needs like recommendations for specific skin types, hair concerns, or makeup looks. Ensure questions explicitly mention Planet Beauty. Return the response ONLY as a valid JSON array of 4 strings.
 
 Example valid JSON output:
-["What acne treatment products available at Planet Beauty would you recommend for sensitive skin?", "Can you suggest a hydrating shampoo and conditioner set from Planet Beauty for color-treated hair?", "What are some top-rated makeup primers at Planet Beauty for achieving a long-lasting, matte look?", "I'm looking for a retinol serum at Planet Beauty. Which one would be best for someone new to retinol and concerned about minimizing irritation?"]`
+["What acne treatment products available at Planet Beauty would you recommend for sensitive skin?", "Can you suggest a hydrating shampoo and conditioner set from Planet Beauty for color-treated hair?", "What are some top-rated makeup primers at Planet Beauty for achieving a long-lasting, matte look?", "I'm looking for a retinol serum at Planet Beauty. Which one would be best for someone new to retinol?"]`
                     }]
                 }],
                 generationConfig: {
-                    temperature: 0.8, // Slightly higher temp for variety
+                    temperature: 0.8,
                     topP: 0.95,
                     topK: 40,
                     maxOutputTokens: 256,
                     responseMimeType: 'application/json'
                 },
-                safetySettings: [ // Standard safety settings
+                safetySettings: [
                     { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
                     { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
                     { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
@@ -857,61 +472,54 @@ Example valid JSON output:
                 ]
             };
 
-            // IMPORTANT: Replace this direct call with a call to your backend proxy
             const res = await axios.post(GEMINI_API_URL, prompt, {
                 headers: { 'Content-Type': 'application/json' },
                 timeout: API_TIMEOUT
             });
-            // const res = await axios.post('/api/generate-suggestions', prompt, { timeout: API_TIMEOUT }); // Example proxy call
 
             if (res.data?.candidates?.[0]?.content?.parts?.[0]?.text) {
                 const responseText = res.data.candidates[0].content.parts[0].text;
                 try {
-                    // Attempt to clean potential markdown/extra chars before parsing
                     const cleanedText = responseText.replace(/^```json\s*|```$/g, '').trim();
                     const questions = JSON.parse(cleanedText);
                     if (Array.isArray(questions) && questions.length >= 4 && questions.every(q => typeof q === 'string')) {
-                        return questions.slice(0, 4); // Return exactly 4 valid questions
-                    } else {
-                         console.warn("Parsed questions format invalid:", questions);
+                        return questions.slice(0, 4);
                     }
                 } catch (parseError) {
-                    console.error('JSON Parse Error for suggested questions:', parseError, 'Raw text:', responseText);
+                    console.error('JSON Parse Error:', parseError, 'Raw text:', responseText);
                 }
             }
-            // If API fails or returns invalid format, throw error to trigger fallback
-            throw new Error('Failed to fetch valid suggested questions from API.');
+            return FALLBACK_QUESTIONS;
         }
 
         function displaySuggestedQuestions(questions) {
-            examplesContainer.innerHTML = ''; // Clear previous suggestions
+            examplesContainer.innerHTML = '';
             if (!Array.isArray(questions)) {
-                console.error("Cannot display suggestions: input is not an array.", questions);
-                questions = FALLBACK_QUESTIONS; // Default to fallbacks
+                console.error("Cannot display suggestions: not an array.", questions);
+                questions = FALLBACK_QUESTIONS;
             }
             questions.forEach((question, index) => {
                 if (typeof question !== 'string' || !question.trim()) {
                     console.warn(`Skipping invalid suggestion at index ${index}:`, question);
-                    return; // Skip empty or non-string suggestions
+                    return;
                 }
                 const chip = document.createElement('div');
                 chip.className = 'example-chip';
                 chip.setAttribute('data-q', question);
                 chip.setAttribute('role', 'button');
-                chip.tabIndex = 0; // Make it focusable
+                chip.tabIndex = 0;
                 chip.setAttribute('aria-label', `Ask: ${question}`);
                 chip.textContent = question;
                 chip.addEventListener('click', handleExampleClick);
-                chip.addEventListener('keypress', (e) => { // Allow activation with Enter/Space
+                chip.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault(); // Prevent scrolling on space
+                        e.preventDefault();
                         handleExampleClick(e);
                     }
                 });
                 examplesContainer.appendChild(chip);
             });
 
-            // Animate the chips appearing
             anime({
                 targets: '.example-chip',
                 translateX: [-20, 0],
@@ -926,42 +534,35 @@ Example valid JSON output:
         function formatProductUrl(productName) {
             const baseUrl = `${PLANET_BEAUTY_DOMAIN}/products/`;
             if (!productName || typeof productName !== 'string') {
-                // Fallback to a general search or homepage if name is invalid
                 return `${PLANET_BEAUTY_DOMAIN}/search?q=product`;
             }
-            // Generate a slug-like path
             const slug = productName.toLowerCase()
-                .replace(/[^\w\s-]/g, '') // Remove non-alphanumeric chars except space/hyphen
+                .replace(/[^\w\s-]/g, '')
                 .trim()
-                .replace(/\s+/g, '-') // Replace spaces with hyphens
-                .replace(/-+/g, '-'); // Collapse multiple hyphens
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-');
             return baseUrl + slug;
         }
 
         function getBackupImage(query) {
             const queryLower = (query || "").toLowerCase();
-            // First try to match based on detected brand/category from query
             const queryContext = analyzeQuery(queryLower);
 
-            // Try brand-specific images first if available
             if (queryContext.brand && productBrands[queryContext.brand]) {
                 const brandImages = productBrands[queryContext.brand]
                     .map(p => p.image)
                     .filter(img => img && typeof img === 'string');
-
                 if (brandImages.length > 0) {
                     return brandImages[Math.floor(Math.random() * brandImages.length)];
                 }
             }
 
-            // Try category-specific images next
             if (queryContext.categories.length > 0) {
                 for (const category of queryContext.categories) {
                     if (productCategories[category]) {
                         const catImages = productCategories[category]
                             .map(p => p.image)
                             .filter(img => img && typeof img === 'string');
-
                         if (catImages.length > 0) {
                             return catImages[Math.floor(Math.random() * catImages.length)];
                         }
@@ -969,51 +570,40 @@ Example valid JSON output:
                 }
             }
 
-            // Fallback to traditional category matching if no context matches
-            for (const [category, keywords] of Object.entries(categoryKeywords)) {
-                if (keywords.some(keyword => queryLower.includes(keyword))) {
-                    const imageArray = backupImages[category] || [];
-                    if (imageArray.length > 0) {
-                        // Return a random image from the category's backups
-                        return imageArray[Math.floor(Math.random() * imageArray.length)];
-                    }
-                }
-            }
-
-            // Default backup if no category match
             return backupImages.default;
         }
 
-        // Analyze query for brand, product line and categories
         function analyzeQuery(query) {
             const result = {
                 brand: null,
-                productLine: null,
-                categories: []
+                categories: [],
+                descriptionTags: []
             };
 
-            // Check for brand mentions
-            for (const [brandKey, keywords] of Object.entries(brandKeywords)) {
-                if (keywords.some(kw => query.includes(kw))) {
-                    result.brand = brandKey;
+            const queryLower = query.toLowerCase();
+            for (const brand of Object.keys(productBrands)) {
+                if (queryLower.includes(brand)) {
+                    result.brand = brand;
                     break;
                 }
             }
 
-            // Check for product line mentions
-            for (const [lineKey, keywords] of Object.entries(productLineKeywords)) {
-                if (keywords.some(kw => query.includes(kw))) {
-                    result.productLine = lineKey;
-                    break;
-                }
-            }
-
-            // Check for category mentions
-            for (const [category, keywords] of Object.entries(categoryKeywords)) {
-                if (keywords.some(kw => query.includes(kw))) {
+            for (const category of Object.keys(productCategories)) {
+                if (queryLower.includes(category) || (category === 'skincare' && queryLower.includes('moisturizer')) ||
+                    (category === 'haircare' && queryLower.includes('shampoo')) ||
+                    (category === 'makeup' && queryLower.includes('foundation')) ||
+                    (category === 'devices' && queryLower.includes('led'))) {
                     result.categories.push(category);
                 }
             }
+
+            if (queryLower.includes('hydration') || queryLower.includes('moisturize')) result.descriptionTags.push('hydration');
+            if (queryLower.includes('anti-aging') || queryLower.includes('wrinkle')) result.descriptionTags.push('anti_aging');
+            if (queryLower.includes('acne') || queryLower.includes('blemish')) result.descriptionTags.push('acne');
+            if (queryLower.includes('brighten') || queryLower.includes('radiance')) result.descriptionTags.push('brightening');
+            if (queryLower.includes('repair') || queryLower.includes('damaged hair')) result.descriptionTags.push('hair_repair');
+            if (queryLower.includes('volume') || queryLower.includes('volumizing')) result.descriptionTags.push('volume');
+            if (queryLower.includes('spectralite') || queryLower.includes('led')) result.descriptionTags.push('light_therapy');
 
             return result;
         }
@@ -1024,7 +614,7 @@ Example valid JSON output:
             if (query) {
                 chatInput.value = query;
                 updateSendButtonState();
-                sendMessage(); // Send the message automatically
+                sendMessage();
                 if (typeof gtag === 'function') {
                     gtag('event', 'example_chip_click', { event_category: 'Chatbot', event_label: query });
                 }
@@ -1051,83 +641,79 @@ Example valid JSON output:
         // --- Core Functions ---
         async function sendMessage() {
             const rawMessage = chatInput.value.trim();
-            if (!rawMessage) return; // Don't send empty messages
+            if (!rawMessage) return;
 
-            // Sanitize user input before displaying and sending
-            const message = DOMPurify.sanitize(rawMessage, { USE_PROFILES: { html: false } }); // Disallow HTML in user messages
+            const message = DOMPurify.sanitize(rawMessage, { USE_PROFILES: { html: false } });
             addMessage(message, 'user');
 
-            // Add sanitized message to history for API call
             const userMessageEntry = { role: 'user', parts: [{ text: message }] };
             conversationHistory.push(userMessageEntry);
-            // Trim history if it exceeds max length
-            if (conversationHistory.length > MAX_HISTORY * 2) { // Keep MAX_HISTORY pairs (user+model)
-                 conversationHistory = conversationHistory.slice(-MAX_HISTORY * 2);
+            if (conversationHistory.length > MAX_HISTORY * 2) {
+                conversationHistory = conversationHistory.slice(-MAX_HISTORY * 2);
             }
 
-            // Update context based on the *sanitized* message
             updateQueryContext(message);
 
-            chatInput.value = ''; // Clear input field
-            updateSendButtonState(); // Disable send button
-            chatInput.disabled = true; // Disable input during processing
+            chatInput.value = '';
+            updateSendButtonState();
+            chatInput.disabled = true;
             sendBtn.disabled = true;
 
             showTypingIndicator();
 
             try {
-                // Check if products loaded, if not, show error and stop
                 if (products.length === 0) {
                     throw new Error("Product catalog not available.");
                 }
                 const response = await callGeminiAPI();
-                await processResponse(response, message); // Process the API response
+                await processResponse(response, message);
             } catch (error) {
                 console.error('Error during message processing:', error);
                 hideTypingIndicator();
-                let errorMessage = "I encountered an issue processing your request. Please try again.";
+                let errorMessage = "I encountered an issue. Please try again.";
                 if (error.message.includes('timed out')) {
-                    errorMessage = "The request timed out. Please check your connection and try again.";
+                    errorMessage = "The request timed out. Check your connection and try again.";
                 } else if (error.message.includes("Product catalog not available")) {
-                    errorMessage = "Sorry, I can't search for products right now as the catalog isn't loaded. Please try refreshing the page.";
+                    errorMessage = "Sorry, I can't search products right now. Try refreshing.";
                 } else if (error.message.includes("blocked")) {
-                    errorMessage = `Request blocked due to safety settings (${error.message}). Please rephrase your query.`;
-                } else if (error.message.includes("API key")) { // Add check for potential backend proxy errors related to keys
-                    errorMessage = "There was an issue authenticating the request. Please contact support if this persists.";
+                    errorMessage = `Request blocked: ${error.message}. Please rephrase.`;
                 }
-                displayError(errorMessage); // Show user-friendly error
+                displayError(errorMessage);
 
-                // Attempt fallback search even on API error, if products are loaded
                 if (products.length > 0) {
                     const fallbackProducts = findRelevantProducts(message);
                     if (fallbackProducts.length > 0) {
-                        addMessage("I had trouble with the AI search, but here are some products from our catalog that might match:", 'bot');
+                        addMessage("I had trouble with the AI search, but here are some products that might match:", 'bot');
                         await Promise.all(fallbackProducts.map(p => addProductCard(p, message)));
                     } else {
-                         addMessage("I couldn't find matching products in our catalog even with a fallback search. Could you try rephrasing?", 'bot');
+                        addMessage("I couldn't find matching products. Could you rephrase?", 'bot');
                     }
                 }
             } finally {
-                // Re-enable input regardless of success or failure
                 chatInput.disabled = false;
                 updateSendButtonState();
-                chatInput.focus(); // Set focus back to input
+                chatInput.focus();
             }
         }
 
         async function callGeminiAPI(retry = false) {
             try {
-                const prompt = createPrompt(); // Generate the prompt with history and instructions
+                const res = await axios.get(`${WEB_APP_URL}?action=getPrompt`, {
+                    params: { conversationHistory: JSON.stringify(conversationHistory) },
+                    timeout: API_TIMEOUT
+                });
+                const prompt = res.data.prompt;
+
                 const payload = {
                     contents: prompt,
                     generationConfig: {
-                        temperature: 0.5, // Slightly lower temp for more focused product results
+                        temperature: 0.5,
                         topP: 0.95,
                         topK: 40,
                         maxOutputTokens: 1024,
-                        responseMimeType: 'application/json' // Expect JSON response
+                        responseMimeType: 'application/json'
                     },
-                    safetySettings: [ // Standard safety settings
+                    safetySettings: [
                         { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
                         { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
                         { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
@@ -1135,149 +721,227 @@ Example valid JSON output:
                     ]
                 };
 
-                debugLog('Calling Gemini API'); // Or 'Calling Backend Proxy'
-
-                // IMPORTANT: Replace this direct call with a call to your backend proxy
-                const res = await axios.post(GEMINI_API_URL, payload, { // Replace GEMINI_API_URL with your proxy endpoint
+                debugLog('Calling Gemini API');
+                const apiRes = await axios.post(GEMINI_API_URL, payload, {
                     headers: { 'Content-Type': 'application/json' },
-                    timeout: API_TIMEOUT // Use configured timeout
+                    timeout: API_TIMEOUT
                 });
-                // Example proxy call:
-                // const res = await axios.post('/api/generate-content', payload, {
-                //     headers: { 'Content-Type': 'application/json' },
-                //     timeout: API_TIMEOUT
-                // });
 
-                // Validate response structure (assuming proxy returns the Gemini structure)
-                if (res.data?.candidates?.[0]?.content?.parts?.[0]?.text) {
-                    const responseText = res.data.candidates[0].content.parts[0].text;
+                if (apiRes.data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+                    const responseText = apiRes.data.candidates[0].content.parts[0].text;
                     try {
-                        // Clean potential markdown before parsing
                         const cleanedText = responseText.replace(/^```json\s*|```$/g, '').trim();
                         const parsedResponse = JSON.parse(cleanedText);
-
-                        // Basic validation of the parsed JSON structure
                         if (typeof parsedResponse !== 'object' || parsedResponse === null ||
                             typeof parsedResponse.text !== 'string' ||
                             typeof parsedResponse.query_type !== 'string' ||
                             !Array.isArray(parsedResponse.products)) {
-                            console.error('Invalid JSON structure received from API/Proxy:', parsedResponse);
-                            throw new Error('Invalid response structure from API/Proxy.');
+                            console.error('Invalid JSON structure:', parsedResponse);
+                            throw new Error('Invalid response structure.');
                         }
-
-                        // Add valid model response to history
                         conversationHistory.push({ role: 'model', parts: [{ text: cleanedText }] });
-                        debugLog('API/Proxy response received', {
+                        debugLog('API response received', {
                             queryType: parsedResponse.query_type,
                             productCount: parsedResponse.products.length
                         });
-                        return parsedResponse; // Return the valid, parsed response
-
+                        return parsedResponse;
                     } catch (parseError) {
-                        console.error('JSON Parse Error in API/Proxy response:', parseError, 'Raw text:', responseText);
+                        console.error('JSON Parse Error:', parseError, 'Raw text:', responseText);
                         debugLog('JSON Parse Error', { error: parseError.message, text: responseText });
-                        // If parsing fails, treat it as an error but maybe provide a generic text response
-                         return { text: "I received a response, but couldn't fully understand it. Let me try to find products based on your query.", query_type: 'other', products: [] };
+                        return { text: "I couldn't fully understand the response. Let me try to find products.", query_type: 'other', products: [] };
                     }
-                } else if (res.data?.promptFeedback?.blockReason) {
-                    // Handle blocked requests explicitly
-                    console.error(`API/Proxy request blocked: ${res.data.promptFeedback.blockReason}`);
-                    throw new Error(`Request blocked: ${res.data.promptFeedback.blockReason}`);
+                } else if (apiRes.data?.promptFeedback?.blockReason) {
+                    console.error(`API request blocked: ${apiRes.data.promptFeedback.blockReason}`);
+                    throw new Error(`Request blocked: ${apiRes.data.promptFeedback.blockReason}`);
                 } else {
-                    // Handle other unexpected response formats
-                    console.error('Unexpected API/Proxy response format:', res.data);
-                    throw new Error('Unexpected response format from API/Proxy.');
+                    console.error('Unexpected API response:', apiRes.data);
+                    throw new Error('Unexpected response format.');
                 }
             } catch (error) {
-                // Handle network errors or timeouts, potentially retry once for timeouts
                 if (!retry && (error.code === 'ECONNABORTED' || (error.response && error.response.status === 408))) {
-                    console.warn('API/Proxy call timed out, retrying once...');
-                    return await callGeminiAPI(true); // Retry once
+                    console.warn('API call timed out, retrying...');
+                    return await callGeminiAPI(true);
                 }
-                 console.error('Error calling API/Proxy:', error);
-                 // Check for specific backend proxy errors (e.g., authentication failure)
-                 if (error.response && error.response.status === 401) {
-                     throw new Error("API key authentication failed.");
-                 }
-                // Re-throw other errors to be caught by sendMessage
+                console.error('Error calling API:', error);
                 throw error;
             }
         }
 
-
-        function createPrompt() {
-            // Summarize recent user queries for context, ensuring parts[0].text exists
-             const recentQueries = conversationHistory
-                .filter(entry => entry.role === 'user' && entry.parts?.[0]?.text)
-                .slice(-3) // Get last 3 user messages
-                .map(entry => entry.parts[0].text)
-                .join('; ');
-            const contextSummary = recentQueries ? `Recent user queries for context: ${recentQueries}` : 'This is the start of the conversation.';
-
-            // System instruction defining the chatbot's role and constraints
-            const systemInstruction = {
-                role: 'user', // System instructions are often passed in the 'user' role initially
-                parts: [{
-                    text: `You are a friendly and helpful AI assistant for Planet Beauty (${PLANET_BEAUTY_DOMAIN}). Your primary goal is to assist users with beauty product queries using ONLY products from the Planet Beauty catalog (which is known to you implicitly via the system, you don't see the raw data). Engage in natural, helpful conversation.
-
-**VERY IMPORTANT RULES:**
-1.  **Strictly Planet Beauty:** ONLY recommend products available at Planet Beauty. ABSOLUTELY DO NOT suggest products or provide information/links for websites outside of ${PLANET_BEAUTY_DOMAIN}.
-2.  **Catalog Focus:** Base recommendations on typical beauty products (skincare, haircare, makeup) and beauty devices/tools (LED masks, facial devices, etc).
-3.  **JSON Output:** ALWAYS respond with a valid JSON object containing three keys: "text" (your conversational reply, max 150 words), "query_type" (string: "greeting", "product", "other"), and "products" (array of product objects OR an empty array []).
-4.  **Product Object Format:** When recommending products, the "products" array must contain objects with ONLY a "name" key, matching a Planet Beauty product name exactly. Example: \`{"name": "Specific Product Name Here"}\`
-5.  **Brand Awareness:** When a user asks for a specific brand (e.g., "Dr. Dennis Gross") or product line (e.g., "Spectralite"), try to find products from that exact brand/line BEFORE suggesting alternatives.
-6.  **Device and Tool Recognition:** Recognize that Planet Beauty sells beauty devices and tools like LED masks, light therapy devices, and facial tools. Don't automatically assume these are unavailable.
-7.  **Thorough Search Before "Not Available":** NEVER state that a product is unavailable at Planet Beauty unless you've thoroughly checked all possible variations (e.g., check "Dr Dennis Gross Spectralite", "DRx SpectraLite", etc). Be VERY careful before claiming a product isn't available.
-8.  **Handling Not Found:** Only if a user asks for a product type that is truly NOT typically sold by beauty retailers or likely not in the catalog:
-    *   Set "query_type": "product".
-    *   In the "text", clearly state it's not available *at Planet Beauty*.
-    *   Suggest 1-2 relevant *alternative* product types available at Planet Beauty.
-    *   Include the names of 1-2 specific alternative products from the catalog in the "products" array.
-    *   If no suitable alternatives exist, return an empty "products" array.
-9.  **Query Types:**
-    *   "greeting": For simple hellos, how are you, etc. Respond warmly, "products": [].
-    *   "product": For requests about specific products, categories, concerns. Provide text response and matching "products" array (or alternatives if not found).
-    *   "other": For thanks, goodbyes, questions about store hours (which you don't know - politely state that), or unclear queries. Respond appropriately, "products": [].
-10. **Context:** Use the conversation history to understand follow-up questions and provide consistent responses. ${contextSummary}
-
-**Example Scenarios:**
-
-*   User: I'm looking for the Dr. Dennis Gross Spectralite mask
-    Assistant JSON: \`{"text": "Yes, Planet Beauty carries the Dr. Dennis Gross DRx SpectraLite Faceware Pro! This LED mask uses red and blue light therapy to reduce wrinkles and acne. It's a premium device that delivers professional-quality results at home.", "query_type": "product", "products": [{"name": "Dr. Dennis Gross DRx Skincare SpectraLite Faceware Pro - White"}]}\`
-*   User: Does Planet Beauty sell Spectralite products?
-    Assistant JSON: \`{"text": "Yes! Planet Beauty carries Dr. Dennis Gross Spectralite products, including the popular DRx SpectraLite FaceWare Pro. This LED light therapy mask helps reduce wrinkles and acne with regular use.", "query_type": "product", "products": [{"name": "Dr. Dennis Gross DRx Skincare SpectraLite Faceware Pro - White"}, {"name": "Dr. Dennis Gross DRx SpectraLite LipWare Pro"}]}\`
-
-Now, respond to the latest user message based on these rules and the conversation history.`
-                }]
+        function updateQueryContext(query) {
+            const queryLower = query.toLowerCase();
+            const analysis = analyzeQuery(queryLower);
+            lastQueryContext = {
+                productType: analysis.categories[0] || lastQueryContext.productType,
+                preferences: userProfile.concerns || [],
+                brand: analysis.brand || lastQueryContext.brand
             };
-
-            // Filter history to ensure valid structure before sending
-            const validHistory = conversationHistory.filter(entry =>
-                entry.role && (entry.role === 'user' || entry.role === 'model') &&
-                entry.parts && Array.isArray(entry.parts) && entry.parts[0] && typeof entry.parts[0].text === 'string'
-            );
-
-            // Combine system instruction with valid conversation history
-            // The last entry in validHistory is the current user message we need the AI to respond to.
-            return [systemInstruction, ...validHistory];
         }
 
+        function addMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = sender === 'user' ? 'user-message animate-fade-in' : 'bot-message animate-fade-in';
+            messageDiv.innerHTML = DOMPurify.sanitize(text);
+            chatArea.appendChild(messageDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
 
-        // Enhanced product search with brand and context awareness
-        function findRelevantProducts(query, context = lastQueryContext, maxResults = 3) {
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'typing-indicator';
+            typingDiv.className = 'bot-message';
+            typingDiv.innerHTML = '<span class="typing-dots">...</span>';
+            chatArea.appendChild(typingDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const typingDiv = document.getElementById('typing-indicator');
+            if (typingDiv) {
+                typingDiv.remove();
+            }
+        }
+
+        function displayError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message animate-fade-in';
+            errorDiv.innerHTML = DOMPurify.sanitize(`${message} <button class="retry-btn" onclick="document.getElementById('chat-input').focus()">Retry</button>`);
+            chatArea.appendChild(errorDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        async function addProductCard(product, query) {
+            const card = document.createElement('a');
+            card.href = product.url;
+            card.className = 'product-card animate-fade-in';
+            card.setAttribute('target', '_blank');
+            card.setAttribute('rel', 'noopener noreferrer');
+
+            let imageHtml = `<div class="image-placeholder">Image not available</div>`;
+            if (product.image) {
+                if (imageCache[product.image]) {
+                    imageHtml = `<img src="${imageCache[product.image]}" alt="${product.name}" class="product-image">`;
+                } else {
+                    imageHtml = `<div class="image-loading"><div class="spinner"></div></div>`;
+                    try {
+                        const imgRes = await axios.get(product.image, { timeout: IMAGE_TIMEOUT });
+                        imageCache[product.image] = product.image;
+                        localStorage.setItem('imageCache', JSON.stringify(imageCache));
+                        imageHtml = `<img src="${product.image}" alt="${product.name}" class="product-image lazyload">`;
+                    } catch (error) {
+                        console.warn(`Failed to load image for ${product.name}:`, error);
+                        imageHtml = `<img src="${getBackupImage(query)}" alt="${product.name}" class="product-image lazyload">`;
+                    }
+                }
+            }
+
+            card.innerHTML = `
+                ${imageHtml}
+                <div class="product-info">
+                    <div class="product-name">${DOMPurify.sanitize(product.name)}</div>
+                    <div class="product-description">${DOMPurify.sanitize(product.description)}</div>
+                    <div class="product-price">${DOMPurify.sanitize(product.price)}</div>
+                </div>
+            `;
+            chatArea.appendChild(card);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        async function processResponse(response, query) {
+            hideTypingIndicator();
+            const text = DOMPurify.sanitize(response.text);
+            addMessage(text, 'bot');
+
+            if (response.products && response.products.length > 0) {
+                const matchedProducts = response.products
+                    .map(p => findBestProductMatch(p.name, query))
+                    .filter(p => p);
+
+                const uniqueProducts = Array.from(new Map(
+                    matchedProducts.map(p => [p.id || p.name, p])
+                ).values());
+
+                if (uniqueProducts.length > 0) {
+                    await Promise.all(uniqueProducts.map(p => addProductCard(p, query)));
+                } else {
+                    addMessage("I couldn't find exact matches for the suggested products. Let me try searching our catalog:", 'bot');
+                    const fallbackProducts = findRelevantProducts(query);
+                    if (fallbackProducts.length > 0) {
+                        await Promise.all(fallbackProducts.map(p => addProductCard(p, query)));
+                    } else {
+                        addMessage("No matching products found. Could you clarify your request?", 'bot');
+                    }
+                }
+            } else if (response.query_type === 'product') {
+                const fallbackProducts = findRelevantProducts(query);
+                if (fallbackProducts.length > 0) {
+                    addMessage("Here are some products that might match your request:", 'bot');
+                    await Promise.all(fallbackProducts.map(p => addProductCard(p, query)));
+                } else {
+                    addMessage("I couldn't find any products matching your request. Could you provide more details?", 'bot');
+                }
+            }
+
+            if (response.query_type === 'greeting' || response.query_type === 'other') {
+                await generateSuggestedQuestions();
+            }
+        }
+
+        function findBestProductMatch(productName, query) {
+            if (!productName || !products.length) return null;
             const queryLower = (query || "").toLowerCase();
-            if (!queryLower || products.length === 0) return []; // Need query and products
+            const nameLower = productName.toLowerCase();
 
-            debugLog('Starting enhanced product search', {
-                query: queryLower,
-                context: context
+            let bestMatch = null;
+            let highestScore = -1;
+
+            products.forEach(product => {
+                const productNameLower = (product.name || "").toLowerCase();
+                const descLower = (product.description || "").toLowerCase();
+                let score = 0;
+
+                if (productNameLower === nameLower) {
+                    score += 50;
+                } else if (productNameLower.includes(nameLower)) {
+                    score += 30;
+                }
+
+                const queryAnalysis = analyzeQuery(queryLower);
+                if (queryAnalysis.brand && product.brand === queryAnalysis.brand) {
+                    score += 20;
+                }
+                if (queryAnalysis.descriptionTags.length > 0) {
+                    const descMatchCount = queryAnalysis.descriptionTags.filter(tag =>
+                        product.descriptionTags.includes(tag)
+                    ).length;
+                    score += descMatchCount * 10;
+                }
+                if (queryAnalysis.categories.length > 0) {
+                    const catMatchCount = queryAnalysis.categories.filter(cat =>
+                        product.categories.includes(cat)
+                    ).length;
+                    score += catMatchCount * 5;
+                }
+
+                if (descLower.includes(nameLower)) score += 5;
+
+                if (score > highestScore) {
+                    highestScore = score;
+                    bestMatch = product;
+                }
             });
 
-            // 1. Try to understand query better
+            return bestMatch;
+        }
+
+        function findRelevantProducts(query, context = lastQueryContext, maxResults = 3) {
+            const queryLower = (query || "").toLowerCase();
+            if (!queryLower || products.length === 0) return [];
+
+            debugLog('Starting product search', { query: queryLower, context });
+
             const queryAnalysis = analyzeQuery(queryLower);
             debugLog('Query analysis', queryAnalysis);
 
-            // 2. Detect if query is a refinement (e.g., "cheapest", "best")
             const refinements = {
                 price_low: ['cheapest', 'cheaper', 'affordable', 'lowest price', 'budget', 'inexpensive'],
                 price_high: ['luxury', 'high-end', 'premium', 'expensive', 'best'],
@@ -1292,27 +956,18 @@ Now, respond to the latest user message based on these rules and the conversatio
                 }
             }
 
-            // 3. Special case: refining previous results
             if (activeRefinements.length > 0 && context.productType) {
-                debugLog('Refinement detected', {
-                    refinements: activeRefinements,
-                    previousType: context.productType
-                });
-
-                // Get products from the previous category
+                debugLog('Refinement detected', { refinements: activeRefinements, previousType: context.productType });
                 let productsToRefine = [];
                 if (context.brand && productBrands[context.brand]) {
-                    // If previous query had a brand, get products from that brand within category
                     productsToRefine = productBrands[context.brand].filter(p =>
-                        p.categories && p.categories.includes(context.productType)
+                        p.categories.includes(context.productType)
                     );
                 } else if (productCategories[context.productType]) {
-                    // Otherwise just get category products
                     productsToRefine = [...productCategories[context.productType]];
                 }
 
                 if (productsToRefine.length > 0) {
-                    // Apply refinements
                     if (activeRefinements.includes('price_low')) {
                         productsToRefine.sort((a, b) => {
                             const priceA = parseFloat(a.price?.replace(/[^0-9.]/g, '')) || Infinity;
@@ -1320,8 +975,7 @@ Now, respond to the latest user message based on these rules and the conversatio
                             return priceA - priceB;
                         });
                         return productsToRefine.slice(0, maxResults);
-                    }
-                    else if (activeRefinements.includes('price_high')) {
+                    } else if (activeRefinements.includes('price_high')) {
                         productsToRefine.sort((a, b) => {
                             const priceA = parseFloat(a.price?.replace(/[^0-9.]/g, '')) || 0;
                             const priceB = parseFloat(b.price?.replace(/[^0-9.]/g, '')) || 0;
@@ -1329,992 +983,69 @@ Now, respond to the latest user message based on these rules and the conversatio
                         });
                         return productsToRefine.slice(0, maxResults);
                     }
-                    // Add other refinement types as needed (rating, newness - requires data)
                 }
             }
 
-            // 4. Brand-specific search
             if (queryAnalysis.brand) {
                 debugLog('Brand-specific search', { brand: queryAnalysis.brand });
-
-                // Filter to brand products
                 let brandProducts = productBrands[queryAnalysis.brand] || [];
 
-                // If specific product line mentioned, further filter
-                if (queryAnalysis.productLine && brandProducts.length > 0) {
-                    debugLog('Product line filter', { line: queryAnalysis.productLine });
-                    const lineProducts = brandProducts.filter(p =>
-                        p.name && (
-                            p.name.toLowerCase().includes(queryAnalysis.productLine) ||
-                            (p.productLine === queryAnalysis.productLine)
-                        )
+                if (queryAnalysis.descriptionTags.length > 0 && brandProducts.length > 0) {
+                    debugLog('Description filter within brand', { descriptionTags: queryAnalysis.descriptionTags });
+                    const descFiltered = brandProducts.filter(p =>
+                        p.descriptionTags.some(tag => queryAnalysis.descriptionTags.includes(tag))
                     );
-
-                    if (lineProducts.length > 0) {
-                        // Found specific line products
-                        return lineProducts.slice(0, maxResults);
+                    if (descFiltered.length > 0) {
+                        return descFiltered.slice(0, maxResults);
                     }
                 }
 
-                // If categories mentioned, filter by those
                 if (queryAnalysis.categories.length > 0 && brandProducts.length > 0) {
                     debugLog('Category filter within brand', { categories: queryAnalysis.categories });
                     const categoryFiltered = brandProducts.filter(p =>
-                        p.categories && p.categories.some(cat => queryAnalysis.categories.includes(cat))
+                        p.categories.some(cat => queryAnalysis.categories.includes(cat))
                     );
-
                     if (categoryFiltered.length > 0) {
                         return categoryFiltered.slice(0, maxResults);
                     }
                 }
 
-                // If we have brand products but no specific filters matched, return top brand products
                 if (brandProducts.length > 0) {
                     debugLog('Returning general brand products');
                     return brandProducts.slice(0, maxResults);
                 }
             }
 
-            // 5. Specialized device search (for LED masks, tools, etc.)
             if (queryLower.includes('led') || queryLower.includes('mask') ||
                 queryLower.includes('device') || queryLower.includes('tool') ||
                 queryLower.includes('spectralite') || queryLower.includes('light therapy')) {
-
                 debugLog('Specialized device search');
+                const deviceProducts = productCategories['devices'] || [];
 
-                // Check for specific device types
-                const deviceProducts = products.filter(p =>
-                    p.categories && p.categories.includes('devices')
-                );
-
-                // Further refine by specific terms
                 if (queryLower.includes('spectralite') ||
                     (queryLower.includes('dennis') && (queryLower.includes('led') || queryLower.includes('mask')))) {
-
                     const spectraliteProducts = deviceProducts.filter(p =>
                         p.name && (
                             p.name.toLowerCase().includes('spectralite') ||
-                            p.name.toLowerCase().includes('faceware') ||
-                            (p.name.toLowerCase().includes('dr. dennis') &&
-                             (p.name.toLowerCase().includes('led') || p.name.toLowerCase().includes('mask')))
+                            p.descriptionTags.includes('light_therapy') ||
+                            (p.brand.includes('dennis') && (p.name.toLowerCase().includes('led') || p.name.toLowerCase().includes('mask')))
                         )
                     );
-
                     if (spectraliteProducts.length > 0) {
                         return spectraliteProducts.slice(0, maxResults);
                     }
                 }
 
-                // General LED/light therapy devices
-                if (queryLower.includes('led') || queryLower.includes('light therapy')) {
-                    const ledProducts = deviceProducts.filter(p =>
-                        p.name && (
-                            p.name.toLowerCase().includes('led') ||
-                            p.name.toLowerCase().includes('light')
-                        )
-                    );
-
-                    if (ledProducts.length > 0) {
-                        return ledProducts.slice(0, maxResults);
-                    }
-                }
-
-                // If we found device products, return them
                 if (deviceProducts.length > 0) {
                     return deviceProducts.slice(0, maxResults);
                 }
             }
 
-            // 6. Advanced keyword scoring
             debugLog('Performing keyword scoring search');
-
-            // Basic keyword extraction (improved)
             const stopWords = new Set(['the', 'a', 'an', 'is', 'for', 'what', 'can', 'you', 'recommend', 'find', 'me', 'i', 'need', 'with', 'of', 'my', 'skin', 'hair', 'product', 'products', 'at', 'from', 'planet', 'beauty']);
-            const keywords = queryLower.split(/[\s,.;!?-]+/) // Split by common delimiters
+            const keywords = queryLower.split(/[\s,.;!?-]+/)
                 .filter(word => word.length > 2 && !stopWords.has(word));
 
             debugLog('Extracted keywords', keywords);
 
-            // If no keywords found, try category matching
-            if (keywords.length === 0 && queryAnalysis.categories.length > 0) {
-                let categoryProducts = [];
-                for (const category of queryAnalysis.categories) {
-                    if (productCategories[category] && productCategories[category].length > 0) {
-                        categoryProducts = [...categoryProducts, ...productCategories[category]];
-                    }
-                }
-
-                if (categoryProducts.length > 0) {
-                    // Remove duplicates
-                    const uniqueProducts = Array.from(new Map(
-                        categoryProducts.map(p => [p.id || p.name, p])
-                    ).values());
-
-                    return uniqueProducts.slice(0, maxResults);
-                }
-            }
-
-            // Score all products based on query relevance
-            const scoredProducts = products.map(product => {
-                let score = 0;
-                const nameLower = (product.name || "").toLowerCase();
-                const descLower = (product.description || "").toLowerCase();
-                const combinedText = `${nameLower} ${descLower}`;
-
-                // Brand match gives high score
-                if (queryAnalysis.brand && product.brand === queryAnalysis.brand) {
-                    score += 20;
-                }
-
-                // Product line match gives high score
-                if (queryAnalysis.productLine && product.productLine === queryAnalysis.productLine) {
-                    score += 15;
-                }
-
-                // Category matches
-                if (queryAnalysis.categories.length > 0) {
-                    const catMatchCount = queryAnalysis.categories.filter(cat =>
-                        product.categories && product.categories.includes(cat)
-                    ).length;
-
-                    score += catMatchCount * 5;
-                }
-
-                // Keyword matches
-                keywords.forEach(term => {
-                    if (nameLower.includes(term)) score += 3; // Higher score for name match
-                    if (descLower.includes(term)) score += 1; // Lower score for description match
-                });
-
-                // Bonus for exact phrase match in name
-                if (nameLower.includes(queryLower)) score += 10;
-
-                // Special case for specific product types that might be misrecognized
-                if ((queryLower.includes('spectralite') || queryLower.includes('led mask')) &&
-                    (nameLower.includes('spectralite') ||
-                     (nameLower.includes('led') && nameLower.includes('mask')))) {
-                    score += 25; // Very high score for exact specialty items
-                }
-
-                return { product, score };
-            });
-
-            // Filter, sort and return top matches
-            const relevantProducts = scoredProducts
-                .filter(item => item.score > 0)
-                .sort((a, b) => b.score - a.score)
-                .map(item => item.product);
-
-            debugLog('Search complete', {
-                relevantCount: relevantProducts.length,
-                topScores: scoredProducts
-                    .filter(item => item.score > 0)
-                    .sort((a, b) => b.score - a.score)
-                    .slice(0, 3)
-                    .map(item => `${item.product.name}: ${item.score}`)
-            });
-
-            // Return top results
-            return relevantProducts.slice(0, maxResults);
-        }
-
-
-        async function processResponse(response, userQuery) {
-            hideTypingIndicator();
-
-            if (!response || typeof response !== 'object') {
-                console.error("Invalid response object received:", response);
-                addMessage("Sorry, I received an unexpected response format. Please try rephrasing.", 'bot');
-                return;
-            }
-
-            // Sanitize and display the bot's text response
-            if (response.text) {
-                addMessage(DOMPurify.sanitize(response.text, { USE_PROFILES: { html: true } }), 'bot');
-                updateUserProfile(response.text); // Update profile based on bot's understanding
-            } else {
-                // Provide a generic response if text is missing but products might be relevant
-                addMessage("Let me see what I can find for you in the Planet Beauty catalog...", 'bot');
-            }
-
-            const queryType = response.query_type || 'other';
-            let productsToShow = []; // Products to be displayed as cards
-
-            // --- Process Products Suggested by API ---
-            if (queryType === 'product' && response.products && Array.isArray(response.products) && response.products.length > 0) {
-                debugLog("API suggested products", response.products.map(p => p?.name || 'Invalid Product Object'));
-
-                for (const suggestedProduct of response.products) {
-                    // Validate the suggested product object structure
-                    if (!suggestedProduct || typeof suggestedProduct.name !== 'string' || !suggestedProduct.name.trim()) {
-                        console.warn("Skipping invalid product object from API:", suggestedProduct);
-                        continue;
-                    }
-
-                    const nameToFind = suggestedProduct.name.trim().toLowerCase();
-                    // Enhanced product matching with better brand awareness
-                    let foundProduct = findBestProductMatch(nameToFind, userQuery);
-
-                    if (foundProduct) {
-                        // Avoid adding duplicates
-                        if (!productsToShow.some(p => (p.id || p.name) === (foundProduct.id || foundProduct.name))) {
-                            debugLog(`Matched API suggestion "${suggestedProduct.name}" to catalog product: ${foundProduct.name}`);
-                            productsToShow.push({
-                                ...foundProduct, // Spread operator copies all properties
-                                name: foundProduct.name || "Unnamed Product",
-                                description: foundProduct.description || "Description not available.",
-                                price: foundProduct.price || "",
-                                image: foundProduct.image,
-                                url: foundProduct.url
-                            });
-                        }
-                    } else {
-                        debugLog(`API suggestion "${suggestedProduct.name}" not found in catalog. Trying aggressive matching...`);
-
-                        // Try aggressive matching for specialized products
-                        const aggressiveMatch = findAggressiveProductMatch(nameToFind, userQuery);
-                        if (aggressiveMatch) {
-                            if (!productsToShow.some(p => (p.id || p.name) === (aggressiveMatch.id || aggressiveMatch.name))) {
-                                debugLog(`Found aggressive match for "${suggestedProduct.name}": ${aggressiveMatch.name}`);
-                                productsToShow.push({
-                                    ...aggressiveMatch,
-                                    name: aggressiveMatch.name || "Unnamed Product",
-                                    description: aggressiveMatch.description || "Description not available.",
-                                    price: aggressiveMatch.price || "",
-                                    image: aggressiveMatch.image,
-                                    url: aggressiveMatch.url
-                                });
-                            }
-                        } else {
-                             debugLog(`No match found for API suggestion "${suggestedProduct.name}" even with aggressive search.`);
-                        }
-                    }
-                }
-            }
-
-            // --- Handle Cases Where API Found No Products or Query Was Niche ---
-            if (productsToShow.length === 0 && queryType === 'product') {
-                debugLog("API returned no matching products. Running enhanced search.");
-                const enhancedSearchProducts = findRelevantProducts(userQuery);
-
-                if (enhancedSearchProducts.length > 0) {
-                    // If our enhanced search finds products
-                    const queryAnalysis = analyzeQuery(userQuery.toLowerCase());
-
-                    // Check if this was a specific product search that should have been found
-                    const isSpecificProductSearch =
-                        queryAnalysis.brand && queryAnalysis.productLine ||
-                        userQuery.toLowerCase().includes('spectralite') ||
-                        (userQuery.toLowerCase().includes('dr dennis') && userQuery.toLowerCase().includes('mask'));
-
-                    if (isSpecificProductSearch && !response.text?.toLowerCase().includes("carry")) { // Avoid contradicting if API already said yes
-                        // If it was a specific product, frame the results correctly
-                        addMessage(`Yes, Planet Beauty does carry ${queryAnalysis.brand ? 'products from ' + formatBrandName(queryAnalysis.brand) : 'these products'}. Here's what I found:`, 'bot');
-                    } else if (!response.text?.toLowerCase().includes("couldn't find") && !response.text?.toLowerCase().includes("not available")) { // Avoid adding if API already gave results/alternatives
-                        // Otherwise, present them as general recommendations
-                        addMessage("Here are some Planet Beauty products based on your request:", 'bot');
-                    }
-
-                    // Map search results to the structure needed for display
-                    productsToShow = enhancedSearchProducts.map(p => ({
-                        ...p,
-                        name: p.name || "Unnamed Product",
-                        description: p.description || "Description not available.",
-                        price: p.price || "",
-                        image: p.image,
-                        url: p.url
-                    }));
-                } else {
-                    // If search finds nothing and API didn't already say so
-                    if (!response.text?.toLowerCase().includes("couldn't find") && !response.text?.toLowerCase().includes("not available")) {
-                        addMessage("I couldn't find specific products matching your request in the Planet Beauty catalog. Could you try rephrasing, or ask about a different type of product?", 'bot');
-                    }
-                }
-            }
-
-            // --- Apply Refinements (e.g., "cheapest") ---
-            if (productsToShow.length > 1 && lastQueryContext.preferences.includes('cheapest')) {
-                debugLog("Applying 'cheapest' refinement to results.");
-                const sortedByPrice = productsToShow
-                    .filter(p => p.price && typeof p.price === 'string' && p.price.match(/\d/))
-                    .sort((a, b) => {
-                        const priceA = parseFloat(a.price.replace(/[^0-9.]/g, '')) || Infinity;
-                        const priceB = parseFloat(b.price.replace(/[^0-9.]/g, '')) || Infinity;
-                        return priceA - priceB;
-                    });
-
-                if (sortedByPrice.length > 0) {
-                    productsToShow = sortedByPrice.slice(0, 1); // Show only the cheapest one after refinement
-                }
-            }
-
-            // --- Display Product Cards ---
-            if (productsToShow.length > 0) {
-                const maxCards = 3; // Limit the number of product cards shown
-                await Promise.all(productsToShow.slice(0, maxCards).map(p => addProductCard(p, userQuery)));
-            }
-        }
-
-
-        // Enhanced product matching function with brand and line awareness
-        function findBestProductMatch(nameToFind, userQuery) {
-            // Exact match first
-            let foundProduct = products.find(p => p.name && p.name.toLowerCase() === nameToFind);
-
-            // If no exact match, try progressively looser matches
-            if (!foundProduct) {
-                const queryLower = userQuery.toLowerCase();
-                const queryAnalysis = analyzeQuery(queryLower);
-
-                // If brand is detected in query, prioritize that brand's products
-                if (queryAnalysis.brand) {
-                    const brandProducts = productBrands[queryAnalysis.brand] || [];
-
-                    // Try to find a match within this brand's products
-                    if (brandProducts.length > 0) {
-                        // Exact name match within brand (redundant check, but safe)
-                        foundProduct = brandProducts.find(p =>
-                            p.name && p.name.toLowerCase() === nameToFind
-                        );
-
-                        // Contains name within brand
-                        if (!foundProduct) {
-                            foundProduct = brandProducts.find(p =>
-                                p.name && (
-                                    p.name.toLowerCase().includes(nameToFind) ||
-                                    nameToFind.includes(p.name.toLowerCase()) // Check if API name is substring of catalog name
-                                )
-                            );
-                        }
-
-                        // Product line match within brand (e.g., "Spectralite")
-                        if (!foundProduct && queryAnalysis.productLine) {
-                            foundProduct = brandProducts.find(p =>
-                                p.name && (
-                                    p.name.toLowerCase().includes(queryAnalysis.productLine) ||
-                                    (p.productLine === queryAnalysis.productLine)
-                                )
-                            );
-                        }
-                    }
-                }
-
-                // If no brand-specific match, try partial match across all products
-                if (!foundProduct) {
-                    foundProduct = products.find(p =>
-                        p.name && (
-                            p.name.toLowerCase().includes(nameToFind) ||
-                            nameToFind.includes(p.name.toLowerCase())
-                        )
-                    );
-                }
-
-                // Special case for specific hard-to-match products like LED masks
-                if (!foundProduct && (nameToFind.includes('spectralite') || nameToFind.includes('led mask') || nameToFind.includes('faceware'))) {
-                    foundProduct = products.find(p =>
-                        p.name && (
-                            p.name.toLowerCase().includes('spectralite') ||
-                            p.name.toLowerCase().includes('faceware') ||
-                            (p.name.toLowerCase().includes('led') && p.name.toLowerCase().includes('mask'))
-                        )
-                    );
-                }
-            }
-
-            return foundProduct;
-        }
-
-
-        // Aggressive matching for special cases
-        function findAggressiveProductMatch(nameToFind, userQuery) {
-            const queryLower = userQuery.toLowerCase();
-
-            // Special case for Spectralite/LED masks
-            if ((nameToFind.includes('spectralite') ||
-                 nameToFind.includes('faceware') ||
-                 (nameToFind.includes('led') && nameToFind.includes('mask')) ||
-                 (queryLower.includes('spectralite') ||
-                  queryLower.includes('led mask') ||
-                  (queryLower.includes('dr dennis') && queryLower.includes('mask'))
-                 ))) {
-
-                // Look for any Spectralite or LED mask product from Dr. Dennis Gross first
-                 let spectraliteProducts = products.filter(p =>
-                    p.brand === 'dr_dennis_gross' &&
-                    p.name && (
-                        p.name.toLowerCase().includes('spectralite') ||
-                        p.name.toLowerCase().includes('faceware') ||
-                        (p.name.toLowerCase().includes('led') && p.name.toLowerCase().includes('mask')) ||
-                        (p.name.toLowerCase().includes('dr. dennis') && p.name.toLowerCase().includes('drx')) // Broader DRX check
-                    )
-                );
-
-                // If none found from DDG, check other brands for LED masks
-                if (spectraliteProducts.length === 0) {
-                    spectraliteProducts = products.filter(p =>
-                        p.categories?.includes('devices') &&
-                        p.name && (
-                            p.name.toLowerCase().includes('led') ||
-                            p.name.toLowerCase().includes('light')
-                        ) && p.name.toLowerCase().includes('mask') // Ensure it's a mask
-                    );
-                }
-
-                if (spectraliteProducts.length > 0) {
-                    return spectraliteProducts[0]; // Return the first match
-                }
-            }
-
-            // Check for Dr. Dennis Gross products generally if mentioned
-            if (nameToFind.includes('dr. dennis') ||
-                nameToFind.includes('dr dennis') ||
-                queryLower.includes('dr. dennis') ||
-                queryLower.includes('dr dennis')) {
-
-                const drDennisProducts = productBrands['dr_dennis_gross'] || []; // Use organized list
-
-                if (drDennisProducts.length > 0) {
-                    // Try to find one that best matches the rest of the query
-                    const keywords = queryLower
-                        .replace(/dr\.?\sdennis\sgross/g, '') // Remove variations of the brand name
-                        .replace(/dr\.?\sdennis/g, '')
-                        .trim()
-                        .split(/\s+/);
-
-                    if (keywords.length > 0 && keywords[0] !== '') { // Ensure there are actual keywords left
-                        // Score each product by keyword matches
-                        const scoredProducts = drDennisProducts.map(product => {
-                            const nameLower = product.name.toLowerCase();
-                            let score = 0;
-
-                            keywords.forEach(keyword => {
-                                if (keyword.length > 2 && nameLower.includes(keyword)) {
-                                    score += 1;
-                                }
-                            });
-
-                            return { product, score };
-                        });
-
-                        // Sort by score and return best match
-                        scoredProducts.sort((a, b) => b.score - a.score);
-                        if (scoredProducts.length > 0 && scoredProducts[0].score > 0) {
-                            return scoredProducts[0].product;
-                        }
-                    }
-
-                    // If no keyword match, return any product from this brand (maybe the Faceware Pro if available?)
-                    const faceWarePro = drDennisProducts.find(p => p.name?.toLowerCase().includes('spectralite'));
-                    return faceWarePro || drDennisProducts[0]; // Return Faceware Pro or the first product
-                }
-            }
-
-            return null;
-        }
-
-
-        // --- UI Functions ---
-        function addMessage(text, sender) {
-            const div = document.createElement('div');
-            div.className = sender === 'user' ? 'user-message' : 'bot-message';
-            // Sanitize HTML content from bot messages before inserting
-            div.innerHTML = DOMPurify.sanitize(text, { USE_PROFILES: { html: true } }); // Allow safe HTML from bot
-            chatArea.appendChild(div);
-
-            // Animate the message appearance
-            anime({
-                targets: div,
-                translateY: [10, 0], // Slide up effect
-                opacity: [0, 1],
-                duration: 400,
-                easing: 'easeOutQuad'
-            });
-
-            scrollToBottom(); // Ensure view scrolls to the new message
-        }
-
-        function showTypingIndicator() {
-            hideTypingIndicator(); // Remove any existing indicator first
-            const div = document.createElement('div');
-            div.id = 'typing-indicator';
-            div.className = 'bot-message animate-fade-in'; // Use bot message style + fade in
-            div.setAttribute('aria-live', 'polite'); // Announce presence to screen readers
-            div.setAttribute('aria-label', 'Bot is typing');
-            div.innerHTML = '<span>Thinking</span><span class="typing-dots">.</span>';
-            chatArea.appendChild(div);
-            scrollToBottom();
-
-            // Animate the dots
-            let dotCount = 1;
-            const intervalId = setInterval(() => {
-                const dotsSpan = div.querySelector('.typing-dots');
-                if (dotsSpan) {
-                    dotCount = (dotCount % 3) + 1; // Cycle 1, 2, 3 dots
-                    dotsSpan.textContent = '.'.repeat(dotCount);
-                } else {
-                    clearInterval(intervalId); // Stop if element is removed
-                }
-            }, 400);
-            // Store interval ID to clear it later
-            div.dataset.intervalId = intervalId.toString();
-        }
-
-        function hideTypingIndicator() {
-            const indicator = document.getElementById('typing-indicator');
-            if (indicator) {
-                const intervalId = indicator.dataset.intervalId;
-                if (intervalId) {
-                    clearInterval(parseInt(intervalId, 10)); // Clear the animation interval
-                }
-                indicator.remove(); // Remove the element from DOM
-            }
-        }
-
-        function displayError(message) {
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'error-message animate-fade-in'; // Add fade-in animation
-            errorDiv.setAttribute('role', 'alert'); // Indicate it's an alert message
-            // Sanitize the error message itself, just in case, though it's usually internal
-            const sanitizedMessage = DOMPurify.sanitize(message);
-            errorDiv.innerHTML = `
-                <i class="fas fa-exclamation-circle mr-2"></i> ${sanitizedMessage}
-                <button class="retry-btn mt-2 text-pink-600 underline" aria-label="Retry last message">Try Again</button>
-            `;
-
-            const retryBtn = errorDiv.querySelector('.retry-btn');
-            if (retryBtn) {
-                retryBtn.addEventListener('click', () => {
-                    // Find the last message sent by the user from history
-                    const lastUserMessageEntry = conversationHistory.filter(m => m.role === 'user').pop();
-                    if (lastUserMessageEntry?.parts?.[0]?.text) {
-                         // Remove the failed model response (if any) and the user message that caused it from history
-                         conversationHistory = conversationHistory.filter(entry => entry !== lastUserMessageEntry);
-                         const lastModelResponseIndex = conversationHistory.map(e => e.role).lastIndexOf('model');
-                         if (lastModelResponseIndex > conversationHistory.map(e => e.role).lastIndexOf('user')) {
-                             conversationHistory.splice(lastModelResponseIndex, 1);
-                         }
-
-                        // Restore the last message to the input field and resend
-                        chatInput.value = lastUserMessageEntry.parts[0].text;
-                        updateSendButtonState();
-                        errorDiv.remove(); // Remove the error message on retry
-                        sendMessage(); // Trigger send again
-                    } else {
-                        // If history is lost or empty
-                        addMessage("Could not retrieve the last message to retry. Please type your message again.", 'bot');
-                        errorDiv.remove();
-                    }
-                });
-            }
-
-            chatArea.appendChild(errorDiv);
-            scrollToBottom();
-        }
-
-
-        async function addProductCard(p, queryContext) {
-            // --- Strict URL Validation ---
-            let finalUrl = p.url || formatProductUrl(p.name); // Start with provided or formatted URL
-            try {
-                 // Ensure it's an absolute URL starting with the correct domain
-                 const parsed = new URL(finalUrl);
-                 if (!parsed.hostname.endsWith('planetbeauty.com')) {
-                     console.warn(`Correcting non-Planet Beauty URL in product card for ${p.name}: ${finalUrl}`);
-                     finalUrl = formatProductUrl(p.name); // Re-format to ensure domain
-                 }
-                 // Ensure HTTPS
-                 finalUrl = finalUrl.replace(/^http:/, 'https:');
-            } catch(e) {
-                 console.error(`Invalid URL generated for product ${p.name}: ${finalUrl}. Defaulting.`);
-                 finalUrl = PLANET_BEAUTY_DOMAIN; // Default to homepage on error
-            }
-             // Final safety check
-             if (!finalUrl.startsWith('https://' + PLANET_BEAUTY_DOMAIN.replace(/^https?:\/\//,''))) { // Check base domain after protocol
-                 console.error(`URL validation failed for ${p.name}. Defaulting to homepage.`);
-                 finalUrl = PLANET_BEAUTY_DOMAIN;
-             }
-
-
-            const card = document.createElement('a');
-            card.href = finalUrl; // Use the validated URL
-            card.target = '_blank'; // Open in new tab
-            card.rel = 'noopener noreferrer'; // Security best practice
-            card.className = 'product-card animate-fade-in'; // Styling and animation
-            card.setAttribute('aria-label', `View product: ${p.name || 'Product'}`); // Accessibility
-            card.addEventListener('click', () => {
-                // Track product clicks
-                if (typeof gtag === 'function') {
-                    gtag('event', 'product_click', {
-                        event_category: 'Chatbot',
-                        event_label: p.name || 'Unknown Product',
-                        value: finalUrl // Send URL as value
-                     });
-                }
-            });
-
-            // --- Image Loading with Fallback ---
-            const imageContainer = document.createElement('div');
-            imageContainer.className = 'image-loading'; // Shows spinner initially
-            const spinner = document.createElement('div');
-            spinner.className = 'spinner';
-            imageContainer.appendChild(spinner);
-            card.appendChild(imageContainer);
-
-            const img = document.createElement('img');
-            img.alt = p.name ? `Image of ${p.name}` : "Product Image"; // Descriptive alt text
-            img.className = 'product-image lazyload'; // Add lazyload class
-            img.style.display = 'none'; // Hide initially until loaded
-
-            // Prepare image sources: primary, category backup, default backup
-            const imageSources = [
-                p.image, // Primary image (already HTTPSified)
-                getBackupImage(p.name || queryContext), // Category-specific backup
-                backupImages.default // Global default backup
-            ].filter(url => url && typeof url === 'string' && url.trim() !== ''); // Filter out invalid/empty URLs
-
-            let currentAttempt = 0;
-
-            const tryLoadNextImage = () => {
-                if (currentAttempt >= imageSources.length) {
-                    // All attempts failed, show placeholder
-                    console.warn(`Failed to load any image for product: ${p.name || 'Unknown'}`);
-                    imageContainer.innerHTML = `<div class="image-placeholder"><span>Image Not Available</span></div>`;
-                    // Ensure placeholder is visible if image loading container was already replaced
-                    if (!card.contains(imageContainer)) {
-                         const infoDiv = card.querySelector('.product-info');
-                         if (infoDiv) card.insertBefore(imageContainer, infoDiv);
-                         else card.appendChild(imageContainer);
-                    }
-                    img.style.display = 'none'; // Ensure img element is hidden
-                    return;
-                }
-
-                const url = imageSources[currentAttempt];
-                debugLog(`Image Load Attempt ${currentAttempt + 1} for ${p.name || 'Unknown'}: ${url}`);
-
-                img.onload = null; // Clear previous handlers
-                img.onerror = null;
-
-                img.onload = () => {
-                    debugLog(`Image loaded successfully: ${img.src}`);
-                    img.style.display = 'block'; // Show the image
-                    img.classList.add('lazyloaded'); // Mark as loaded for potential CSS transitions
-                    if (imageContainer.parentNode === card) { // Check if spinner is still the child
-                        card.replaceChild(img, imageContainer); // Replace spinner container with image
-                    } else {
-                        // If something else replaced the spinner, just ensure the image is prepended correctly
-                        const infoDiv = card.querySelector('.product-info');
-                        if (infoDiv) card.insertBefore(img, infoDiv);
-                        else card.appendChild(img); // Fallback append
-                    }
-                };
-
-                img.onerror = () => {
-                    console.warn(`Image Load Attempt ${currentAttempt + 1} failed for URL: ${url}`);
-                    currentAttempt++;
-                    tryLoadNextImage(); // Try the next source
-                };
-
-                // Use data-src for lazysizes if preferred, or just src
-                // img.setAttribute('data-src', url); // For lazysizes
-                img.src = url; // Direct loading might be simpler here
-            };
-
-            tryLoadNextImage(); // Start loading attempts
-
-            // --- Product Information ---
-            const MAX_TITLE_LENGTH = 60; // Slightly longer title allowed
-            const MAX_DESC_LENGTH = 120; // Slightly longer description
-
-            const productName = p.name || "Unnamed Product";
-            const productDesc = p.description || "Click for details.";
-
-            // Truncate text for display, use full text in title attribute for tooltips
-            const truncatedName = productName.length > MAX_TITLE_LENGTH
-                ? productName.substring(0, MAX_TITLE_LENGTH) + '...'
-                : productName;
-            const truncatedDesc = productDesc.length > MAX_DESC_LENGTH
-                ? productDesc.substring(0, MAX_DESC_LENGTH) + '...'
-                : productDesc;
-
-            const infoDiv = document.createElement('div');
-            infoDiv.className = 'product-info';
-            // Sanitize all text content before inserting as HTML
-            infoDiv.innerHTML = `
-                <div class="product-name" title="${DOMPurify.sanitize(productName)}">${DOMPurify.sanitize(truncatedName)}</div>
-                <div class="product-description">${DOMPurify.sanitize(truncatedDesc)}</div>
-                <div class="product-price">${p.price ? DOMPurify.sanitize(p.price) : ""}</div>
-            `;
-
-            card.appendChild(infoDiv);
-            chatArea.appendChild(card); // Add the complete card to the chat
-            scrollToBottom(); // Scroll to make it visible
-        }
-
-
-        function scrollToBottom() {
-            // Use requestAnimationFrame for smoother scrolling after DOM updates
-            requestAnimationFrame(() => {
-                chatArea.scrollTop = chatArea.scrollHeight;
-            });
-        }
-
-        function updateUserProfile(botResponseText) {
-            // Basic profile update based on keywords in bot response (can be expanded)
-            if (typeof botResponseText !== 'string') return;
-
-            const textLower = botResponseText.toLowerCase();
-            let updated = false;
-            const newProfile = { ...userProfile }; // Copy current profile
-
-            // Example: Infer skin type
-            if (textLower.includes('dry skin') && newProfile.skinType !== 'Dry') {
-                newProfile.skinType = 'Dry'; updated = true;
-            } else if (textLower.includes('oily skin') && newProfile.skinType !== 'Oily') {
-                newProfile.skinType = 'Oily'; updated = true;
-            } else if (textLower.includes('combination skin') && newProfile.skinType !== 'Combination') {
-                newProfile.skinType = 'Combination'; updated = true;
-            } else if (textLower.includes('sensitive skin') && newProfile.skinType !== 'Sensitive') {
-                newProfile.skinType = 'Sensitive'; updated = true;
-            }
-
-            // Example: Infer concerns
-            if (textLower.includes('acne') && !newProfile.concerns.includes('Acne')) {
-                newProfile.concerns.push('Acne'); updated = true;
-            }
-            if ((textLower.includes('wrinkles') || textLower.includes('fine lines') || textLower.includes('anti-aging')) && !newProfile.concerns.includes('Aging')) {
-                newProfile.concerns.push('Aging'); updated = true;
-            }
-            if (textLower.includes('dullness') && !newProfile.concerns.includes('Dullness')) {
-                newProfile.concerns.push('Dullness'); updated = true;
-            }
-
-            if (updated) {
-                Object.assign(userProfile, newProfile); // Update the global profile state
-                debugLog(`User profile inferred`, {
-                    skinType: userProfile.skinType || 'N/A',
-                    concerns: userProfile.concerns.join(', ') || 'None'
-                });
-            }
-        }
-
-        function updateQueryContext(query) {
-            const queryLower = query.toLowerCase();
-            const queryAnalysis = analyzeQuery(queryLower);
-
-            // Update context with detected brand
-            if (queryAnalysis.brand) {
-                lastQueryContext.brand = queryAnalysis.brand;
-            } else {
-                 // Reset brand if not mentioned in this query? Or keep it sticky?
-                 // Let's keep it sticky for now unless explicitly changed.
-                 // lastQueryContext.brand = null;
-            }
-
-            // Update context with detected product line
-            if (queryAnalysis.productLine) {
-                lastQueryContext.productLine = queryAnalysis.productLine;
-            } else {
-                // lastQueryContext.productLine = null; // Keep sticky?
-            }
-
-            // Update context with detected product type/category
-            if (queryAnalysis.categories.length > 0) {
-                // Prioritize more specific categories if multiple match
-                const categoryPriority = ['devices', 'serum', 'foundation', 'shampoo', 'conditioner', 'mask', 'moisturizer', 'cleanser', 'sunscreen', 'exfoliant', 'primer', 'lipstick', 'mascara', 'eyeshadow', 'concealer', 'hairmask', 'styling', 'skincare', 'haircare', 'makeup', 'aging', 'acne', 'hydration', 'sensitive'];
-                let bestCategory = queryAnalysis.categories[0]; // Default to first match
-                for(const cat of categoryPriority) {
-                    if (queryAnalysis.categories.includes(cat)) {
-                        bestCategory = cat;
-                        break;
-                    }
-                }
-                lastQueryContext.productType = bestCategory;
-            } else {
-                // Reset product type if no category keywords detected?
-                // lastQueryContext.productType = null; // Keep sticky?
-            }
-
-
-            // Detect preferences (like 'cheapest')
-            const newPreferences = [];
-            if (queryLower.includes('cheapest') || queryLower.includes('cheaper') || queryLower.includes('affordable') || queryLower.includes('lowest price')) {
-                newPreferences.push('cheapest');
-            }
-            if (queryLower.includes('best') || queryLower.includes('highest quality') || queryLower.includes('premium') || queryLower.includes('luxury')) {
-                 newPreferences.push('best'); // Note: 'best' is ambiguous, could mean price or rating
-            }
-            if (queryLower.includes('newest') || queryLower.includes('latest')) {
-                 newPreferences.push('newest');
-            }
-            if (queryLower.includes('top-rated') || queryLower.includes('highest rated') || queryLower.includes('most popular')) {
-                 newPreferences.push('rating');
-            }
-
-            // Only update preferences if new ones are detected, otherwise keep old ones?
-            // For now, let's reset preferences with each query unless it's clearly a refinement.
-            lastQueryContext.preferences = newPreferences;
-
-
-            debugLog('Updated query context', lastQueryContext);
-        }
-
-// Auto-generated brandMap from brands.tsv
-const brands = [
-  '"Zadro, Inc."',
-  '"Zadro, Inc.™"',
-  '12 Benefits',
-  'AHAVA',
-  'Alterna',
-  'American Crew',
-  'AMERICAN INTERNATIONAL',
-  'Amika',
-  'ANTHONY FOR MEN',
-  'Archipelago',
-  'Arcona',
-  'Arctic Fox',
-  'ARDELL',
-  'ART OF SHAVING',
-  'Atelier Cologne',
-  'Babor',
-  'Bare Escentuals',
-  'BareMinerals',
-  'Batiste',
-  'BEAUTYCOUNTER',
-  'Borghese',
-  'Bumble And Bumble',
-  'Butter London',
-  'By Terry',
-  'Caudalie',
-  'Cetaphil',
-  'Cha Cha',
-  'Charlotte Tilbury',
-  'Cheryl’s Cosmeceuticals',
-  'Chloe + Isabel',
-  'Clarisonic',
-  'Clean & Clear',
-  'Clé de Peau Beauté',
-  'Clindamycin',
-  'Clinique',
-  'Cliniscent',
-  'ColourPop',
-  'Cosmedica',
-  'Cotz',
-  'CSC DISTRIBUTOR',
-  'Davines',
-  'Denman',
-  'Dermalogica',
-  'DEVA',
-  'DEVELO PLUS',
-  'DR. BRANDT',
-  'Dr. Dennis Gross',
-  'DuWop',
-  'EC SCOTT',
-  'ELCHIM DRYER',
-  'Elta MD Skincare',
-  'Embryolisse',
-  'Enjoy',
-  'Epicuren',
-  'Erno Laszlo',
-  'Exuviance',
-  'Fekkai',
-  'Fenty Beauty',
-  'Florence By Mills',
-  'Francis Kurkdjian',
-  'Frederick Fekkai',
-  'G.M. Collin',
-  'Garnier',
-  'Glossier',
-  'Guinot',
-  'Guerlain',
-  'Herbivore',
-  'High Beauty',
-  'Hourglass',
-  'HydroPeptide',
-  'ILIA',
-  'Jane Iredale',
-  'Juice Beauty',
-  'Kérastase',
-  'Kevyn Aucoin',
-  'Kiehl\'s',
-  'La Roche-Posay',
-  'Lancer',
-  'Lancôme',
-  'Laneige',
-  'Larson',
-  'Laura Mercier',
-  'L’Oréal',
-  'MAC',
-  'Malin + Goetz',
-  'Mario Badescu',
-  'Matrix',
-  'Maybelline',
-  'Murad',
-  'NARS',
-  'Nioxin',
-  'NYX',
-  'Olaplex',
-  'Osea',
-  'Paula\'s Choice',
-  'Peter Thomas Roth',
-  'Philip B',
-  'Pixi',
-  'Poo-Pourri',
-  'REN',
-  'REVOLVE',
-  'RMS Beauty',
-  'RoC',
-  'Shani Darden',
-  'Shiseido',
-  'SkinCeuticals',
-  'Skin Gym',
-  'Skinfix',
-  'SKOP',
-  'Sol de Janeiro',
-  'Soultanicals',
-  'Sunday Riley',
-  'Supergoop!',
-  'TATCHA',
-  'Tarte',
-  'The Ordinary',
-  'THE POUTS.',
-  'Thayers',
-  'TRESemmé',
-  'Ulta Beauty',
-  'Urban Decay',
-  'Vasanti',
-  'Vivier',
-  'Voluspa',
-  'Z Skin Science'
-];
-
-const brandMap = brands.reduce((map, name) => {
-  const key = name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_|_$/g, '');
-  // Title-case each word for display
-  const display = name
-    .split(/\s+/)
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-    .join(' ');
-  map[key] = display;
-  return map;
-}, {});
-
-// Usage examples:
-//   formatBrandName('dermalogica')      -> 'Dermalogica'
-//   formatBrandName('the_ordinary')     -> 'The Ordinary'
-//   formatBrandName('unknown_brand_key') -> 'Unknown Brand Key'
-function formatBrandName(brandKey) {
-  return (
-    brandMap[brandKey] ||
-    brandKey
-      .replace(/_/g, ' ')
-      .replace(/\b\w/g, l => l.toUpperCase())
-  );
-}
-
-    </script>
-</body>
-</html>
+            if (keywords
