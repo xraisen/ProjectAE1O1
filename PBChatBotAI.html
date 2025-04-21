@@ -36,7 +36,7 @@
             height: 100%;
             background: #f8f9fa;
             display: flex;
-            flex-direction: column;
+            flex-direction: column; /* Stack spinner and percentage */
             align-items: center;
             justify-content: center;
             z-index: 1000;
@@ -49,7 +49,7 @@
             border-top-color: transparent;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-bottom: 1rem;
+            margin-bottom: 1rem; /* Space between spinner and percentage */
         }
         #preloader .percentage {
             font-size: 1.5rem;
@@ -341,11 +341,13 @@
         <h1 class="text-3xl sm:text-4xl font-bold">Planet Beauty</h1>
         <p class="text-lg sm:text-xl">Your AI Beauty Assistant ✨</p>
     </header>
+
     <main class="chat-container flex-grow animate-fade-in">
         <div id="chat-area" class="chat-area">
-            <div class="bot-message">Hi there! Welcome to Planet Beauty's AI Assistant. ✨ How can I help you find the perfect products from our catalog today?</div>
+            <div class="bot-message">Hi there! Welcome to Planet Beauty's AI Assistant. ✨ How can I help you find the perfect products today?</div>
             <div id="examples-container" class="examples-container"></div>
         </div>
+
         <div class="input-area">
             <div class="input-row">
                 <input id="chat-input" type="text" placeholder="Ask about beauty products..." autocomplete="off" aria-label="Type your beauty product question">
@@ -353,17 +355,20 @@
             </div>
         </div>
     </main>
+
     <footer>
         <span>Developed with ❤️ by</span>
         <a href="https://www.linkedin.com/in/joseespinosa" target="_blank" rel="noopener noreferrer">Jose Espinosa</a>
     </footer>
+
     <script>
         // --- Configuration ---
         const GEMINI_API_KEY = 'AIzaSyCpI-eNfqWk_ZiK2qHOj_tD2NzeAJ_U398'; // Replace with your Gemini API key
-        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`; // MODIFIED: Using 1.5 Flash potentially better context
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzzp5mD6Nu3RZmYvjzDFXvCNC5MhJyfNMvs_MJDYLqZ8Uad1BJE-cO1WWg7BpoYO62_/exec'; // Replace with your deployed Web App URL
-        const API_TIMEOUT = 15000;
+        const API_TIMEOUT = 20000; // MODIFIED: Increased timeout slightly
         const IMAGE_TIMEOUT = 15000;
+
         const PRELOADER_MIN_DURATION = 1000;
         const PERCENTAGE_ANIMATION_DURATION = 2000;
 
@@ -378,31 +383,33 @@
         // --- State ---
         const userProfile = { skinType: null, skinTone: null, concerns: [] };
         let conversationHistory = [];
-        const MAX_HISTORY = 5; // Store 5 user + 5 model interactions
-        let lastSuggestedProducts = []; // Track last recommended products for follow-ups
+        const MAX_HISTORY = 8; // MODIFIED: Increased history length (was 6)
         const imageCache = JSON.parse(localStorage.getItem('imageCache')) || {};
         let products = [];
         let productCategories = {};
         const backupImages = {
-            default: 'https://via.placeholder.com/600x400/E91e63/FFFFFF?text=Planet+Beauty'
+            default: 'https://via.placeholder.com/600x400/E91e63/FFFFFF?text=Planet+Beauty',
         };
 
         // --- Category Keywords ---
+        // IMPORTANT: Add keywords relevant to YOUR product catalog.
+        // If you sell red light devices, add relevant keywords here.
         const categoryKeywords = {
             acne: ['acne', 'blemish', 'pimple', 'breakout', 'clear skin', 'oily'],
-            moisturizer: ['moisturizer', 'hydrating', 'dry skin', 'hydration', 'cream'],
+            moisturizer: ['moisturizer', 'hydrating', 'dry skin', 'hydration', 'cream', 'lotion'],
             shampoo: ['shampoo', 'hair wash', 'clean hair'],
             conditioner: ['conditioner', 'soften hair', 'detangle'],
             hairmask: ['hair mask', 'treatment', 'damaged hair', 'repair hair'],
             foundation: ['foundation', 'makeup base', 'cover', 'complexion', 'tone'],
-            serum: ['serum', 'treatment', 'concentrate'],
-            cleanser: ['cleanser', 'face wash', 'wash'],
-            exfoliant: ['exfoliant', 'scrub', 'peel', 'smooth skin'],
-            styling: ['styling', 'hairspray', 'texture', 'volume', 'hold'],
+            serum: ['serum', 'treatment', 'concentrate', 'anti-aging'],
+            cleanser: ['cleanser', 'face wash', 'wash', 'makeup remover'],
+            exfoliant: ['exfoliant', 'scrub', 'peel', 'smooth skin', 'aha', 'bha'],
+            styling: ['styling', 'hairspray', 'texture', 'volume', 'hold', 'gel', 'mousse'],
             skincare: ['skincare', 'face care', 'complexion', 'skin health'],
             haircare: ['haircare', 'hair product', 'mane'],
             sunscreen: ['sunscreen', 'spf', 'uv', 'protection'],
-            devices: ['red light', 'therapy', 'device', 'led', 'light therapy'] // New category
+            // NEW: Example category - add if you have these products
+            // therapy_device: ['red light', 'led therapy', 'light mask', 'therapy device'],
         };
 
         // --- DOM Elements ---
@@ -416,26 +423,28 @@
         document.addEventListener('DOMContentLoaded', async () => {
             let percentage = 0;
             const percentageElement = preloader.querySelector('.percentage');
-            const animatePercentage = () => new Promise(resolve => {
-                anime({
-                    targets: { value: percentage },
-                    value: 90,
-                    duration: PERCENTAGE_ANIMATION_DURATION,
-                    easing: 'easeOutQuad',
-                    update: (anim) => {
-                        percentage = Math.round(anim.animatables[0].target.value);
-                        percentageElement.textContent = `${percentage}%`;
-                    },
-                    complete: resolve
+            const animatePercentage = () => {
+                return new Promise(resolve => {
+                    anime({
+                        targets: { value: percentage },
+                        value: 90,
+                        duration: PERCENTAGE_ANIMATION_DURATION,
+                        easing: 'easeOutQuad',
+                        update: (anim) => {
+                            percentage = Math.round(anim.animatables[0].target.value);
+                            percentageElement.textContent = `${percentage}%`;
+                        },
+                        complete: () => resolve()
+                    });
                 });
-            });
+            };
 
             const minDurationPromise = new Promise(resolve => setTimeout(resolve, PRELOADER_MIN_DURATION));
             const animationPromise = animatePercentage();
             try {
-                products = await fetchProducts();
-                categorizeProducts();
-                await generateSuggestedQuestions();
+                products = await fetchProducts(percentageElement);
+                categorizeProducts(); // Ensure products are categorized before generating questions
+                await generateSuggestedQuestions(); // Generate questions after products are loaded/categorized
                 await Promise.all([minDurationPromise, animationPromise]);
                 await anime({
                     targets: { value: percentage },
@@ -455,7 +464,8 @@
                 await Promise.all([minDurationPromise, animationPromise]);
                 preloader.style.opacity = '0';
                 setTimeout(() => preloader.remove(), 500);
-                addMessage("Sorry, I couldn't load the product catalog. Please try again later.", 'bot');
+                // Display error in chat if preloader fails
+                addMessage("Sorry, I couldn't load the product catalog. Please refresh the page to try again.", 'bot');
             }
 
             anime({
@@ -470,79 +480,111 @@
             chatInput.addEventListener('input', handleInputChange);
             sendBtn.addEventListener('click', () => {
                 sendMessage();
-                gtag('event', 'send_message', { event_category: 'Chatbot', event_label: chatInput.value });
+                if (typeof gtag === 'function') {
+                    gtag('event', 'send_message', { event_category: 'Chatbot', event_label: chatInput.value });
+                }
             });
             chatInput.focus();
             updateSendButtonState();
         });
 
-        // --- Fetch Products ---
-        async function fetchProducts() {
+        // --- Fetch Products from Google Apps Script Web App ---
+        async function fetchProducts(percentageElement) {
             try {
                 const res = await axios.get(WEB_APP_URL, { timeout: API_TIMEOUT });
                 if (res.data && res.data.products) {
+                    // IMPORTANT: Ensure your Google Sheet provides correct, full URLs for Planet Beauty
+                    // Example: https://www.planetbeauty.com/products/some-product-name
                     products = res.data.products.map((p, index) => ({
                         ...p,
-                        id: p.id || `p${index + 1}`,
-                        image: p.image && typeof p.image === 'string' && p.image.startsWith('http://') ? p.image.replace('http://', 'https://') : p.image
+                        id: p.id || `p${index + 1}`, // Ensure unique ID
+                        // Sanitize image URL (force HTTPS)
+                        image: p.image && typeof p.image === 'string' && p.image.startsWith('http://') ? p.image.replace('http://', 'https://') : p.image,
+                        // Use provided URL if valid, otherwise null (will trigger fallback)
+                        url: p.url && typeof p.url === 'string' && p.url.startsWith('https://www.planetbeauty.com/') ? p.url : null
                     }));
-                    console.log("Products loaded:", products.length);
+                    console.log("Products loaded from Web App:", products.length);
+                    if (products.length === 0) {
+                         console.warn("Warning: No products loaded from the Web App URL. Check the URL and the Google Sheet data.");
+                         addMessage("It seems our product catalog is currently empty. Please check back later!", 'bot');
+                    }
                     return products;
                 } else if (res.data && res.data.error) {
                     throw new Error(`Web App Error: ${res.data.error}`);
                 } else {
-                    throw new Error("Invalid data format.");
+                    throw new Error("Invalid data format received from Web App.");
                 }
             } catch (error) {
                 console.error('Failed to fetch products:', error);
-                throw error;
+                // Don't add message here, handled in initialization catch block
+                throw error; // Re-throw to handle in initialization
             }
         }
 
         // --- Categorize Products ---
         function categorizeProducts() {
-            if (!products || products.length === 0) return;
+            if (!products || products.length === 0) {
+                console.warn("Cannot categorize products, product list is empty.");
+                return;
+            }
             products.forEach(product => {
                 product.categories = [];
+                const nameLower = (product.name || "").toLowerCase();
+                const descLower = (product.description || "").toLowerCase();
+
                 for (const [category, keywords] of Object.entries(categoryKeywords)) {
-                    if (keywords.some(keyword =>
-                        (product.name && typeof product.name === 'string' && product.name.toLowerCase().includes(keyword)) ||
-                        (product.description && typeof product.description === 'string' && product.description.toLowerCase().includes(keyword)))) {
+                    if (keywords.some(keyword => nameLower.includes(keyword) || descLower.includes(keyword))) {
                         product.categories.push(category);
                     }
                 }
             });
+            // Create map for quick category lookup
             productCategories = Object.fromEntries(
                 Object.keys(categoryKeywords).map(category => [
                     category,
                     products.filter(p => p.categories && p.categories.includes(category))
                 ])
             );
+            // Populate backup images per category
             for (const category of Object.keys(productCategories)) {
                 backupImages[category] = productCategories[category]
                     .map(p => p.image)
-                    .filter(img => img && typeof img === 'string');
+                    .filter(img => img && typeof img === 'string'); // Filter out invalid image URLs
             }
+            console.log("Products categorized:", Object.keys(productCategories).length, "categories found.");
         }
 
         // --- Suggested Questions ---
         async function generateSuggestedQuestions() {
+            // Only generate if products are available
+            if (!products || products.length === 0) {
+                 displaySuggestedQuestions(FALLBACK_QUESTIONS); // Show fallbacks if no products
+                 return;
+            }
             try {
                 const questions = await fetchSuggestedQuestions();
                 displaySuggestedQuestions(questions);
             } catch (error) {
-                console.error('Failed to generate questions:', error);
-                displaySuggestedQuestions(FALLBACK_QUESTIONS);
+                console.error('Failed to generate suggested questions:', error);
+                displaySuggestedQuestions(FALLBACK_QUESTIONS); // Use fallbacks on error
             }
         }
 
         async function fetchSuggestedQuestions() {
+            // Create a context string based on available product categories
+            const availableCategories = Object.keys(productCategories).filter(cat => productCategories[cat].length > 0);
+            const categoryContext = availableCategories.length > 0
+                ? `Focus questions on these available product types: ${availableCategories.join(', ')}.`
+                : "Focus questions on general skincare, haircare, and makeup topics.";
+
             const prompt = {
                 contents: [{
                     role: 'user',
                     parts: [{
-                        text: `Generate 4 concise, varied beauty-related questions for a chatbot, relevant to skincare, haircare, makeup, or beauty devices from Planet Beauty (https://www.planetbeauty.com/). Address common needs (e.g., specific skin or hair concerns). Return as a JSON array of strings. Example:
-                        ["What's a great Planet Beauty moisturizer for dry skin?", "Which Planet Beauty shampoo is best for curly hair?", "Can you suggest a Planet Beauty foundation for sensitive skin?", "What Planet Beauty serum helps with fine lines?"]`
+                        text: `Generate 4 concise, varied, and helpful beauty-related questions a user might ask an AI assistant for the Planet Beauty store. ${categoryContext} Questions should address common user needs (e.g., product recommendations for specific skin types, hair concerns, makeup looks). Return the response ONLY as a valid JSON array of 4 strings.
+
+                        Example format:
+                        ["What's the best moisturizer for oily skin?", "Can you recommend a shampoo for dry hair?", "What foundation suits sensitive skin?", "Which serum helps with fine lines?"]`
                     }]
                 }],
                 generationConfig: {
@@ -565,48 +607,54 @@
                 timeout: API_TIMEOUT
             });
 
-            if (res.data && res.data.candidates && res.data.candidates[0] &&
-                res.data.candidates[0].content && res.data.candidates[0].content.parts &&
-                res.data.candidates[0].content.parts[0] && res.data.candidates[0].content.parts[0].text) {
+            if (res.data?.candidates?.[0]?.content?.parts?.[0]?.text) {
                 const responseText = res.data.candidates[0].content.parts[0].text;
                 try {
-                    const cleanedText = responseText.replace(/^```json\s*|```$/g, '').trim();
+                    // More robust cleaning for potential markdown/extra text
+                    const cleanedText = responseText.replace(/^```json\s*/, '').replace(/\s*```$/, '').trim();
                     const questions = JSON.parse(cleanedText);
                     if (Array.isArray(questions) && questions.length >= 4 && questions.every(q => typeof q === 'string')) {
-                        return questions.slice(0, 4);
+                        return questions.slice(0, 4); // Return exactly 4
+                    } else {
+                        console.error('Parsed questions are not in the expected format (Array of 4 strings):', questions);
                     }
                 } catch (parseError) {
-                    console.error('JSON Parse Error:', parseError, 'Raw:', responseText);
+                    console.error('JSON Parse Error for questions:', parseError, 'Raw text:', responseText);
                 }
             }
-            throw new Error('Failed to fetch valid questions.');
+            // Throw error if API response is bad or parsing fails
+            throw new Error('Failed to fetch valid questions from API.');
         }
 
+
         function displaySuggestedQuestions(questions) {
-            examplesContainer.innerHTML = '';
+            examplesContainer.innerHTML = ''; // Clear previous suggestions
             if (!Array.isArray(questions)) {
-                console.error("Invalid suggestions:", questions);
-                questions = FALLBACK_QUESTIONS;
+                console.error("Cannot display suggestions: input is not an array.", questions);
+                questions = FALLBACK_QUESTIONS; // Use fallback if input is invalid
             }
-            questions.forEach((question, index) => {
-                if (typeof question !== 'string') return;
+            // Ensure we only display valid string questions
+            const validQuestions = questions.filter(q => typeof q === 'string' && q.trim() !== '');
+
+            validQuestions.slice(0, 4).forEach((question) => { // Limit to 4 suggestions
                 const chip = document.createElement('div');
                 chip.className = 'example-chip';
                 chip.setAttribute('data-q', question);
                 chip.setAttribute('role', 'button');
-                chip.tabIndex = 0;
+                chip.tabIndex = 0; // Make focusable
                 chip.setAttribute('aria-label', `Ask: ${question}`);
                 chip.textContent = question;
                 chip.addEventListener('click', handleExampleClick);
                 chip.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
+                        e.preventDefault(); // Prevent scrolling on space
                         handleExampleClick(e);
                     }
                 });
                 examplesContainer.appendChild(chip);
             });
 
+            // Animate the chips
             anime({
                 targets: '.example-chip',
                 translateX: [-20, 0],
@@ -619,13 +667,18 @@
 
         // --- Utilities ---
         function formatProductUrl(productName) {
-            if (!productName || typeof productName !== 'string') return 'https://www.planetbeauty.com/';
-            return 'https://www.planetbeauty.com/products/' +
-                productName.toLowerCase()
-                    .replace(/[^\w\s-]/g, '')
-                    .trim()
-                    .replace(/\s+/g, '-')
-                    .replace(/-+/g, '-');
+            // IMPORTANT: This function generates a URL SLUG. It MUST match the pattern used on planetbeauty.com
+            // If their URLs are different (e.g., include IDs), this needs adjustment or rely solely on sheet data.
+            const baseUrl = 'https://www.planetbeauty.com/products/';
+            if (!productName || typeof productName !== 'string') return 'https://www.planetbeauty.com/'; // Fallback to base site
+
+            // Basic slugification - adjust if Planet Beauty uses a different scheme
+            const slug = productName.toLowerCase()
+                .replace(/[^\w\s-]/g, '') // Remove non-word chars except space/hyphen
+                .trim()
+                .replace(/\s+/g, '-') // Replace spaces with hyphens
+                .replace(/-+/g, '-'); // Collapse multiple hyphens
+            return baseUrl + slug;
         }
 
         function getBackupImage(query) {
@@ -634,11 +687,12 @@
                 if (keywords.some(keyword => queryLower.includes(keyword))) {
                     const imageArray = backupImages[category] || [];
                     if (imageArray.length > 0) {
+                        // Return a random image from the category's valid images
                         return imageArray[Math.floor(Math.random() * imageArray.length)];
                     }
                 }
             }
-            return backupImages.default;
+            return backupImages.default; // Default placeholder if no category match
         }
 
         // --- Event Handlers ---
@@ -647,15 +701,19 @@
             if (query) {
                 chatInput.value = query;
                 updateSendButtonState();
-                sendMessage();
-                gtag('event', 'example_chip_click', { event_category: 'Chatbot', event_label: query });
+                sendMessage(); // Send the message automatically
+                if (typeof gtag === 'function') {
+                    gtag('event', 'example_chip_click', { event_category: 'Chatbot', event_label: query });
+                }
             }
         }
 
         function handleInputKeyup(event) {
             if (event.key === 'Enter' && !sendBtn.disabled) {
                 sendMessage();
-                gtag('event', 'send_message', { event_category: 'Chatbot', event_label: chatInput.value });
+                if (typeof gtag === 'function') {
+                    gtag('event', 'send_message', { event_category: 'Chatbot', event_label: chatInput.value });
+                }
             }
         }
 
@@ -672,12 +730,14 @@
             const rawMessage = chatInput.value.trim();
             if (!rawMessage) return;
 
-            const message = DOMPurify.sanitize(rawMessage, { USE_PROFILES: { html: true } });
+            // Sanitize user input before displaying
+            const message = DOMPurify.sanitize(rawMessage, { USE_PROFILES: { html: false } }); // Disallow HTML in user messages
             addMessage(message, 'user');
-            const userMessageEntry = { role: 'user', parts: [{ text: message }] };
+            const userMessageEntry = { role: 'user', parts: [{ text: message }] }; // Use sanitized message for history too
             conversationHistory.push(userMessageEntry);
 
-            if (conversationHistory.length > MAX_HISTORY * 2) {
+            // Trim history (do this *before* API call)
+            if (conversationHistory.length > MAX_HISTORY * 2) { // Keep user+model pairs
                 conversationHistory = conversationHistory.slice(-MAX_HISTORY * 2);
             }
 
@@ -685,48 +745,65 @@
             updateSendButtonState();
             chatInput.disabled = true;
             sendBtn.disabled = true;
+            examplesContainer.style.display = 'none'; // Hide examples during processing
 
             showTypingIndicator();
 
             try {
                 const response = await callGeminiAPI();
-                await processResponse(response, message);
+                await processResponse(response, message); // Pass original user query for context
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error during message processing pipeline:', error);
                 hideTypingIndicator();
                 const errorMessage = error.message.includes('timed out')
                     ? "Sorry, the request timed out. Please try again."
-                    : "Sorry, I encountered an issue. Please try again.";
+                    : error.message.includes('safety settings') // Check for specific safety block message
+                    ? error.message // Display the safety block reason
+                    : "Sorry, I encountered an issue processing your request. Could you please rephrase or try again?";
                 displayError(errorMessage);
 
-                const fallbackProducts = fallbackSearch(message);
-                if (fallbackProducts.length > 0) {
-                    addMessage("Here are some Planet Beauty products that might match your request:", 'bot');
-                    for (const p of fallbackProducts) {
-                        await addProductCard(p, message);
+                // Attempt fallback search only if it wasn't a safety block
+                if (!error.message.includes('safety settings')) {
+                    console.log("Attempting fallback search due to error.");
+                    const fallbackProducts = fallbackSearch(message); // Use sanitized message for fallback
+                    if (fallbackProducts.length > 0) {
+                        addMessage("While I had trouble with the specific request, here are some potentially relevant products based on your query:", 'bot');
+                        for (const p of fallbackProducts) {
+                            await addProductCard(p, message); // Pass user query for image context
+                        }
+                    } else {
+                         // Only add this if no other error message was more specific
+                        if (!errorMessage.includes("timed out") && !errorMessage.includes("issue processing")) {
+                           addMessage("I couldn't find relevant products based on your query, even with a fallback search.", 'bot');
+                        }
                     }
-                } else {
-                    addMessage("I couldn't find any Planet Beauty products for that. Can I help with something else?", 'bot');
                 }
             } finally {
                 chatInput.disabled = false;
                 updateSendButtonState();
                 chatInput.focus();
+                // Optionally re-display examples if needed, or keep hidden
+                // examplesContainer.style.display = 'flex';
             }
         }
 
         async function callGeminiAPI() {
-            const prompt = createPrompt();
+            // Ensure history doesn't exceed limits just before the call
+            if (conversationHistory.length > MAX_HISTORY * 2) {
+                conversationHistory = conversationHistory.slice(-MAX_HISTORY * 2);
+            }
+
+            const prompt = createPrompt(); // Generate the prompt with current history
             const payload = {
                 contents: prompt,
                 generationConfig: {
-                    temperature: 0.4,
+                    temperature: 0.5, // Slightly higher temp for more conversational feel
                     topP: 0.95,
                     topK: 40,
                     maxOutputTokens: 1024,
                     responseMimeType: 'application/json'
                 },
-                safetySettings: [
+                safetySettings: [ // Standard safety settings
                     { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
                     { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
                     { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
@@ -740,238 +817,303 @@
                     timeout: API_TIMEOUT
                 });
 
-                if (res.data && res.data.candidates && res.data.candidates[0] &&
-                    res.data.candidates[0].content && res.data.candidates[0].content.parts &&
-                    res.data.candidates[0].content.parts[0] && res.data.candidates[0].content.parts[0].text) {
+                // Check for blocked content first
+                if (res.data?.promptFeedback?.blockReason) {
+                    const reason = res.data.promptFeedback.blockReason;
+                    const safetyRatings = res.data.promptFeedback.safetyRatings?.map(r => `${r.category}: ${r.probability}`).join(', ') || 'N/A';
+                    console.warn(`Request blocked by API: ${reason}. Ratings: ${safetyRatings}`);
+                    throw new Error(`Your request was blocked due to safety settings (${reason}). Please rephrase your query.`);
+                }
+
+                // Check for valid candidate response
+                if (res.data?.candidates?.[0]?.content?.parts?.[0]?.text) {
                     const responseText = res.data.candidates[0].content.parts[0].text;
+                    let parsedResponse;
                     try {
+                        // Clean potential markdown
                         const cleanedText = responseText.replace(/^```json\s*|```$/g, '').trim();
-                        const parsedResponse = JSON.parse(cleanedText);
-                        if (typeof parsedResponse !== 'object' || !parsedResponse.text || !parsedResponse.query_type || !Array.isArray(parsedResponse.products)) {
-                            throw new Error("Invalid response structure.");
+                        parsedResponse = JSON.parse(cleanedText);
+
+                        // Validate the structure of the parsed JSON
+                        if (typeof parsedResponse !== 'object' || parsedResponse === null ||
+                            typeof parsedResponse.text !== 'string' ||
+                            typeof parsedResponse.query_type !== 'string' ||
+                            !Array.isArray(parsedResponse.products)) {
+                            console.error("Parsed API response has invalid structure:", parsedResponse);
+                            // Fallback: Treat the raw text as the response if JSON is invalid
+                            parsedResponse = { text: responseText, query_type: 'other', products: [] };
+                            // Still add the raw text to history for context, but log the error
+                            conversationHistory.push({ role: 'model', parts: [{ text: responseText }] });
+                            return parsedResponse; // Return the fallback structure
                         }
+
+                        // Add the valid *parsed* response structure text to history
                         conversationHistory.push({ role: 'model', parts: [{ text: cleanedText }] });
-                        return parsedResponse;
+                        return parsedResponse; // Return the valid, parsed response
+
                     } catch (parseError) {
-                        console.error('JSON Parse Error:', parseError, 'Raw:', responseText);
-                        return { text: "I understood your request, but let's try finding some Planet Beauty products!", query_type: 'other', products: [] };
+                        console.error('JSON Parse Error:', parseError, "Raw Text:", responseText);
+                        // If JSON parsing fails, treat the raw text as the response
+                        const fallbackResponse = { text: responseText, query_type: 'other', products: [] };
+                        conversationHistory.push({ role: 'model', parts: [{ text: responseText }] }); // Add raw text to history
+                        return fallbackResponse; // Return the fallback structure
                     }
-                } else if (res.data && res.data.promptFeedback && res.data.promptFeedback.blockReason) {
-                    throw new Error(`Request blocked: ${res.data.promptFeedback.blockReason}. Please rephrase.`);
                 } else {
-                    throw new Error('Unexpected response format.');
+                    // Handle cases where the response is missing expected data but wasn't blocked
+                    console.error('Unexpected API response format (no valid candidate):', res.data);
+                    throw new Error('Received an unexpected response format from the AI service.');
                 }
             } catch (error) {
+                // Handle Axios and other errors
                 if (axios.isAxiosError(error)) {
-                    throw new Error(error.response ? `API Error: ${error.response.status} - ${error.response.data?.error?.message || 'Server error'}` : 'Request timed out.');
+                    if (error.code === 'ECONNABORTED' || error.message.toLowerCase().includes('timeout')) {
+                         console.error('API Request Error: Timeout.', error.message);
+                         throw new Error('The request timed out. Please try again.');
+                    } else if (error.response) {
+                        console.error(`API Error: ${error.response.status}`, error.response.data);
+                        throw new Error(`API Error: ${error.response.status} - ${error.response.data?.error?.message || 'Server error'}`);
+                    } else if (error.request) {
+                        console.error('API Request Error: No response received.', error.request);
+                        throw new Error('Could not connect to the AI service. Please check your connection or try again later.');
+                    } else {
+                        console.error('API Request Setup Error:', error.message);
+                        throw new Error(`Request setup error: ${error.message}`);
+                    }
+                } else {
+                    // Re-throw errors already created (like safety blocks or format errors)
+                    console.error('Non-API Error during call:', error);
+                    throw error;
                 }
-                throw error;
             }
         }
 
         function createPrompt() {
+            // MODIFIED: Enhanced system prompt for relevance, context, and refinement handling
             const systemInstruction = {
-                role: 'user',
+                role: 'user', // System-like instruction provided as 'user' role for Gemini
                 parts: [{
-                    text: `You are a friendly AI assistant for Planet Beauty (https://www.planetbeauty.com/). Your goal is to assist users with beauty product queries using ONLY products from Planet Beauty's catalog. Maintain a conversational, companion-like tone, recalling the last 3-5 interactions to ensure continuity. Respond to follow-up requests (e.g., "cheapest") by refining previous recommendations.
+                    text: `You are a friendly and helpful AI assistant for the Planet Beauty online store. Your primary goal is to assist users with beauty product queries based *only* on the context of this conversation and general beauty knowledge. You *cannot* access external websites or real-time store inventory/pricing beyond the product names mentioned in the conversation history or potentially suggested by you.
 
-- For greetings or casual conversation (e.g., "hi," "how are you"), set "query_type": "greeting" and reply warmly without products.
-- For product recommendation requests or beauty concerns (e.g., "red light therapy," "moisturizer for dry skin"), set "query_type": "product" and provide a concise response (max 150 words) with 1-3 product recommendations from Planet Beauty. Each product in the "products" array must be an object with a "name" key (e.g., {"name": "Product Name"}). If no products match (e.g., for niche devices), return an empty products array and suggest alternatives.
-- For other messages (e.g., "thank you," "store hours"), set "query_type": "other" and respond appropriately without products.
-- For follow-ups like "cheapest" or "less expensive," filter previously suggested products by price or find budget-friendly options, referencing the conversation history.
+Instructions:
+1.  **Analyze User Intent:** Determine the type of query:
+    *   "greeting": Casual conversation (hi, hello, how are you?). Respond warmly, ask how you can help with beauty needs.
+    *   "product": Asking for recommendations, specific products (e.g., "moisturizer for dry skin", "red light therapy device", "shampoo for oily hair"), or beauty advice related to products.
+    *   "refinement": Modifying a *previous* product request (e.g., "only the cheapest one", "which of those is vegan?", "do you have that in travel size?").
+    *   "other": Anything else (thank you, goodbye, questions about store hours, policy questions you can't answer).
+2.  **Conversation Context:** Pay close attention to the `conversationHistory`. Use it to understand follow-up questions and refinements.
+3.  **Product Recommendations ("product" or "refinement" query_type):**
+    *   Provide a concise, helpful text response (max 150 words).
+    *   If recommending products, suggest 1-3 relevant items based *specifically* on the user's request and the conversation history.
+    *   **Crucially:** Only suggest product *names* in the "products" array (e.g., {"name": "Product Name"}). Do *not* invent products. If you recommended products in a previous turn and the user refines the request (e.g., "cheapest"), acknowledge the refinement in your text. You cannot actually filter by price, but you can say something like "Regarding the price, you'd need to check the product pages for the latest details, but here are the options we discussed:".
+    *   **Relevance is Key:** If the user asks for something specific (like "red light therapy device") and you don't have information or context suggesting Planet Beauty sells it, state that clearly. Say something like: "I don't have specific information on 'red light therapy devices' in the Planet Beauty catalog based on our chat. However, we have a great range of skincare serums and tools. Can I help you find something else?" Do *not* recommend unrelated products just to fill the list.
+4.  **Handling Refinements ("refinement" query_type):** Acknowledge the user is refining their request based on previous turns. Refer back to the items discussed if possible. Example: User asks for moisturizers, you list A, B, C. User asks "which is best for sensitive skin?". Respond like: "Between A, B, and C we discussed, Product B is often recommended for sensitive skin. Remember to check the full ingredients list on the product page!"
+5.  **Other Queries ("other" or "greeting" query_type):** Respond appropriately and conversationally. Do *not* include products in the "products" array. If asked about information you don't have (store hours, specific stock, policies), politely state your limitations as an AI and suggest checking the official Planet Beauty website.
+6.  **Output Format:** ALWAYS return your response as a single, valid JSON object with these keys:
+    *   `"text"`: Your conversational reply (string).
+    *   `"query_type"`: One of "greeting", "product", "refinement", "other" (string).
+    *   `"products"`: An array of product objects (e.g., `[{"name": "Product A"}, {"name": "Product B"}]`) or an empty array `[]` if not applicable.
 
-Always return a valid JSON object with "text" (your reply), "query_type" (greeting, product, other), and "products" (array, possibly empty). Use conversation history for context. Do NOT suggest products from other brands or websites.
-
-Examples:
-1. User: Hi
-Assistant: {"text": "Hey there! Excited to help you explore Planet Beauty's products. What's on your mind today?", "query_type": "greeting", "products": []}
-2. User: I need a moisturizer for dry skin
-Assistant: {"text": "Dry skin needs extra love! Here are some Planet Beauty moisturizers to hydrate your skin: ✨", "query_type": "product", "products": [{"name": "Dermalogica Intensive Moisture Balance"}] }
-3. User: Only cheapest
-Assistant: {"text": "Let's find you a budget-friendly option from those moisturizers! Here's the most affordable one: ✨", "query_type": "product", "products": [{"name": "Dermalogica Intensive Moisture Balance"}] }
-4. User: Red light therapy products
-Assistant: {"text": "I couldn't find red light therapy devices in Planet Beauty's catalog. Would you like skincare products to complement your routine?", "query_type": "product", "products": []}
-5. User: Thank you!
-Assistant: {"text": "You're so welcome! I'm here whenever you need more beauty tips. What's next?", "query_type": "other", "products": []}`
+Example Flow:
+User: Hi
+Assistant: {"text": "Hello! Welcome to Planet Beauty. How can I help you find the perfect beauty products today? ✨", "query_type": "greeting", "products": []}
+User: I need a good serum for fine lines
+Assistant: {"text": "Serums are great for targeting specific concerns like fine lines! Based on popular choices, you might consider these: ✨", "query_type": "product", "products": [{"name": "Glow Recipe Plum Plump Hyaluronic Serum"}, {"name": "Peter Thomas Roth Peptide 21 Wrinkle Resist Serum"}]}
+User: which one is cheaper?
+Assistant: {"text": "To compare the current prices for the Glow Recipe and Peter Thomas Roth serums, you'll need to check their pages on the Planet Beauty website. Prices can sometimes change with promotions!", "query_type": "refinement", "products": []} // Acknowledges refinement, doesn't list products again unless helpful
+User: do you sell red light masks?
+Assistant: {"text": "I don't have specific information about 'red light masks' being sold at Planet Beauty based on our chat. We do have many other effective skincare treatments and tools. Would you like to explore serums or moisturizers perhaps?", "query_type": "product", "products": []} // Handles specific query it can't confirm
+User: Thanks
+Assistant: {"text": "You're very welcome! Let me know if anything else comes up. 😊", "query_type": "other", "products": []}`
                 }]
             };
-            const validHistory = conversationHistory.filter(entry => entry.role && entry.parts && Array.isArray(entry.parts));
-            return [systemInstruction, ...validHistory];
+            // Filter history to ensure it's valid before sending
+            const validHistory = conversationHistory.filter(entry => entry.role && entry.parts && Array.isArray(entry.parts) && entry.parts[0] && typeof entry.parts[0].text === 'string');
+            return [systemInstruction, ...validHistory]; // Send system instruction + valid history
         }
 
         function fallbackSearch(query) {
             const queryLower = (query || "").toLowerCase();
-            if (!queryLower || products.length === 0) return [];
+            if (!queryLower || !products || products.length === 0) return [];
 
-            const keywords = queryLower.split(/\s+/)
-                .filter(word => word.length > 2 && !['the', 'a', 'an', 'is', 'for', 'what', 'can', 'you', 'recommend', 'find', 'me', 'i', 'need', 'with', 'of', 'my', 'skin', 'hair'].includes(word));
+            // Basic keyword extraction (improved slightly)
+            const stopWords = new Set(['the', 'a', 'an', 'is', 'for', 'what', 'can', 'you', 'recommend', 'find', 'me', 'i', 'need', 'with', 'of', 'my', 'skin', 'hair', 'product', 'products', 'good', 'best', 'please', 'show']);
+            const keywords = queryLower.split(/[\s,.-]+/) // Split by spaces and common punctuation
+                .filter(word => word.length > 2 && !stopWords.has(word));
 
-            let categoryMatches = new Set();
-            for (const [category, catKeywords] of Object.entries(categoryKeywords)) {
-                if (catKeywords.some(kw => queryLower.includes(kw))) {
-                    const categoryProducts = productCategories[category] || [];
-                    categoryProducts.forEach(product => categoryMatches.add(product));
-                }
-            }
+            if (keywords.length === 0) return []; // No useful keywords found
 
-            let matchedProducts = Array.from(categoryMatches);
-            if (matchedProducts.length >= 2) {
-                return matchedProducts.slice(0, 3);
-            }
-
+            // Score products based on keyword matches in name and description
             const scoredProducts = products.map(product => {
                 let score = 0;
                 const nameLower = (product.name || "").toLowerCase();
                 const descLower = (product.description || "").toLowerCase();
-                if (categoryMatches.has(product)) score += 5;
+                const categories = product.categories || [];
+
+                // Higher score for name match, lower for description
                 keywords.forEach(term => {
                     if (nameLower.includes(term)) score += 3;
                     if (descLower.includes(term)) score += 1;
                 });
+
+                // Bonus score if query keywords match product's assigned categories' keywords
+                for (const category of categories) {
+                     if (categoryKeywords[category]?.some(catKeyword => keywords.some(term => catKeyword.includes(term)))) {
+                         score += 2; // Add bonus for category keyword match
+                     }
+                }
+
                 return { product, score };
             });
 
+            // Filter, sort, and return top 3 relevant products
             const relevantProducts = scoredProducts
-                .filter(item => item.score > 0)
-                .sort((a, b) => b.score - a.score)
+                .filter(item => item.score > 0) // Only include products with some match
+                .sort((a, b) => b.score - a.score) // Sort by score descending
                 .map(item => item.product);
 
-            const combinedResults = new Map();
-            matchedProducts.forEach(p => combinedResults.set(p.id || p.name, p));
-            relevantProducts.forEach(p => {
-                if (!combinedResults.has(p.id || p.name)) {
-                    combinedResults.set(p.id || p.name, p);
-                }
-            });
-
-            return Array.from(combinedResults.values()).slice(0, 3);
+            return relevantProducts.slice(0, 3); // Return top 3 matches
         }
 
         async function processResponse(response, userQuery) {
             hideTypingIndicator();
 
             if (!response || typeof response !== 'object') {
-                console.error("Invalid response:", response);
-                addMessage("Sorry, something went wrong. Let’s try that again!", 'bot');
+                console.error("Invalid response object received in processResponse:", response);
+                addMessage("Sorry, I received an unexpected response. Please try again.", 'bot');
                 return;
             }
 
+            // Display the AI's text response (sanitized)
             if (response.text) {
-                addMessage(DOMPurify.sanitize(response.text, { USE_PROFILES: { html: true } }), 'bot');
-                updateUserProfile(response.text);
+                addMessage(DOMPurify.sanitize(response.text, { USE_PROFILES: { html: true } }), 'bot'); // Allow safe HTML from bot
+                updateUserProfile(response.text); // Update profile based on bot response
             } else {
-                addMessage("Let me find some Planet Beauty products for you!", 'bot');
+                // Fallback message if AI provides no text (should be rare with new prompt)
+                addMessage("Okay, let me see...", 'bot');
             }
 
             let productsToShow = [];
-            const queryType = response.query_type || 'other';
-            const queryLower = userQuery.toLowerCase();
-            const isFollowUp = queryLower.includes('cheapest') || queryLower.includes('less expensive') || queryLower.includes('budget');
+            const queryType = response.query_type || 'other'; // Default to 'other' if missing
 
-            if (isFollowUp && lastSuggestedProducts.length > 0) {
-                // Handle follow-up requests like "cheapest"
-                productsToShow = lastSuggestedProducts
-                    .filter(p => p.price && !isNaN(parseFloat(p.price.replace(/[^0-9.]/g, ''))))
-                    .sort((a, b) => parseFloat(a.price.replace(/[^0-9.]/g, '')) - parseFloat(b.price.replace(/[^0-9.]/g, '')))
-                    .slice(0, 1); // Show the cheapest
-                if (productsToShow.length > 0) {
-                    addMessage("Here's the most budget-friendly option from my previous suggestions:", 'bot');
-                } else {
-                    addMessage("I couldn't find a cheaper option from my previous suggestions. Let me search for affordable Planet Beauty products:", 'bot');
-                    productsToShow = fallbackSearch(userQuery)
-                        .filter(p => p.price && !isNaN(parseFloat(p.price.replace(/[^0-9.]/g, ''))))
-                        .sort((a, b) => parseFloat(a.price.replace(/[^0-9.]/g, '')) - parseFloat(b.price.replace(/[^0-9.]/g, '')))
-                        .slice(0, 3);
-                }
-            } else if (response.products && Array.isArray(response.products) && response.products.length > 0) {
-                console.log("Gemini suggested:", response.products.map(p => p.name));
+            // Process products suggested by the AI
+            if (response.products && Array.isArray(response.products) && response.products.length > 0) {
+                console.log("Gemini suggested products:", response.products.map(p => p.name));
+
                 for (const suggestedProduct of response.products) {
+                    // Validate suggested product structure
                     if (!suggestedProduct || typeof suggestedProduct.name !== 'string' || !suggestedProduct.name.trim()) {
-                        console.warn("Skipping invalid product:", suggestedProduct);
+                        console.warn("Skipping invalid product suggestion from API:", suggestedProduct);
                         continue;
                     }
 
                     const nameLower = suggestedProduct.name.trim().toLowerCase();
-                    let foundProduct = products.find(p => p.name && p.name.toLowerCase() === nameLower);
+                    let foundProduct = null;
 
+                    // --- Improved Matching Logic ---
+                    // 1. Exact match (case-insensitive)
+                    foundProduct = products.find(p => p.name && p.name.toLowerCase() === nameLower);
+
+                    // 2. Contains match (either way) - prioritize if CSV name is *in* API name (more specific)
                     if (!foundProduct) {
                         foundProduct = products.find(p =>
-                            p.name && (p.name.toLowerCase().includes(nameLower) || nameLower.includes(p.name.toLowerCase()))
+                            p.name && nameLower.includes(p.name.toLowerCase())
                         );
                     }
+                    if (!foundProduct) {
+                         foundProduct = products.find(p =>
+                            p.name && p.name.toLowerCase().includes(nameLower)
+                        );
+                    }
+                    // --- End Improved Matching ---
+
 
                     if (foundProduct) {
+                        // Avoid duplicates
                         if (!productsToShow.some(p => (p.id || p.name) === (foundProduct.id || foundProduct.name))) {
-                            console.log(`Matched "${suggestedProduct.name}" to: ${foundProduct.name}`);
+                            console.log(`Matched API suggestion "${suggestedProduct.name}" to catalog product: ${foundProduct.name}`);
                             productsToShow.push({
-                                ...foundProduct,
+                                ...foundProduct, // Spread existing product data
                                 name: foundProduct.name || "Unnamed Product",
                                 description: foundProduct.description || "Description not available.",
-                                price: foundProduct.price || "",
-                                image: foundProduct.image,
-                                url: foundProduct.url || formatProductUrl(foundProduct.name)
+                                price: foundProduct.price || "", // Use price from sheet if available
+                                // IMPORTANT: Prioritize URL from sheet if valid, otherwise generate fallback
+                                url: (foundProduct.url && foundProduct.url.startsWith('https://www.planetbeauty.com/'))
+                                     ? foundProduct.url
+                                     : formatProductUrl(foundProduct.name),
+                                image: foundProduct.image // Use image from sheet
                             });
                         }
                     } else {
-                        console.log(`No match for "${suggestedProduct.name}".`);
+                        console.log(`Could not find catalog match for API suggestion "${suggestedProduct.name}". Skipping card.`);
+                        // Optionally, mention this in the chat if the AI's text didn't already cover it.
+                        // addMessage(`I mentioned "${suggestedProduct.name}", but couldn't find its details in our current catalog.`, 'bot');
                     }
                 }
             }
 
-            if (productsToShow.length === 0 && queryType === 'product') {
-                console.log("Using fallback search.");
-                productsToShow = fallbackSearch(userQuery).map(p => ({
-                    ...p,
-                    name: p.name || "Unnamed Product",
-                    description: p.description || "Description not available.",
-                    price: p.price || "",
-                    image: p.image,
-                    url: p.url || formatProductUrl(p.name)
-                }));
+            // If AI was supposed to find products ('product' type) but none matched our catalog,
+            // OR if the query was a 'refinement' but AI didn't list products,
+            // consider using fallback search based on the *original user query*.
+            // Avoid fallback if the AI explicitly said it couldn't find anything relevant (based on prompt instructions).
+            const aiSaidNotFound = response.text && (response.text.toLowerCase().includes("don't have specific information") || response.text.toLowerCase().includes("couldn't find specific"));
 
-                if (productsToShow.length === 0) {
-                    if (queryLower.includes('red light') || queryLower.includes('therapy')) {
-                        addMessage("I couldn’t find red light therapy products in Planet Beauty’s catalog. Can I suggest some skincare products to enhance your routine?", 'bot');
-                    } else {
-                        addMessage("I couldn’t find matching products in Planet Beauty’s catalog. Can you clarify or try another request?", 'bot');
+            if (productsToShow.length === 0 && (queryType === 'product' || queryType === 'refinement') && !aiSaidNotFound) {
+                console.log("Using fallback search as API provided no usable/matched products or query type was product/refinement without results.");
+                const fallbackProducts = fallbackSearch(userQuery); // Use original user query for fallback
+
+                if (fallbackProducts.length > 0) {
+                     productsToShow = fallbackProducts.map(p => ({
+                        ...p,
+                        name: p.name || "Unnamed Product",
+                        description: p.description || "Description not available.",
+                        price: p.price || "",
+                         // IMPORTANT: Prioritize URL from sheet if valid, otherwise generate fallback
+                        url: (p.url && p.url.startsWith('https://www.planetbeauty.com/'))
+                             ? p.url
+                             : formatProductUrl(p.name),
+                        image: p.image
+                    }));
+                    // Add a message indicating these are fallback results, unless the AI already gave a relevant text response
+                     if (!response.text || !response.text.toLowerCase().includes("relevant")) {
+                        addMessage("Based on your query, these might be relevant from our catalog:", 'bot');
                     }
                 } else {
-                    addMessage("Here are some Planet Beauty products that might suit your needs:", 'bot');
+                    // Only add this message if the AI *didn't* already say it couldn't find anything
+                    if (!aiSaidNotFound) {
+                         addMessage("I looked through our catalog based on your request but couldn't find matching products this time. Perhaps try rephrasing?", 'bot');
+                    }
                 }
             }
 
+            // Display product cards if any were found (either from AI match or fallback)
             if (productsToShow.length > 0) {
-                lastSuggestedProducts = productsToShow; // Store for follow-ups
-                const maxCards = 3;
-                await Promise.all(productsToShow.slice(0, maxCards).map(p => addProductCard(p, userQuery)));
-                addMessage("Anything else I can help you find?", 'bot'); // Companion-like prompt
+                const maxCards = 3; // Limit cards shown
+                await Promise.all(productsToShow.slice(0, maxCards).map(p => addProductCard(p, userQuery))); // Pass user query for image context
             }
         }
+
 
         // --- UI Functions ---
         function addMessage(text, sender) {
             const div = document.createElement('div');
             div.className = sender === 'user' ? 'user-message' : 'bot-message';
-            div.innerHTML = DOMPurify.sanitize(text, { USE_PROFILES: { html: true } });
+            // Sanitize HTML from bot, disallow from user
+            div.innerHTML = DOMPurify.sanitize(text, { USE_PROFILES: { html: sender === 'bot' } });
+            div.classList.add('animate-fade-in'); // Add fade-in class
             chatArea.appendChild(div);
-            anime({
-                targets: div,
-                translateY: sender === 'user' ? [10, 0] : [10, 0],
-                opacity: [0, 1],
-                duration: 400,
-                easing: 'easeOutQuad'
-            });
             scrollToBottom();
         }
 
         function showTypingIndicator() {
-            hideTypingIndicator();
+            hideTypingIndicator(); // Remove any existing indicator
             const div = document.createElement('div');
             div.id = 'typing-indicator';
-            div.className = 'bot-message';
+            div.className = 'bot-message animate-fade-in'; // Add fade-in
             div.innerHTML = '<span>Thinking</span><span class="typing-dots">.</span>';
             chatArea.appendChild(div);
             scrollToBottom();
+
+            // Animate dots
             let dotCount = 1;
             const intervalId = setInterval(() => {
                 const dotsSpan = div.querySelector('.typing-dots');
@@ -979,137 +1121,197 @@ Assistant: {"text": "You're so welcome! I'm here whenever you need more beauty t
                     dotCount = (dotCount % 3) + 1;
                     dotsSpan.textContent = '.'.repeat(dotCount);
                 } else {
-                    clearInterval(intervalId);
+                    clearInterval(intervalId); // Stop if indicator removed
                 }
             }, 400);
-            div.dataset.intervalId = intervalId.toString();
+            div.dataset.intervalId = intervalId.toString(); // Store interval ID for clearing
         }
 
         function hideTypingIndicator() {
             const indicator = document.getElementById('typing-indicator');
             if (indicator) {
                 const intervalId = indicator.dataset.intervalId;
-                if (intervalId) clearInterval(parseInt(intervalId, 10));
+                if (intervalId) {
+                    clearInterval(parseInt(intervalId, 10));
+                }
                 indicator.remove();
             }
         }
 
         function displayError(message) {
             const errorDiv = document.createElement('div');
-            errorDiv.className = 'error-message';
+            errorDiv.className = 'error-message animate-fade-in'; // Add fade-in
+            // Sanitize the error message itself before displaying
             errorDiv.innerHTML = DOMPurify.sanitize(`
                 <i class="fas fa-exclamation-circle mr-2"></i> ${message}
                 <button class="retry-btn mt-2 text-pink-600 underline" aria-label="Retry last message">Try Again</button>
             `);
+
             const retryBtn = errorDiv.querySelector('.retry-btn');
             if (retryBtn) {
                 retryBtn.addEventListener('click', () => {
+                    // Find the last actual user message text to retry
                     const lastUserMessage = conversationHistory.filter(m => m.role === 'user').pop();
-                    if (lastUserMessage && lastUserMessage.parts[0].text) {
-                        chatInput.value = lastUserMessage.parts[0].text;
+                    if (lastUserMessage?.parts?.[0]?.text) {
+                        chatInput.value = lastUserMessage.parts[0].text; // Restore sanitized text
                         updateSendButtonState();
-                        sendMessage();
+                        errorDiv.remove(); // Remove the error message first
+                        sendMessage(); // Resend the message
                     } else {
-                        addMessage("Could not retry the last message.", 'bot');
+                        addMessage("Could not retrieve the last message to retry.", 'bot');
+                        errorDiv.remove(); // Still remove error message
                     }
-                    errorDiv.remove();
                 });
             }
+
             chatArea.appendChild(errorDiv);
             scrollToBottom();
         }
 
         async function addProductCard(p, queryContext) {
+            // Ensure product data is somewhat valid
+            if (!p || typeof p !== 'object') {
+                console.warn("Attempted to add invalid product card:", p);
+                return;
+            }
+            const productName = typeof p.name === 'string' ? p.name : "Unnamed Product";
+            const productUrl = (typeof p.url === 'string' && p.url.startsWith('https://www.planetbeauty.com/'))
+                               ? p.url
+                               : formatProductUrl(productName); // Generate fallback URL if needed
+
             const card = document.createElement('a');
-            card.href = p.url || formatProductUrl(p.name);
+            card.href = productUrl;
             card.target = '_blank';
             card.rel = 'noopener noreferrer';
-            card.className = 'product-card animate-fade-in';
+            card.className = 'product-card animate-fade-in'; // Add fade-in
+            card.setAttribute('aria-label', `View product: ${productName}`); // Accessibility
             card.addEventListener('click', () => {
-                gtag('event', 'product_click', { event_category: 'Chatbot', event_label: p.name || 'Unknown Product' });
+                if (typeof gtag === 'function') {
+                    gtag('event', 'product_click', { event_category: 'Chatbot', event_label: productName });
+                }
             });
 
+            // --- Image Loading with Fallback ---
             const imageContainer = document.createElement('div');
-            imageContainer.className = 'image-loading';
+            imageContainer.className = 'image-loading'; // Shows spinner initially
             const spinner = document.createElement('div');
             spinner.className = 'spinner';
             imageContainer.appendChild(spinner);
             card.appendChild(imageContainer);
 
             const img = document.createElement('img');
-            img.alt = p.name || "Product Image";
-            img.className = 'product-image';
-            img.style.display = 'none';
+            img.alt = productName;
+            img.className = 'product-image lazyload'; // Use lazyload class
+            img.style.display = 'none'; // Hide initially
 
+            // Prioritize product image, then category backup, then default
             const imageSources = [
-                p.image,
-                getBackupImage(p.name || queryContext),
-                backupImages.default
-            ].filter(url => url && typeof url === 'string' && url.trim() !== '');
+                p.image, // Image from sheet data
+                getBackupImage(productName || queryContext), // Backup based on name/query
+                backupImages.default // Final default placeholder
+            ].filter(url => url && typeof url === 'string' && url.trim() !== ''); // Filter out invalid URLs
 
             let currentAttempt = 0;
 
             const tryLoadNextImage = () => {
                 if (currentAttempt >= imageSources.length) {
-                    console.warn(`Failed to load image for: ${p.name || 'Unknown'}`);
-                    imageContainer.innerHTML = `
-                        <div class="image-placeholder">
-                            <span>Image Not Available</span>
-                        </div>`;
+                    console.warn(`Failed to load any image for product: ${productName}`);
+                    // Display placeholder text if all images fail
+                    imageContainer.innerHTML = `<div class="image-placeholder"><span>Image Not Available</span></div>`;
+                    // Ensure container is still part of the card if it was replaced prematurely
                     if (!card.contains(imageContainer)) {
-                        const infoDiv = card.querySelector('.product-info');
-                        if (infoDiv) card.insertBefore(imageContainer, infoDiv);
-                        else card.appendChild(imageContainer);
+                         const infoDiv = card.querySelector('.product-info');
+                         if (infoDiv) card.insertBefore(imageContainer, infoDiv);
+                         else card.appendChild(imageContainer);
                     }
                     return;
                 }
 
                 const url = imageSources[currentAttempt];
-                console.log(`Attempt ${currentAttempt + 1} for ${p.name || 'Unknown'}: ${url}`);
+                console.log(`Image Load Attempt ${currentAttempt + 1} for ${productName}: Trying URL ${url}`);
 
-                img.onload = null;
+                // Use lazysizes data-src
+                img.setAttribute('data-src', url);
+                img.onload = null; // Clear previous handlers
                 img.onerror = null;
 
+                // We rely on lazysizes to handle loading now.
+                // If lazysizes fails, it won't trigger 'load'. We need a fallback mechanism.
+
+                // Simple timeout fallback: If image hasn't loaded after a delay, try next source.
+                const loadTimeout = setTimeout(() => {
+                    // Check if the image has loaded (lazysizes adds 'lazyloaded' class)
+                    if (!img.classList.contains('lazyloaded')) {
+                        console.warn(`Image Load Attempt ${currentAttempt + 1} for ${productName}: URL ${url} timed out or failed.`);
+                        currentAttempt++;
+                        tryLoadNextImage(); // Try the next image source
+                    } else {
+                         // If loaded successfully by timeout check, ensure spinner is gone
+                         if (imageContainer.parentNode === card) {
+                            imageContainer.replaceWith(img);
+                            img.style.display = 'block'; // Ensure visible
+                         }
+                    }
+                }, IMAGE_TIMEOUT); // Use configured image timeout
+
                 img.onload = () => {
-                    console.log(`Image loaded: ${img.src}`);
+                    clearTimeout(loadTimeout); // Cancel timeout if loaded successfully
+                    console.log(`Image loaded successfully via onload: ${img.src}`);
                     img.style.display = 'block';
-                    if (imageContainer.parentNode) imageContainer.replaceWith(img);
+                    if (imageContainer.parentNode === card) { // Check if spinner is still there
+                        imageContainer.replaceWith(img);
+                    }
                 };
 
                 img.onerror = () => {
-                    console.warn(`Failed URL ${url} for ${p.name || 'Unknown'}.`);
+                    clearTimeout(loadTimeout); // Cancel timeout on explicit error
+                    console.warn(`Image Load Attempt ${currentAttempt + 1} for ${productName}: URL ${url} failed (onerror).`);
                     currentAttempt++;
-                    tryLoadNextImage();
+                    tryLoadNextImage(); // Try the next image source
                 };
 
-                img.src = url;
+                // Trigger lazysizes (if not already triggered)
+                if (typeof lazySizes !== 'undefined') {
+                    lazySizes.loader.unveil(img);
+                } else {
+                    // Fallback if lazysizes isn't loaded? Load directly.
+                    img.src = url;
+                }
             };
 
-            tryLoadNextImage();
+            tryLoadNextImage(); // Start loading attempts
+            // --- End Image Loading ---
 
-            const MAX_TITLE_LENGTH = 50;
-            const MAX_DESC_LENGTH = 100;
-            const productName = typeof p.name === 'string' ? p.name : "Unnamed Product";
+
+            // --- Product Info ---
+            const MAX_TITLE_LENGTH = 60; // Adjusted length
+            const MAX_DESC_LENGTH = 120; // Adjusted length
+
             const productDesc = typeof p.description === 'string' ? p.description : "Click for details.";
+            const productPrice = typeof p.price === 'string' || typeof p.price === 'number' ? String(p.price) : ""; // Ensure price is string
+
+            // Truncate text
             const truncatedName = productName.length > MAX_TITLE_LENGTH
-                ? productName.substring(0, MAX_TITLE_LENGTH) + '...'
+                ? productName.substring(0, MAX_TITLE_LENGTH) + '…' // Use ellipsis character
                 : productName;
             const truncatedDesc = productDesc.length > MAX_DESC_LENGTH
-                ? productDesc.substring(0, MAX_DESC_LENGTH) + '...'
+                ? productDesc.substring(0, MAX_DESC_LENGTH) + '…' // Use ellipsis character
                 : productDesc;
 
             const infoDiv = document.createElement('div');
             infoDiv.className = 'product-info';
+            // Sanitize content before setting innerHTML
             infoDiv.innerHTML = DOMPurify.sanitize(`
-                <div class="product-name" title="${productName}">${truncatedName}</div>
-                <div class="product-description">${truncatedDesc}</div>
-                <div class="product-price">${p.price ? DOMPurify.sanitize(p.price) : ""}</div>
-            `, { USE_PROFILES: { html: true } });
+                <div class="product-name" title="${DOMPurify.sanitize(productName, { USE_PROFILES: { html: false } })}">${DOMPurify.sanitize(truncatedName, { USE_PROFILES: { html: false } })}</div>
+                <div class="product-description">${DOMPurify.sanitize(truncatedDesc, { USE_PROFILES: { html: false } })}</div>
+                <div class="product-price">${productPrice ? DOMPurify.sanitize(productPrice, { USE_PROFILES: { html: false } }) : ""}</div>
+            `, { USE_PROFILES: { html: true } }); // Allow structure, sanitize content
 
             card.appendChild(infoDiv);
             chatArea.appendChild(card);
-            scrollToBottom();
+            scrollToBottom(); // Ensure view scrolls down
         }
+
 
         function scrollToBottom() {
             requestAnimationFrame(() => {
@@ -1117,42 +1319,40 @@ Assistant: {"text": "You're so welcome! I'm here whenever you need more beauty t
             });
         }
 
+        // Basic profile update based on keywords in bot response (can be expanded)
         function updateUserProfile(botResponseText) {
             if (typeof botResponseText !== 'string') return;
+
             const textLower = botResponseText.toLowerCase();
             let updated = false;
-            const newProfile = { ...userProfile };
+            const newProfile = { ...userProfile }; // Copy current profile
 
+            // Simple keyword checks (can be made more sophisticated)
             if (textLower.includes('dry skin') && newProfile.skinType !== 'Dry') {
-                newProfile.skinType = 'Dry';
-                updated = true;
+                newProfile.skinType = 'Dry'; updated = true;
             } else if (textLower.includes('oily skin') && newProfile.skinType !== 'Oily') {
-                newProfile.skinType = 'Oily';
-                updated = true;
+                newProfile.skinType = 'Oily'; updated = true;
             } else if (textLower.includes('combination skin') && newProfile.skinType !== 'Combination') {
-                newProfile.skinType = 'Combination';
-                updated = true;
+                newProfile.skinType = 'Combination'; updated = true;
             } else if (textLower.includes('sensitive skin') && newProfile.skinType !== 'Sensitive') {
-                newProfile.skinType = 'Sensitive';
-                updated = true;
+                newProfile.skinType = 'Sensitive'; updated = true;
             }
 
-            if (textLower.includes('acne') && !newProfile.concerns.includes('Acne')) {
-                newProfile.concerns.push('Acne');
-                updated = true;
+            if ((textLower.includes('acne') || textLower.includes('blemish')) && !newProfile.concerns.includes('Acne')) {
+                newProfile.concerns.push('Acne'); updated = true;
             }
-            if (textLower.includes('wrinkles') || textLower.includes('fine lines') && !newProfile.concerns.includes('Aging')) {
-                newProfile.concerns.push('Aging');
-                updated = true;
+            if ((textLower.includes('wrinkles') || textLower.includes('fine lines') || textLower.includes('aging')) && !newProfile.concerns.includes('Aging')) {
+                newProfile.concerns.push('Aging'); updated = true;
             }
             if (textLower.includes('dullness') && !newProfile.concerns.includes('Dullness')) {
-                newProfile.concerns.push('Dullness');
-                updated = true;
+                newProfile.concerns.push('Dullness'); updated = true;
             }
+            // Add more concerns as needed
 
             if (updated) {
-                Object.assign(userProfile, newProfile);
-                console.log(`Profile updated - Skin Type: ${userProfile.skinType || 'N/A'}, Concerns: ${userProfile.concerns.join(', ') || 'None'}`);
+                Object.assign(userProfile, newProfile); // Update the main profile object
+                console.log(`User profile updated - Skin Type: ${userProfile.skinType || 'N/A'}, Concerns: ${userProfile.concerns.length > 0 ? userProfile.concerns.join(', ') : 'None'}`);
+                // Potential future use: Pass profile info back to API for personalization
             }
         }
     </script>
