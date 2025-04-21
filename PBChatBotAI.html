@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Planet Beauty AI Chatbot - Find personalized beauty products with our interactive assistant.">
-    <link rel="icon" href="https://placehold.co/16x16/E91e63/FFFFFF?text=PB" type="image/png">
+    <link rel="icon" href="https://placehold.co/16x16/E91e63/FFFFFF?text=PB" type="image/png" onerror="this.href='/images/favicon.png';">
     <title>Planet Beauty AI Chatbot</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" rel="stylesheet">
@@ -118,9 +118,10 @@
         const API_TIMEOUT = 25000;
         const IMAGE_TIMEOUT = 15000;
         const PRELOADER_MIN_DURATION = 1000;
+        const PRELOADER_MAX_DURATION = 10000; // Force preloader removal after 10s
         const PERCENTAGE_ANIMATION_DURATION = 2000;
         const PLANET_BEAUTY_DOMAIN = 'https://www.planetbeauty.com';
-        const DEBUG_MODE = false;
+        const DEBUG_MODE = true; // Enabled to diagnose issues
 
         // --- Fallback Definitions ---
         const FALLBACK_QUESTIONS = [
@@ -159,6 +160,7 @@
         };
         const backupImages = {
             default: 'https://placehold.co/600x400/E91e63/FFFFFF?text=Planet+Beauty',
+            local: '/images/placeholder.png' // Local fallback
         };
 
         // --- DOM Elements ---
@@ -226,10 +228,14 @@
             };
 
             const minDurationPromise = new Promise(resolve => setTimeout(resolve, PRELOADER_MIN_DURATION));
+            const maxDurationPromise = new Promise(resolve => setTimeout(resolve, PRELOADER_MAX_DURATION));
             const animationPromise = animatePercentage();
+
             try {
                 debugLog('Initializing Planet Beauty AI Assistant');
-                products = await fetchProducts();
+                // Add delay to allow Cloudflare challenge to complete
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                products = await fetchProductsWithRetry();
                 organizeProducts();
                 await generateSuggestedQuestions();
                 await Promise.all([minDurationPromise, animationPromise]);
@@ -242,22 +248,22 @@
                         percentageElement.textContent = `${Math.round(anim.animatables[0].target.value)}%`;
                     }
                 }).finished;
-                preloader.style.opacity = '0';
-                setTimeout(() => preloader.remove(), 500);
-                debugLog('Initialization complete', {
-                    productCount: products.length,
-                    categoryCount: Object.keys(productCategories).length,
-                    brandCount: Object.keys(productBrands).length
-                });
             } catch (error) {
                 console.error('Initialization error:', error);
                 debugLog('Initialization error', error);
                 percentageElement.textContent = 'Error';
                 percentageElement.style.color = '#c62828';
-                await Promise.all([minDurationPromise, animationPromise]);
-                preloader.style.opacity = '0';
-                setTimeout(() => preloader.remove(), 500);
                 addMessage("Sorry, I couldn't load the product catalog. Showing general recommendations.", 'bot');
+            } finally {
+                // Ensure preloader is removed after max duration or completion
+                await Promise.race([Promise.all([minDurationPromise, animationPromise]), maxDurationPromise]);
+                preloader.style.opacity = '0';
+                setTimeout(() => {
+                    if (preloader && preloader.parentNode) {
+                        preloader.remove();
+                    }
+                }, 500);
+                debugLog('Preloader removed');
             }
 
             anime({
@@ -280,60 +286,73 @@
             updateSendButtonState();
         });
 
-        // --- Fetch Products ---
-        async function fetchProducts() {
-            try {
-                const cachedProducts = localStorage.getItem('cachedProducts');
-                if (cachedProducts) {
-                    debugLog('Using cached products as fallback');
-                    return JSON.parse(cachedProducts);
-                }
+        // --- Fetch Products with Retry ---
+        async function fetchProductsWithRetry(retries = 2, delay = 1000) {
+            for (let attempt = 1; attempt <= retries; attempt++) {
+                try {
+                    const cachedProducts = localStorage.getItem('cachedProducts');
+                    if (cachedProducts) {
+                        debugLog('Using cached products');
+                        return JSON.parse(cachedProducts);
+                    }
 
-                const res = await axios.get(`${WEB_APP_URL}?action=getProducts`, { timeout: API_TIMEOUT });
-                if (res.data && Array.isArray(res.data.products)) {
-                    const validatedProducts = res.data.products.map((p, index) => {
-                        let productUrl = p.url || formatProductUrl(p.name);
-                        if (productUrl && typeof productUrl === 'string') {
-                            try {
-                                const parsedUrl = new URL(productUrl);
-                                if (!parsedUrl.hostname.endsWith('planetbeauty.com')) {
-                                    productUrl = formatProductUrl(p.name);
-                                } else {
-                                    productUrl = productUrl.replace(/^http:/, 'https:');
-                                }
-                            } catch (e) {
-                                productUrl = formatProductUrl(p.name);
-                            }
-                        }
-
-                        return {
-                            ...p,
-                            id: p.id || `p${index + 1}`,
-                            name: p.name || 'Unnamed Product',
-                            description: p.description || 'No description available',
-                            price: p.price || '',
-                            image: p.image || getBackupImage(''),
-                            url: productUrl,
-                            brand: p.brand || '',
-                            categories: [],
-                            descriptionTags: []
-                        };
+                    const res = await axios.get(`${WEB_APP_URL}?action=getProducts`, {
+                        timeout: API_TIMEOUT,
+                        headers: { 'User-Agent': 'PlanetBeautyChatbot/1.0' }
                     });
 
-                    localStorage.setItem('cachedProducts', JSON.stringify(validatedProducts));
-                    debugLog('Products fetched and cached', { count: validatedProducts.length });
-                    return validatedProducts;
-                } else {
-                    throw new Error('Invalid data format from Web App');
+                    if (res.data && Array.isArray(res.data.products)) {
+                        const validatedProducts = res.data.products.map((p, index) => {
+                            let productUrl = p.url || formatProductUrl(p.name);
+                            if (productUrl && typeof productUrl === 'string') {
+                                try {
+                                    const parsedUrl = new URL(productUrl);
+                                    if (!parsedUrl.hostname.endsWith('planetbeauty.com')) {
+                                        productUrl = formatProductUrl(p.name);
+                                    } else {
+                                        productUrl = productUrl.replace(/^http:/, 'https:');
+                                    }
+                                } catch (e) {
+                                    productUrl = formatProductUrl(p.name);
+                                }
+                            }
+
+                            return {
+                                ...p,
+                                id: p.id || `p${index + 1}`,
+                                name: p.name || 'Unnamed Product',
+                                description: p.description || 'No description available',
+                                price: p.price || '',
+                                image: p.image || getBackupImage(''),
+                                url: productUrl,
+                                brand: p.brand || '',
+                                categories: [],
+                                descriptionTags: []
+                            };
+                        });
+
+                        localStorage.setItem('cachedProducts', JSON.stringify(validatedProducts));
+                        debugLog('Products fetched and cached', { count: validatedProducts.length });
+                        return validatedProducts;
+                    } else {
+                        throw new Error('Invalid data format from Web App');
+                    }
+                } catch (error) {
+                    console.error(`Fetch products attempt ${attempt} failed:`, error);
+                    debugLog('Fetch products error', { attempt, error: error.message });
+                    if (attempt < retries) {
+                        debugLog(`Retrying fetch products in ${delay}ms`);
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                    } else {
+                        const cachedProducts = localStorage.getItem('cachedProducts');
+                        if (cachedProducts) {
+                            debugLog('Falling back to cached products');
+                            return JSON.parse(cachedProducts);
+                        }
+                        debugLog('Using fallback products');
+                        return fallbackProducts;
+                    }
                 }
-            } catch (error) {
-                console.error('Failed to fetch products:', error);
-                debugLog('Fetch products error', error);
-                const cachedProducts = localStorage.getItem('cachedProducts');
-                if (cachedProducts) {
-                    return JSON.parse(cachedProducts);
-                }
-                return fallbackProducts;
             }
         }
 
@@ -418,6 +437,7 @@
         // --- Suggested Questions ---
         async function generateSuggestedQuestions() {
             if (products.length === 0) {
+                debugLog('No products, using fallback questions');
                 displaySuggestedQuestions(FALLBACK_QUESTIONS);
                 return;
             }
@@ -426,6 +446,7 @@
                 displaySuggestedQuestions(questions);
             } catch (error) {
                 console.error('Failed to generate suggested questions:', error);
+                debugLog('Suggested questions error', error);
                 displaySuggestedQuestions(FALLBACK_QUESTIONS);
             }
         }
@@ -472,24 +493,35 @@ Example valid JSON output:
                 ]
             };
 
-            const res = await axios.post(GEMINI_API_URL, prompt, {
-                headers: { 'Content-Type': 'application/json' },
-                timeout: API_TIMEOUT
-            });
+            try {
+                const res = await axios.post(GEMINI_API_URL, prompt, {
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'User-Agent': 'PlanetBeautyChatbot/1.0'
+                    },
+                    timeout: API_TIMEOUT
+                });
 
-            if (res.data?.candidates?.[0]?.content?.parts?.[0]?.text) {
-                const responseText = res.data.candidates[0].content.parts[0].text;
-                try {
-                    const cleanedText = responseText.replace(/^```json\s*|```$/g, '').trim();
-                    const questions = JSON.parse(cleanedText);
-                    if (Array.isArray(questions) && questions.length >= 4 && questions.every(q => typeof q === 'string')) {
-                        return questions.slice(0, 4);
+                if (res.data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+                    const responseText = res.data.candidates[0].content.parts[0].text;
+                    try {
+                        const cleanedText = responseText.replace(/^```json\s*|```$/g, '').trim();
+                        const questions = JSON.parse(cleanedText);
+                        if (Array.isArray(questions) && questions.length >= 4 && questions.every(q => typeof q === 'string' && q.trim())) {
+                            return questions.slice(0, 4);
+                        }
+                        throw new Error('Invalid questions format');
+                    } catch (parseError) {
+                        console.error('JSON Parse Error:', parseError, 'Raw text:', responseText);
+                        debugLog('Suggested questions JSON parse error', { error: parseError.message });
+                        return FALLBACK_QUESTIONS;
                     }
-                } catch (parseError) {
-                    console.error('JSON Parse Error:', parseError, 'Raw text:', responseText);
                 }
+                throw new Error('No valid response from API');
+            } catch (error) {
+                debugLog('Suggested questions fetch error', { error: error.message });
+                return FALLBACK_QUESTIONS;
             }
-            return FALLBACK_QUESTIONS;
         }
 
         function displaySuggestedQuestions(questions) {
@@ -669,6 +701,7 @@ Example valid JSON output:
                 await processResponse(response, message);
             } catch (error) {
                 console.error('Error during message processing:', error);
+                debugLog('Message processing error', error);
                 hideTypingIndicator();
                 let errorMessage = "I encountered an issue. Please try again.";
                 if (error.message.includes('timed out')) {
@@ -700,7 +733,8 @@ Example valid JSON output:
             try {
                 const res = await axios.get(`${WEB_APP_URL}?action=getPrompt`, {
                     params: { conversationHistory: JSON.stringify(conversationHistory) },
-                    timeout: API_TIMEOUT
+                    timeout: API_TIMEOUT,
+                    headers: { 'User-Agent': 'PlanetBeautyChatbot/1.0' }
                 });
                 const prompt = res.data.prompt;
 
@@ -723,7 +757,10 @@ Example valid JSON output:
 
                 debugLog('Calling Gemini API');
                 const apiRes = await axios.post(GEMINI_API_URL, payload, {
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'User-Agent': 'PlanetBeautyChatbot/1.0'
+                    },
                     timeout: API_TIMEOUT
                 });
 
@@ -747,7 +784,7 @@ Example valid JSON output:
                         return parsedResponse;
                     } catch (parseError) {
                         console.error('JSON Parse Error:', parseError, 'Raw text:', responseText);
-                        debugLog('JSON Parse Error', { error: parseError.message, text: responseText });
+                        debugLog('Gemini API JSON parse error', { error: parseError.message, text: responseText });
                         return { text: "I couldn't fully understand the response. Let me try to find products.", query_type: 'other', products: [] };
                     }
                 } else if (apiRes.data?.promptFeedback?.blockReason) {
@@ -763,6 +800,7 @@ Example valid JSON output:
                     return await callGeminiAPI(true);
                 }
                 console.error('Error calling API:', error);
+                debugLog('Gemini API error', { error: error.message });
                 throw error;
             }
         }
@@ -823,13 +861,17 @@ Example valid JSON output:
                 } else {
                     imageHtml = `<div class="image-loading"><div class="spinner"></div></div>`;
                     try {
-                        const imgRes = await axios.get(product.image, { timeout: IMAGE_TIMEOUT });
+                        const imgRes = await axios.get(product.image, { 
+                            timeout: IMAGE_TIMEOUT,
+                            headers: { 'User-Agent': 'PlanetBeautyChatbot/1.0' }
+                        });
                         imageCache[product.image] = product.image;
                         localStorage.setItem('imageCache', JSON.stringify(imageCache));
                         imageHtml = `<img src="${product.image}" alt="${product.name}" class="product-image lazyload">`;
                     } catch (error) {
                         console.warn(`Failed to load image for ${product.name}:`, error);
-                        imageHtml = `<img src="${getBackupImage(query)}" alt="${product.name}" class="product-image lazyload">`;
+                        debugLog('Product image load error', { product: product.name, error: error.message });
+                        imageHtml = `<img src="${backupImages.local}" alt="${product.name}" class="product-image lazyload">`;
                     }
                 }
             }
@@ -1048,4 +1090,24 @@ Example valid JSON output:
 
             debugLog('Extracted keywords', keywords);
 
-            if (keywords
+            const scoredProducts = products.map(product => {
+                let score = 0;
+                const nameLower = (product.name || "").toLowerCase();
+                const descLower = (product.description || "").toLowerCase();
+
+                keywords.forEach(keyword => {
+                    if (nameLower.includes(keyword)) score += 10;
+                    if (descLower.includes(keyword)) score += 5;
+                    if (product.categories.includes(keyword)) score += 15;
+                    if (product.descriptionTags.includes(keyword)) score += 10;
+                });
+
+                return { product, score };
+            }).filter(item => item.score > 0);
+
+            scoredProducts.sort((a, b) => b.score - a.score);
+            return scoredProducts.slice(0, maxResults).map(item => item.product);
+        }
+    </script>
+</body>
+</html>
