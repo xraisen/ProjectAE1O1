@@ -12,7 +12,6 @@
     <script src="https://cdn.jsdelivr.net/npm/lazysizes@5.3.2/lazysizes.min.js" async></script>
     <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
     <script>
@@ -143,14 +142,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #f8f9fa, #e91e63);
-            color: white;
+            background: #eee;
+            color: #666;
             font-size: 0.9em;
             text-align: center;
-            transition: opacity 0.3s ease;
-        }
-        .image-placeholder:hover {
-            opacity: 0.9;
         }
         .product-info {
             padding: 1rem;
@@ -354,11 +349,11 @@
 
     <script>
         // --- Configuration ---
-        const GEMINI_API_KEY = 'AIzaSyCpI-eNfqWk_ZiK2qHOj_tD2NzeAJ_U398';
+        const GEMINI_API_KEY = 'AIzaSyCpI-eNfqWk_ZiK2qHOj_tD2NzeAJ_U398'; // Replace with your Gemini API key
         const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzzp5mD6Nu3RZmYvjzDFXvCNC5MhJyfNMvs_MJDYLqZ8Uad1BJE-cO1WWg7BpoYO62_/exec'; // Replace with your deployed Web App URL
         const API_TIMEOUT = 15000;
         const IMAGE_TIMEOUT = 5000;
-        const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRX4zvphZLKZmYtDv2NC5RXHlgEl7pb7pzt91FhgCKi7NiDaeoYCvcXQ0zZt74BR5aTFc4ZVrAWi41x/pub?gid=875103365&single=true&output=csv'; // Replace with your actual CSV link
 
         // --- Fallback Questions ---
         const FALLBACK_QUESTIONS = [
@@ -430,31 +425,28 @@
             });
             chatInput.focus();
             updateSendButtonState();
-            preloadImages();
         });
 
-        // --- Fetch Products from Google Sheet ---
+        // --- Fetch Products from Google Apps Script Web App ---
         async function fetchProducts() {
             try {
-                const res = await axios.get(csvUrl);
-                const data = Papa.parse(res.data, { header: true });
-                products = data.data.map((row, index) => {
-                    let imageUrl = row['image link'];
-                    if (imageUrl && imageUrl.startsWith('http://')) {
-                        imageUrl = imageUrl.replace('http://', 'https://'); // Enforce HTTPS
-                    }
-                    return {
-                        id: `p${index + 1}`,
-                        name: row['title'],
-                        price: row['price'],
-                        description: row['description'],
-                        image: imageUrl,
-                        url: row['link']
-                    };
-                }).filter(p => p.name && p.url);
-                return products;
+                const res = await axios.get(WEB_APP_URL);
+                if (res.data && res.data.products) {
+                    products = res.data.products.map((p, index) => ({
+                        ...p,
+                        id: p.id || `p${index + 1}`,
+                        image: p.image && p.image.startsWith('http://') ? p.image.replace('http://', 'https://') : p.image
+                    }));
+                    console.log("Products loaded from Web App:", products.length);
+                    return products;
+                } else if (res.data && res.data.error) {
+                    throw new Error(`Web App Error: ${res.data.error}`);
+                } else {
+                    throw new Error("Invalid data format received from Web App.");
+                }
             } catch (error) {
                 console.error('Failed to fetch products:', error);
+                addMessage("Sorry, I couldn't load the product catalog right now. Please try again later.", 'bot');
                 return [];
             }
         }
@@ -477,7 +469,6 @@
                     products.filter(p => p.categories.includes(category))
                 ])
             );
-            // Update backupImages with product images
             for (const category of Object.keys(productCategories)) {
                 backupImages[category] = productCategories[category].map(p => p.image).filter(Boolean);
             }
@@ -619,17 +610,6 @@
             return backupImages.default;
         }
 
-        function preloadImages() {
-            const preloadImages = products.slice(0, 3).map(p => p.image).filter(Boolean);
-            preloadImages.forEach(src => {
-                const link = document.createElement('link');
-                link.rel = 'preload';
-                link.as = 'image';
-                link.href = src;
-                document.head.appendChild(link);
-            });
-        }
-
         // --- Event Handlers ---
         function handleExampleClick(event) {
             const query = event.target.getAttribute('data-q');
@@ -760,7 +740,7 @@
                     text: `You are a friendly AI assistant for Planet Beauty. Your goal is to assist users with beauty product queries and engage in natural conversation. For each user message, determine the query type and respond accordingly.
 
 - If the user is greeting or engaging in casual conversation (e.g., "hi," "hello," "how are you"), set "query_type": "greeting" and respond with a friendly message without recommending products.
-- If the user is asking for product recommendations or mentioning a beauty concern, set "query_type": "product" and provide a concise response (max 150 words) along with 1-3 product recommendations in the "products" array.
+- If the user is asking for product recommendations or mentioning a beauty concern, set "query_type": "product" and provide a concise response (max 150 words) along with 1-3 product recommendations in the "products" array, including only the product names.
 - For other types of messages, set "query_type": "other" and respond appropriately.
 
 Always include "text", "query_type", and "products" in your JSON response. Use conversation history for context.
@@ -769,13 +749,13 @@ Examples:
 1. User: Hi
 Assistant: {"text": "Hello! How can I assist you with your beauty needs today?", "query_type": "greeting", "products": []}
 2. User: I need a moisturizer for dry skin
-Assistant: {"text": "For dry skin, try these: ✨", "query_type": "product", "products": [{"name": "CeraVe Moisturizing Cream", "description": "Rich cream with ceramides.", "price": "$17.99", "image": "https://www.cerave.com/image.png", "url": "https://www.planetbeauty.com/products/cerave-moisturizing-cream"}]}
+Assistant: {"text": "For dry skin, try these: ✨", "query_type": "product", "products": [{"name": "CeraVe Moisturizing Cream"}, {"name": "Borghese Energia Retinol Renewal Night Oil"}]}
 3. User: Thank you!
 Assistant: {"text": "You're welcome! Anything else I can help with?", "query_type": "other", "products": []}
 4. User: Bye
 Assistant: {"text": "Goodbye! Have a beautiful day!", "query_type": "greeting", "products": []}
 5. User: Hi, can you recommend a shampoo for oily hair?
-Assistant: {"text": "Hi! For oily hair, try these shampoos: ✨", "query_type": "product", "products": [{"name": "Olaplex No. 4 Bond Maintenance Shampoo", "description": "Repairs and strengthens hair bonds.", "price": "$30.00", "image": "https://olaplex.com/image.png", "url": "https://www.planetbeauty.com/products/olaplex-no-4-bond-maintenance-shampoo"}]}`
+Assistant: {"text": "Hi! For oily hair, try these shampoos: ✨", "query_type": "product", "products": [{"name": "Shea Moisture Coconut & Hibiscus Curl & Shine Shampoo"}]}`
                 }]
             };
             return [systemInstruction, ...conversationHistory];
@@ -823,38 +803,63 @@ Assistant: {"text": "Hi! For oily hair, try these shampoos: ✨", "query_type": 
             return combined.slice(0, 3);
         }
 
-        function processResponse(response, userQuery) {
+        async function processResponse(response, userQuery) {
             hideTypingIndicator();
 
             if (response && response.text) {
                 addMessage(DOMPurify.sanitize(response.text), 'bot');
                 updateUserProfile(response.text);
             } else {
-                addMessage("Here's what I found:", 'bot');
+                addMessage("Okay, based on that, here are some suggestions:", 'bot');
             }
 
             let productsToShow = [];
             const queryType = response.query_type || 'other';
 
             if (response && response.products && response.products.length > 0) {
-                productsToShow = response.products.map(p => ({
-                    name: p.name || "Unknown Product",
-                    description: p.description || "No description available.",
-                    price: p.price || "Price not available",
-                    image: p.image || getBackupImage(p.name || userQuery),
-                    url: p.url && p.url.startsWith('https://www.planetbeauty.com/products/') ? p.url : formatProductUrl(p.name),
-                    id: products.find(prod => prod.name === p.name)?.id || `api-${Date.now()}`
-                }));
-            } else if (queryType === 'product') {
-                console.log("API returned no products for product query, using fallback search.");
-                productsToShow = fallbackSearch(userQuery);
+                console.log("Gemini suggested products:", response.products.map(p => p.name));
+                for (const suggestedProduct of response.products) {
+                    if (!suggestedProduct.name) continue;
+
+                    const nameLower = suggestedProduct.name.toLowerCase();
+                    let foundProduct = products.find(p => p.name.toLowerCase() === nameLower);
+
+                    if (!foundProduct) {
+                        foundProduct = products.find(p => p.name.toLowerCase().includes(nameLower) || nameLower.includes(p.name.toLowerCase()));
+                    }
+
+                    if (foundProduct) {
+                        console.log(`Matched "${suggestedProduct.name}" to CSV product: ${foundProduct.name}`);
+                        productsToShow.push({
+                            ...foundProduct,
+                            name: foundProduct.name,
+                            description: foundProduct.description || "Description from Planet Beauty.",
+                            price: foundProduct.price || "See link for price",
+                            image: foundProduct.image,
+                            url: foundProduct.url
+                        });
+                    } else {
+                        console.log(`Could not find CSV match for "${suggestedProduct.name}". Skipping.`);
+                    }
+                }
+            }
+
+            if (productsToShow.length === 0 && queryType === 'product') {
+                console.log("Using fallback search as API provided no usable products.");
+                const fallbackProducts = fallbackSearch(userQuery);
+                productsToShow = fallbackProducts;
                 if (productsToShow.length === 0) {
-                    addMessage("I couldn't find specific products for that, but perhaps browse our categories?", 'bot');
+                    addMessage("I looked through our catalog but couldn't find specific products for that. Perhaps try rephrasing or browse our categories?", 'bot');
+                } else {
+                    addMessage("I couldn't get specific suggestions, but based on your query, these might be relevant from our catalog:", 'bot');
                 }
             }
 
             if (productsToShow.length > 0) {
-                productsToShow.forEach(p => addProductCard(p, userQuery));
+                const maxCards = 3;
+                for (const p of productsToShow.slice(0, maxCards)) {
+                    await addProductCard(p, userQuery);
+                }
             }
         }
 
@@ -945,45 +950,65 @@ Assistant: {"text": "Hi! For oily hair, try these shampoos: ✨", "query_type": 
             let currentAttempt = 0;
             const tryLoadNextImage = async () => {
                 if (currentAttempt >= imageSources.length) {
-                    console.warn(`No valid image available for product: ${p.name}`);
+                    console.warn(`Failed to load any image for product: ${p.name}`);
                     imageContainer.innerHTML = `
-                        <div class="image-placeholder">
-                            <span>Image Unavailable</span>
+                        <div class="image-placeholder" style="height: 200px; display: flex; align-items: center; justify-content: center; background: #eee; color: #666; text-align: center; font-size: 0.9em;">
+                            <span>Image Not Available</span>
                         </div>`;
+                    const existingSpinner = imageContainer.querySelector('.spinner');
+                    if (existingSpinner) existingSpinner.remove();
                     return;
                 }
                 const url = imageSources[currentAttempt];
+                if (!url) {
+                    console.warn(`Attempt ${currentAttempt + 1} for ${p.name}: URL is empty.`);
+                    currentAttempt++;
+                    await tryLoadNextImage();
+                    return;
+                }
+                console.log(`Attempt ${currentAttempt + 1} for ${p.name}: Trying URL ${url}`);
                 if (await isValidImageUrl(url)) {
                     img.dataset.src = url;
+                    img.src = url;
                     img.classList.add('lazyload');
-                    if (img.classList.contains('lazyloaded')) {
-                        imageContainer.replaceWith(img);
-                        img.style.display = 'block';
-                    }
+                    console.log(`Attempt ${currentAttempt + 1} for ${p.name}: URL ${url} seems valid, setting src.`);
                 } else {
+                    console.warn(`Attempt ${currentAttempt + 1} for ${p.name}: URL ${url} failed validation or timed out.`);
                     currentAttempt++;
-                    tryLoadNextImage();
+                    await tryLoadNextImage();
                 }
             };
 
-            img.addEventListener('load', () => {
+            img.onload = () => {
+                console.log(`Image loaded successfully: ${img.src}`);
                 imageContainer.replaceWith(img);
                 img.style.display = 'block';
-            });
+                img.classList.add('lazyloaded');
+                img.classList.remove('lazyload', 'lazyloading');
+            };
 
-            img.addEventListener('error', () => {
-                console.warn(`Image failed to load: ${img.dataset.src}`);
+            img.onerror = async () => {
+                console.warn(`Image failed to load via onerror: ${img.src || img.dataset.src}`);
                 currentAttempt++;
-                tryLoadNextImage();
-            });
+                await tryLoadNextImage();
+            };
 
             await tryLoadNextImage();
+
+            const MAX_TITLE_LENGTH = 50;
+            const MAX_DESC_LENGTH = 100;
+            const truncatedName = (p.name && p.name.length > MAX_TITLE_LENGTH)
+                ? p.name.substring(0, MAX_TITLE_LENGTH) + '...'
+                : p.name || "Unnamed Product";
+            const truncatedDesc = (p.description && p.description.length > MAX_DESC_LENGTH)
+                ? p.description.substring(0, MAX_DESC_LENGTH) + '...'
+                : p.description || "Click for details.";
 
             const infoDiv = document.createElement('div');
             infoDiv.className = 'product-info';
             infoDiv.innerHTML = DOMPurify.sanitize(`
-                <div class="product-name">${p.name || "Unnamed Product"}</div>
-                <div class="product-description">${p.description || "Click for details."}</div>
+                <div class="product-name">${truncatedName}</div>
+                <div class="product-description">${truncatedDesc}</div>
                 <div class="product-price">${p.price || ""}</div>
             `);
             card.appendChild(infoDiv);
