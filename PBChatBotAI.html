@@ -2,38 +2,51 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description" content="Planet Beauty AI Chatbot - Discover personalized beauty products with our smart assistant.">
-    <link rel="icon" href="https://placehold.co/16x16/E91e63/FFFFFF?text=PB" type="image/png" onerror="this.href='/images/favicon.png';">
-    <title>Planet Beauty AI Chatbot</title>
+    <!-- Use a real favicon URL or remove if you don't have one -->
+    <link rel="icon" href="https://www.planetbeauty.com/cdn/shop/files/pb-monogram-logo-black.png?v=1694652991&width=32" type="image/png">
+    <title>Planet Beauty AI Assistant</title>
+    <!-- External Libraries -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lazysizes@5.3.2/lazysizes.min.js" async></script>
     <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DLVD913P7M"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js"></script> <!-- Updated DOMPurify -->
+    <!-- Google Analytics (Optional) -->
+    <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=G-YOUR_GA_ID"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-        gtag('config', 'G-DLVD913P7M');
-    </script>
+        gtag('config', 'G-YOUR_GA_ID'); // Replace with your GA ID
+    </script> -->
     <style>
         :root {
-            --primary: #e91e63;
+            --primary: #e91e63; /* Planet Beauty Pink */
             --primary-dark: #c2185b;
             --bg-light: #f8f9fa;
-            --bg-dark: #1f2937;
+            --bg-dark: #1f2937; /* Dark Gray */
             --text-light: #1f2937;
-            --text-dark: #f3f4f6;
+            --text-dark: #f3f4f6; /* Light Gray */
+            --card-bg-light: white;
+            --card-bg-dark: #374151; /* Medium Gray */
+            --input-bg-light: white;
+            --input-bg-dark: #4b5563; /* Slightly Lighter Dark Gray */
+            --border-light: #e5e7eb; /* Light Gray Border */
+            --border-dark: #4b5563;
         }
+        html { scroll-behavior: smooth; }
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-light);
+            color: var(--text-light);
             margin: 0;
-            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
             transition: background-color 0.3s, color 0.3s;
         }
         body.dark-mode {
@@ -41,482 +54,254 @@
             color: var(--text-dark);
         }
         #preloader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-light);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            transition: opacity 0.5s ease;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 1000; transition: opacity 0.5s ease;
         }
-        .dark-mode #preloader {
-            background: var(--bg-dark);
-        }
+        .dark-mode #preloader { background: var(--bg-dark); }
         #preloader .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid var(--primary);
-            border-top-color: transparent;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 1rem;
+            width: 40px; height: 40px; border: 4px solid var(--primary); border-top-color: transparent;
+            border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1rem;
         }
-        #preloader .percentage {
-            font-size: 1.25rem;
-            font-weight: 500;
-            color: var(--primary);
-        }
+        #preloader .percentage { font-size: 1.25rem; font-weight: 500; color: var(--primary); }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
         .chat-container {
-            max-width: 800px;
+            max-width: 800px; width: 100%;
             margin: 1rem auto;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             border-radius: 16px;
-            background: white;
-            display: flex;
-            flex-direction: column;
-            height: calc(100vh - 120px);
-            max-height: 900px;
+            background: var(--card-bg-light);
+            display: flex; flex-direction: column;
+            flex-grow: 1; /* Takes available space */
+            max-height: calc(100vh - 140px); /* Adjust based on header/footer */
             overflow: hidden;
         }
-        .dark-mode .chat-container {
-            background: #374151;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        .dark-mode .chat-container { background: var(--card-bg-dark); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+
+        .chat-header {
+            background: linear-gradient(to right, var(--primary), var(--primary-dark));
+            color: white; padding: 0.75rem 1rem; border-top-left-radius: 16px; border-top-right-radius: 16px;
+            text-align: center; font-weight: 600; flex-shrink: 0;
         }
+
         .chat-area {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 1rem;
+            flex-grow: 1; overflow-y: auto; padding: 1rem;
             scroll-behavior: smooth;
         }
-        .dark-mode .chat-area {
-            background: #374151;
+        .dark-mode .chat-area { background: var(--card-bg-dark); } /* Match container */
+
+        .message-base {
+            padding: 0.6rem 1rem; border-radius: 12px; max-width: 80%;
+            margin-bottom: 0.75rem; word-wrap: break-word;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); line-height: 1.5;
         }
         .user-message {
-            background: var(--primary);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 12px 12px 0 12px;
-            max-width: 75%;
-            margin-left: auto;
-            margin-bottom: 0.75rem;
-            word-wrap: break-word;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            background: var(--primary); color: white; margin-left: auto;
+            border-bottom-right-radius: 0;
         }
         .bot-message {
-            background: #e5e7eb;
-            color: var(--text-light);
-            padding: 0.5rem 1rem;
-            border-radius: 12px 12px 12px 0;
-            max-width: 75%;
-            margin-right: auto;
-            margin-bottom: 0.75rem;
-            word-wrap: break-word;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            background: var(--border-light); color: var(--text-light); margin-right: auto;
+            border-bottom-left-radius: 0;
         }
-        .dark-mode .bot-message {
-            background: #4b5563;
-            color: var(--text-dark);
-        }
+        .dark-mode .bot-message { background: var(--input-bg-dark); color: var(--text-dark); }
+
         .product-section {
-            background: #f1f5f9;
-            padding: 0.5rem 1rem;
-            border-radius: 12px;
-            margin-bottom: 0.75rem;
-            max-width: 90%;
-            margin-right: auto;
+            background: #f1f5f9; padding: 0.75rem; border-radius: 12px;
+            margin-bottom: 0.75rem; max-width: 95%; margin-right: auto;
         }
-        .dark-mode .product-section {
-            background: #4b5563;
-        }
+        .dark-mode .product-section { background: var(--input-bg-dark); }
+
         .product-card {
-            display: flex;
-            align-items: center;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
-            margin: 0.5rem 0;
-            text-decoration: none;
-            color: inherit;
-            background: white;
-            max-width: 100%;
-            cursor: pointer;
-            border: 1px solid #e5e7eb;
+            display: flex; align-items: center; border-radius: 10px; overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08); transition: transform 0.2s, box-shadow 0.2s;
+            margin: 0.5rem 0; text-decoration: none; color: inherit;
+            background: var(--card-bg-light); max-width: 100%; cursor: pointer;
+            border: 1px solid var(--border-light);
         }
-        .dark-mode .product-card {
-            background: #6b7280;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-            border-color: #4b5563;
-        }
-        .product-card:hover {
-            transform: scale(1.02);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
-        .product-image {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            flex-shrink: 0;
-            border-radius: 8px;
-            margin: 0.5rem;
-        }
-        .lazyload, .lazyloading {
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        .lazyloaded {
-            opacity: 1;
-        }
-        .image-placeholder {
-            width: 80px;
-            height: 80px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #eee;
-            color: #666;
-            font-size: 0.75rem;
-            text-align: center;
-            border-radius: 8px;
-            margin: 0.5rem;
-            flex-shrink: 0;
-        }
-        .dark-mode .image-placeholder {
-            background: #6b7280;
-            color: #d1d5db;
-        }
-        .product-info {
-            padding: 0.5rem;
-            flex-grow: 1;
-        }
-        .product-name {
-            font-weight: 500;
-            font-size: 0.85rem;
-            margin-bottom: 0.25rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 100%;
-        }
-        .product-description {
-            font-size: 0.75rem;
-            color: #6b7280;
-            margin-bottom: 0.25rem;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .dark-mode .product-description {
-            color: #d1d5db;
-        }
-        .product-price {
-            font-weight: 500;
-            font-size: 0.8rem;
-            color: var(--primary);
-        }
-        .examples-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-bottom: 0.75rem;
-            max-width: 90%;
-        }
+        .dark-mode .product-card { background: #6b7280; box-shadow: 0 2px 6px rgba(0,0,0,0.2); border-color: var(--border-dark); }
+        .product-card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.12); }
+
+        .product-image-container { width: 80px; height: 80px; flex-shrink: 0; margin: 0.5rem; border-radius: 8px; overflow: hidden; background: #eee; }
+        .dark-mode .product-image-container { background: #4b5563; }
+        .product-image { width: 100%; height: 100%; object-fit: cover; }
+        .lazyload, .lazyloading { opacity: 0; transition: opacity 0.4s ease-in-out; }
+        .lazyloaded { opacity: 1; }
+        .image-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #999; font-size: 2rem; }
+        .dark-mode .image-placeholder { color: #ccc; }
+
+        .product-info { padding: 0.5rem 0.75rem; flex-grow: 1; min-width: 0; /* Prevents overflow */ }
+        .product-name { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .product-description { font-size: 0.8rem; color: #555; margin-bottom: 0.25rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; }
+        .dark-mode .product-description { color: #d1d5db; }
+        .product-price { font-weight: 600; font-size: 0.85rem; color: var(--primary); }
+
+        .examples-container { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; max-width: 95%; }
         .example-chip {
-            padding: 0.4rem 0.8rem;
-            background: #e5e7eb;
-            border: 1px solid #d1d5db;
-            border-radius: 16px;
-            cursor: pointer;
-            transition: transform 0.2s, background-color 0.3s, box-shadow 0.2s;
-            font-size: 0.85rem;
+            padding: 0.4rem 0.8rem; background: var(--border-light); border: 1px solid #d1d5db;
+            border-radius: 16px; cursor: pointer; transition: all 0.2s ease; font-size: 0.85rem;
         }
-        .dark-mode .example-chip {
-            background: #4b5563;
-            border-color: #6b7280;
-            color: var(--text-dark);
-        }
-        .example-chip:hover {
-            background: var(--primary);
-            color: white;
-            transform: scale(1.05);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        .example-chip:focus {
-            outline: 2px solid var(--primary);
-            outline-offset: 2px;
-        }
+        .dark-mode .example-chip { background: var(--input-bg-dark); border-color: var(--border-dark); color: var(--text-dark); }
+        .example-chip:hover { background: var(--primary); color: white; transform: scale(1.03); box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-color: var(--primary); }
+        .example-chip:focus { outline: 2px solid var(--primary); outline-offset: 2px; }
+
         .input-area {
-            display: flex;
-            padding: 0.75rem;
-            border-top: 1px solid #e5e7eb;
-            background: white;
-            align-items: center;
-            gap: 0.5rem;
+            display: flex; padding: 0.75rem; border-top: 1px solid var(--border-light);
+            background: var(--card-bg-light); align-items: center; gap: 0.5rem; flex-shrink: 0;
         }
-        .dark-mode .input-area {
-            background: #374151;
-            border-top-color: #4b5563;
+        .dark-mode .input-area { background: var(--card-bg-dark); border-top-color: var(--border-dark); }
+
+        .input-row { display: flex; gap: 8px; flex-grow: 1; }
+        #chat-input {
+            flex: 1; padding: 0.6rem 1rem; border: 1px solid #d1d5db; border-radius: 20px;
+            outline: none; transition: border-color 0.3s; font-size: 0.95rem; background: var(--input-bg-light); color: var(--text-light);
         }
-        .input-row {
-            display: flex;
-            gap: 8px;
-            flex-grow: 1;
+        .dark-mode #chat-input { background: var(--input-bg-dark); border-color: var(--border-dark); color: var(--text-dark); }
+        #chat-input:focus { border-color: var(--primary); }
+        #chat-input::placeholder { color: #9ca3af; }
+        .dark-mode #chat-input::placeholder { color: #a0aec0; }
+        #chat-input:disabled { background-color: #f3f4f6; cursor: not-allowed; }
+        .dark-mode #chat-input:disabled { background-color: #4b5563; }
+
+        .icon-button {
+            background: var(--primary); color: white; border: none; border-radius: 50%;
+            width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: background-color 0.3s, transform 0.2s; flex-shrink: 0;
         }
-        input[type=text] {
-            flex: 1;
-            padding: 0.5rem 0.75rem;
-            border: 1px solid #d1d5db;
-            border-radius: 20px;
-            outline: none;
-            transition: border-color 0.3s;
-            font-size: 0.9rem;
-        }
-        .dark-mode input[type=text] {
-            background: #4b5563;
-            border-color: #6b7280;
-            color: var(--text-dark);
-        }
-        input[type=text]:focus {
-            border-color: var(--primary);
-        }
-        input[type=text]:disabled {
-            background-color: #f5f5f5;
-            cursor: not-allowed;
-        }
-        .dark-mode input[type=text]:disabled {
-            background-color: #6b7280;
-        }
-        .send-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.2s;
-            flex-shrink: 0;
-        }
-        .send-btn:hover {
-            background: var(--primary-dark);
-            transform: scale(1.1);
-        }
-        .send-btn:disabled {
-            background: #d1d5db;
-            cursor: not-allowed;
-            transform: none;
-        }
-        .theme-toggle {
-            background: #e5e7eb;
-            color: var(--text-light);
-            border: none;
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        .dark-mode .theme-toggle {
-            background: #4b5563;
-            color: var(--text-dark);
-        }
-        .theme-toggle:hover {
-            background: var(--primary);
-            color: white;
-        }
+        .icon-button:hover { background: var(--primary-dark); transform: scale(1.1); }
+        .icon-button:disabled { background: #d1d5db; cursor: not-allowed; transform: none; }
+        .dark-mode .icon-button:disabled { background: #6b7280; }
+
+        .theme-toggle { background: #e5e7eb; color: var(--text-light); }
+        .dark-mode .theme-toggle { background: var(--input-bg-dark); color: var(--text-dark); }
+        .theme-toggle:hover { background: var(--primary); color: white; }
+
         .error-message {
-            background: #fef2f2;
-            color: #dc2626;
-            padding: 0.5rem 1rem;
-            border-radius: 12px;
-            margin-bottom: 0.75rem;
-            max-width: 75%;
-            margin-right: auto;
-            border: 1px solid #fecaca;
-            font-size: 0.85rem;
+            background: #fef2f2; color: #dc2626; padding: 0.6rem 1rem; border-radius: 12px;
+            margin-bottom: 0.75rem; max-width: 80%; margin-right: auto; border: 1px solid #fecaca;
+            font-size: 0.85rem; line-height: 1.4;
         }
-        .dark-mode .error-message {
-            background: #7f1d1d;
-            color: #f87171;
-            border-color: #b91c1c;
-        }
-        .retry-btn {
-            background: none;
-            border: none;
-            color: var(--primary);
-            text-decoration: underline;
-            cursor: pointer;
-            font-size: 0.85rem;
-        }
-        footer {
-            background: white;
-            padding: 0.5rem 1rem;
-            color: #6b7280;
-            font-size: 0.8rem;
-            text-align: center;
-            flex-shrink: 0;
-        }
-        .dark-mode footer {
-            background: #374151;
-            color: #d1d5db;
-        }
-        footer a {
-            color: var(--primary);
-            text-decoration: none;
-        }
-        footer a:hover {
-            text-decoration: underline;
-        }
-        #typing-indicator {
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-            font-size: 0.85rem;
-        }
-        #typing-indicator .dot {
-            width: 6px;
-            height: 6px;
-            background: var(--primary);
-            border-radius: 50%;
-            display: inline-block;
-        }
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-4px); }
-        }
-        .dot-1 { animation: bounce 0.5s infinite; }
-        .dot-2 { animation: bounce 0.5s infinite 0.15s; }
-        .dot-3 { animation: bounce 0.5s infinite 0.3s; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in {
-            animation: fadeIn 0.4s ease-out;
-        }
+        .dark-mode .error-message { background: #7f1d1d; color: #fca5a5; border-color: #b91c1c; }
+        .retry-btn { background: none; border: none; color: var(--primary); text-decoration: underline; cursor: pointer; font-size: 0.85rem; margin-left: 0.5rem; }
+        .dark-mode .retry-btn { color: #fca5a5; }
+
+        #typing-indicator { display: flex; align-items: center; gap: 0.25rem; font-size: 0.85rem; }
+        #typing-indicator .dot { width: 7px; height: 7px; background: var(--primary); border-radius: 50%; display: inline-block; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .dot-1 { animation: bounce 0.6s infinite ease-in-out; }
+        .dot-2 { animation: bounce 0.6s infinite 0.1s ease-in-out; }
+        .dot-3 { animation: bounce 0.6s infinite 0.2s ease-in-out; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+
         #debug-panel {
-            position: fixed;
-            bottom: 0;
-            right: 0;
-            background: rgba(31, 41, 55, 0.9);
-            color: #f3f4f6;
-            padding: 0.75rem;
-            max-width: 280px;
-            max-height: 250px;
-            overflow: auto;
-            font-size: 0.75rem;
-            z-index: 1000;
-            border-top-left-radius: 8px;
-            display: none;
+            position: fixed; bottom: 10px; right: 10px; background: rgba(31, 41, 55, 0.95); color: #f3f4f6;
+            padding: 0.75rem; max-width: 320px; max-height: 250px; overflow: auto; font-size: 0.75rem;
+            z-index: 1000; border-radius: 8px; display: none; border: 1px solid #4b5563;
         }
-        .debug-entry {
-            padding: 0.4rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        .debug-entry { padding: 0.4rem 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1); word-break: break-all; }
+        .debug-entry pre { white-space: pre-wrap; word-wrap: break-word; background: rgba(0,0,0,0.2); padding: 0.2rem; border-radius: 4px; margin-top: 0.2rem; font-size: 0.7rem; }
+        .debug-button { background: var(--primary); color: white; border: none; padding: 0.2rem 0.5rem; border-radius: 4px; margin-top: 0.5rem; cursor: pointer; font-size: 0.75rem; }
+
+        footer {
+            background: var(--bg-light); padding: 0.75rem 1rem; color: #6b7280; font-size: 0.8rem;
+            text-align: center; flex-shrink: 0; border-top: 1px solid var(--border-light);
+            padding-bottom: calc(0.75rem + env(safe-area-inset-bottom)); /* iOS safe area */
         }
-        .debug-button {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 0.2rem 0.4rem;
-            border-radius: 4px;
-            margin-top: 0.4rem;
-            cursor: pointer;
-            font-size: 0.75rem;
-        }
+        .dark-mode footer { background: var(--bg-dark); color: #a0aec0; border-top-color: var(--border-dark); }
+        footer a { color: var(--primary); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        /* Responsive Adjustments */
         @media (max-width: 640px) {
             body { padding: 0; }
-            .chat-container {
-                margin: 0;
-                border-radius: 0;
-                max-width: 100%;
-                height: 100vh;
-                max-height: none;
-            }
+            .chat-container { margin: 0; border-radius: 0; max-height: none; height: 100%; }
+            .chat-header { border-radius: 0; }
             .chat-area { padding: 0.75rem; }
-            .user-message, .bot-message, .product-section, .examples-container, .error-message {
-                max-width: 85%;
-            }
-            .input-area { padding: 0.5rem; }
-            input[type=text] { padding: 0.4rem 0.6rem; font-size: 0.85rem; }
-            .send-btn, .theme-toggle { width: 32px; height: 32px; }
-            footer { font-size: 0.75rem; padding-bottom: calc(0.5rem + env(safe-area-inset-bottom)); }
-            #debug-panel { max-width: 90%; }
-            .product-image, .image-placeholder {
-                width: 60px;
-                height: 60px;
-                margin: 0.4rem;
-            }
-            .product-name { font-size: 0.8rem; }
-            .product-description { font-size: 0.7rem; -webkit-line-clamp: 1; }
-            .product-price { font-size: 0.75rem; }
+            .message-base, .product-section, .examples-container, .error-message { max-width: 90%; }
+            .input-area { padding: 0.5rem; padding-bottom: calc(0.5rem + env(safe-area-inset-bottom)); }
+            #chat-input { padding: 0.5rem 0.8rem; font-size: 0.9rem; }
+            .icon-button { width: 36px; height: 36px; }
+            footer { font-size: 0.75rem; }
+            #debug-panel { max-width: 90%; bottom: 5px; right: 5px; }
+            .product-image-container { width: 60px; height: 60px; margin: 0.4rem; }
+            .product-name { font-size: 0.85rem; }
+            .product-description { font-size: 0.75rem; -webkit-line-clamp: 1; }
+            .product-price { font-size: 0.8rem; }
         }
     </style>
 </head>
-<body class="flex flex-col min-h-screen">
+<body>
     <div id="preloader">
         <div class="spinner"></div>
         <div class="percentage">0%</div>
     </div>
-    <header class="text-center py-4 px-4 flex-shrink-0 bg-gradient-to-r from-pink-600 to-purple-700 text-white shadow-md animate-fade-in">
-        <h1 class="text-2xl sm:text-3xl font-semibold">Planet Beauty</h1>
-        <p class="text-base sm:text-lg">Your AI Beauty Assistant ✨</p>
-    </header>
-    <main class="chat-container flex-grow animate-fade-in">
+
+    <!-- Main Chat Structure -->
+    <div class="chat-container">
+        <div class="chat-header">
+            Planet Beauty AI Assistant ✨
+        </div>
         <div id="chat-area" class="chat-area">
-            <div class="bot-message">Hello! Welcome to Planet Beauty. I'm here to help with your beauty needs or just chat about what's on your mind. How can I assist you today? 😊</div>
-            <div id="examples-container" class="examples-container"></div>
+            <!-- Initial Bot Message -->
+            <div class="bot-message message-base animate-fade-in">Hello! Welcome to Planet Beauty. I'm here to help with your beauty needs, find products, or just chat. How can I assist you today? 😊</div>
+            <!-- Example Questions Container -->
+            <div id="examples-container" class="examples-container animate-fade-in" style="animation-delay: 0.2s;"></div>
         </div>
         <div class="input-area">
             <div class="input-row">
-                <input id="chat-input" type="text" placeholder="Ask about beauty products or chat..." autocomplete="off" aria-label="Type your beauty question or chat">
-                <button id="send-btn" class="send-btn" disabled aria-label="Send message"><i class="fas fa-paper-plane"></i></button>
+                <input id="chat-input" type="text" placeholder="Ask about products or just chat..." autocomplete="off" aria-label="Type your beauty question or chat message">
+                <button id="send-btn" class="icon-button send-btn" disabled aria-label="Send message">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
             </div>
-            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode"><i class="fas fa-moon"></i></button>
+            <button id="theme-toggle" class="icon-button theme-toggle" aria-label="Toggle dark mode">
+                <i class="fas fa-moon"></i>
+            </button>
         </div>
-    </main>
+    </div>
+
     <footer>
-        <span>Developed with ❤️ by</span>
-        <a Principled
-        <a href="https://www.linkedin.com/in/joseespinosa" target="_blank" rel="noopener noreferrer">Jose Espinosa</a>
+        <span>Powered by AI</span> |
+        <span>Developed by <a href="https://www.linkedin.com/in/joseespinosa" target="_blank" rel="noopener noreferrer">Jose Espinosa</a></span>
     </footer>
+
     <div id="debug-panel">
-        <h3 class="font-semibold mb-1.5">Debug Information</h3>
+        <h3 class="font-semibold mb-1.5 text-sm">Debug Information</h3>
         <div id="debug-content"></div>
         <button id="debug-clear" class="debug-button">Clear</button>
         <button id="debug-close" class="debug-button ml-1.5">Close</button>
     </div>
+
     <script>
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx544DSP6TmyBkWzqtU41be9PqpRNY444Tx_G7wIkLnay9PlHpnTN514Vt4OsgxLHyc/exec';
-        const API_TIMEOUT = 20000;
-        const PLANET_BEAUTY_DOMAIN = 'https://www.planetbeauty.com';
-        const DEBUG_MODE = true;
-        const RATE_LIMIT_MS = 1000;
+        // --- Configuration ---
+        // CRITICAL: Replace with your DEPLOYED Google Apps Script Web App URL
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw0h0z8bwQpCcAp3Lk3VIaO9uUcku1tt13vYKfqtOZTAhRWK36t53nWuI3VGs5ez9mK/exec'; // <--- REPLACE THIS
+
+        // Client-side Gemini Key (for suggested questions - BEWARE of exposure)
+        const CLIENT_GEMINI_API_KEY = 'AIzaSyCpI-eNfqWk_ZiK2qHOj_tD2NzeAJ_U398'; // Replace with your key if using this feature
+
+        const API_TIMEOUT = 25000; // Increased timeout (25 seconds)
+        const PLANET_BEAUTY_DOMAIN = 'https://www.planetbeauty.com'; // Used in prompts
+        const DEBUG_MODE = false; // Set to false for production
+        const RATE_LIMIT_MS = 1000; // Min time between user messages (1 second)
 
         const FALLBACK_QUESTIONS = [
             "What shampoo is best for dry, color-treated hair?",
-            "Can you suggest a cleanser for oily, acne-prone skin?",
-            "Which products are best for someone with low vision?",
-            "What are the top 20 beauty products for 2025?",
-            "Do you have any LED masks for anti-aging?"
+            "Suggest a gentle cleanser for sensitive, acne-prone skin.",
+            "Show me some vegan and cruelty-free moisturizers.",
+            "Are there any beauty tools with accessible packaging?",
+            "Find top-rated anti-aging serums under $100."
         ];
 
-        let conversationHistory = [];
-        let lastRecommendedProducts = [];
-        let lastMessageTime = 0;
+        // --- State Variables ---
+        let conversationHistory = []; // Stores history in the format expected by backend
+        let lastRecommendedProducts = []; // Stores basic info of last shown products
+        let lastMessageTime = 0; // For rate limiting
 
+        // --- DOM Elements ---
         const chatArea = document.getElementById('chat-area');
         const chatInput = document.getElementById('chat-input');
         const sendBtn = document.getElementById('send-btn');
@@ -526,262 +311,125 @@
         const debugContent = document.getElementById('debug-content');
         const themeToggle = document.getElementById('theme-toggle');
 
-        themeToggle.addEventListener('click', () => {
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            setupTheme();
+            await runPreloader();
+            setupEventListeners();
+            if (DEBUG_MODE) {
+                debugPanel.style.display = 'block'; // Show debug panel if enabled
+            }
+            debugLog('Chatbot Initialized', { webAppUrl: WEB_APP_URL });
+            chatInput.focus();
+            updateSendButtonState();
+            // Fetch and display suggested questions after main init
+            generateSuggestedQuestions();
+        });
+
+        // --- Theme Handling ---
+        function setupTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            } else {
+                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+            }
+            themeToggle.addEventListener('click', toggleTheme);
+        }
+
+        function toggleTheme() {
             document.body.classList.toggle('dark-mode');
             const isDark = document.body.classList.contains('dark-mode');
             themeToggle.innerHTML = `<i class="fas fa-${isDark ? 'sun' : 'moon'}"></i>`;
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            if (typeof gtag === 'function') {
-                gtag('event', 'theme_toggle', { event_category: 'UI', event_label: isDark ? 'dark' : 'light' });
-            }
-        });
-
-        if (localStorage.getItem('theme') === 'dark') {
-            document.body.classList.add('dark-mode');
-            themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            debugLog('Theme toggled', { mode: isDark ? 'dark' : 'light' });
+            // Optional: Track with GA
+            // if (typeof gtag === 'function') {
+            //     gtag('event', 'theme_toggle', { event_category: 'UI', event_label: isDark ? 'dark' : 'light' });
+            // }
         }
 
-        function debugLog(message, data) {
-            if (!DEBUG_MODE) return;
-            console.log(`[DEBUG] ${message}`, data);
-            const entry = document.createElement('div');
-            entry.className = 'debug-entry';
-            const timestamp = new Date().toLocaleTimeString();
-            let content = `<strong>[${timestamp}]</strong> ${message}`;
-            if (data !== undefined) {
-                if (typeof data === 'object') {
-                    try {
-                        content += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
-                    } catch (e) {
-                        content += `<pre>[Object]</pre>`;
-                    }
-                } else {
-                    content += ` ${data}`;
-                }
-            }
-            entry.innerHTML = content;
-            debugContent.appendChild(entry);
-            debugPanel.scrollTop = debugPanel.scrollHeight;
-            if (DEBUG_MODE && debugPanel.style.display === 'none') {
-                debugPanel.style.display = 'block';
-            }
-        }
-
-        document.getElementById('debug-clear').addEventListener('click', () => {
-            debugContent.innerHTML = '';
-        });
-
-        document.getElementById('debug-close').addEventListener('click', () => {
-            debugPanel.style.display = 'none';
-        });
-
-        function safeEncodeURIComponent(str) {
-            try {
-                return encodeURIComponent(str).replace(/[!'()*]/g, escape);
-            } catch (e) {
-                debugLog('URL encoding error', { error: e.message });
-                return '';
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', async () => {
+        // --- Preloader Logic ---
+        async function runPreloader() {
             let percentage = 0;
             const percentageElement = preloader.querySelector('.percentage');
-            const animatePercentage = () => {
-                return new Promise(resolve => {
-                    anime({
-                        targets: { value: percentage },
-                        value: 90,
-                        duration: 1500,
-                        easing: 'easeOutQuad',
-                        update: (anim) => {
-                            percentage = Math.round(anim.animatables[0].target.value);
-                            percentageElement.textContent = `${percentage}%`;
-                        },
-                        complete: () => resolve()
-                    });
-                });
-            };
+            const updateTarget = { value: 0 };
 
-            const minDurationPromise = new Promise(resolve => setTimeout(resolve, 800));
-            const maxDurationPromise = new Promise(resolve => setTimeout(resolve, 8000));
-            const animationPromise = animatePercentage();
-            let initializationSuccess = true;
+            const animationPromise = anime({
+                targets: updateTarget,
+                value: 90,
+                duration: 1200, // Faster preloader
+                easing: 'easeOutQuad',
+                update: () => {
+                    percentage = Math.round(updateTarget.value);
+                    percentageElement.textContent = `${percentage}%`;
+                }
+            }).finished;
+
+            const minDurationPromise = new Promise(resolve => setTimeout(resolve, 500)); // Shorter min duration
 
             try {
-                debugLog('Initializing Planet Beauty AI Assistant');
-                await new Promise(resolve => setTimeout(resolve, 800));
+                // Simulate essential setup (can add actual async tasks here if needed)
+                await Promise.all([animationPromise, minDurationPromise]);
+                debugLog('Preloader animation near complete');
             } catch (error) {
-                console.error('Initialization error:', error);
+                console.error('Initialization error during preloading:', error);
                 debugLog('Initialization error', error);
                 percentageElement.textContent = 'Error';
                 percentageElement.style.color = '#dc2626';
-                addMessage("Sorry, I couldn't initialize properly. Please refresh the page.", 'bot');
-                initializationSuccess = false;
+                addMessage("Sorry, I couldn't initialize properly. Please refresh the page.", 'bot', true); // Add error directly
             } finally {
-                try {
-                    await generateSuggestedQuestions();
-                } catch (error) {
-                    debugLog('Failed to generate suggested questions during init', error);
-                }
-                await Promise.race([Promise.all([minDurationPromise, animationPromise]), maxDurationPromise]);
+                // Complete animation to 100%
                 await anime({
-                    targets: { value: percentage },
+                    targets: updateTarget,
                     value: 100,
                     duration: 200,
-                    easing: 'easeOutQuad',
-                    update: (anim) => {
-                        percentageElement.textContent = `${Math.round(anim.animatables[0].target.value)}%`;
+                    easing: 'linear',
+                    update: () => {
+                        percentageElement.textContent = `${Math.round(updateTarget.value)}%`;
                     }
                 }).finished;
-                preloader.style.opacity = '0';
-                setTimeout(() => {
-                    if (preloader && preloader.parentNode) {
-                        preloader.remove();
-                        debugLog('Preloader removed', { timedOut: !initializationSuccess });
-                    }
-                }, 400);
+
+                // Fade out preloader
+                await anime({
+                    targets: preloader,
+                    opacity: 0,
+                    duration: 400,
+                    easing: 'easeOutQuad'
+                }).finished;
+
+                if (preloader && preloader.parentNode) {
+                    preloader.remove();
+                    debugLog('Preloader removed');
+                }
             }
+        }
 
-            anime({
-                targets: 'header',
-                translateY: [-15, 0],
-                opacity: [0, 1],
-                duration: 600,
-                easing: 'easeOutQuad'
-            });
-
+        // --- Event Listeners Setup ---
+        function setupEventListeners() {
             chatInput.addEventListener('keyup', handleInputKeyup);
             chatInput.addEventListener('input', handleInputChange);
             sendBtn.addEventListener('click', () => {
                 sendMessage();
-                if (typeof gtag === 'function') {
-                    gtag('event', 'send_message', { event_category: 'Chatbot', event_label: chatInput.value });
-                }
+                // Optional: Track with GA
+                // if (typeof gtag === 'function') {
+                //     gtag('event', 'send_message_click', { event_category: 'Chatbot', event_label: 'button_click' });
+                // }
             });
-            chatInput.focus();
-            updateSendButtonState();
-        });
-
-        async function generateSuggestedQuestions() {
-            try {
-                const questions = await fetchSuggestedQuestions();
-                displaySuggestedQuestions(questions);
-            } catch (error) {
-                console.error('Failed to generate suggested questions:', error);
-                debugLog('Suggested questions error', error);
-                displaySuggestedQuestions(FALLBACK_QUESTIONS);
-            }
+            // Debug Panel Buttons
+            document.getElementById('debug-clear').addEventListener('click', () => { debugContent.innerHTML = ''; });
+            document.getElementById('debug-close').addEventListener('click', () => { debugPanel.style.display = 'none'; });
         }
 
-        async function fetchSuggestedQuestions() {
-            const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyCpI-eNfqWk_ZiK2qHOj_tD2NzeAJ_U398`;
-            const prompt = {
-                contents: [{
-                    role: 'user',
-                    parts: [{
-                        text: `Generate 5 concise, varied beauty-related questions for a chatbot exclusive to Planet Beauty (${PLANET_BEAUTY_DOMAIN}). Questions MUST focus on products likely available in the Planet Beauty catalog and address specific user concerns (e.g., skin type, accessibility, devices, 2025 trends like sustainability or inclusivity). Return ONLY a valid JSON array of 5 strings.`
-                    }]
-                }],
-                generationConfig: {
-                    temperature: 0.7,
-                    topP: 0.95,
-                    topK: 40,
-                    maxOutputTokens: 256,
-                    responseMimeType: 'application/json'
-                },
-                safetySettings: [
-                    { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
-                    { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
-                    { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
-                    { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" }
-                ]
-            };
-
-            try {
-                const res = await axios.post(GEMINI_API_URL, prompt, {
-                    headers: { 'Content-Type': 'application/json' },
-                    timeout: API_TIMEOUT
-                });
-
-                if (res.data?.candidates?.[0]?.content?.parts?.[0]?.text) {
-                    const responseText = res.data.candidates[0].content.parts[0].text;
-                    try {
-                        const cleanedText = responseText.replace(/^```json\s*|```$/g, '').trim();
-                        const questions = JSON.parse(cleanedText);
-                        if (Array.isArray(questions) && questions.length >= 5 && questions.every(q => typeof q === 'string' && q.trim())) {
-                            return questions.slice(0, 5);
-                        }
-                        throw new Error('Invalid questions format');
-                    } catch (parseError) {
-                        console.error('JSON Parse Error:', parseError, 'Raw text:', responseText);
-                        debugLog('Suggested questions JSON parse error', { error: parseError.message, raw: responseText });
-                        return FALLBACK_QUESTIONS;
-                    }
-                }
-                throw new Error('No valid response from API');
-            } catch (error) {
-                debugLog('Suggested questions fetch error', { error: error.message });
-                return FALLBACK_QUESTIONS;
-            }
-        }
-
-        function displaySuggestedQuestions(questions) {
-            examplesContainer.innerHTML = '';
-            if (!Array.isArray(questions)) {
-                console.error("Cannot display suggestions: not an array.", questions);
-                questions = FALLBACK_QUESTIONS;
-            }
-            questions.forEach((question, index) => {
-                if (typeof question !== 'string' || !question.trim()) {
-                    console.warn(`Skipping invalid suggestion at index ${index}:`, question);
-                    return;
-                }
-                const chip = document.createElement('div');
-                chip.className = 'example-chip';
-                chip.setAttribute('data-q', question);
-                chip.setAttribute('role', 'button');
-                chip.tabIndex = 0;
-                chip.setAttribute('aria-label', `Ask: ${question}`);
-                chip.textContent = question;
-                chip.addEventListener('click', handleExampleClick);
-                chip.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        handleExampleClick(e);
-                    }
-                });
-                examplesContainer.appendChild(chip);
-            });
-
-            anime({
-                targets: '.example-chip',
-                translateX: [-15, 0],
-                opacity: [0, 1],
-                delay: anime.stagger(80),
-                duration: 500,
-                easing: 'easeOutQuad'
-            });
-        }
-
-        function handleExampleClick(event) {
-            const query = event.currentTarget.getAttribute('data-q');
-            if (query) {
-                chatInput.value = query;
-                updateSendButtonState();
-                sendMessage();
-                if (typeof gtag === 'function') {
-                    gtag('event', 'example_chip_click', { event_category: 'Chatbot', event_label: query });
-                }
-            }
-        }
-
+        // --- Input Handling ---
         function handleInputKeyup(event) {
             if (event.key === 'Enter' && !sendBtn.disabled) {
                 sendMessage();
-                if (typeof gtag === 'function') {
-                    gtag('event', 'send_message_enter', { event_category: 'Chatbot', event_label: chatInput.value });
-                }
+                 // Optional: Track with GA
+                // if (typeof gtag === 'function') {
+                //     gtag('event', 'send_message_enter', { event_category: 'Chatbot', event_label: 'enter_key' });
+                // }
             }
         }
 
@@ -793,19 +441,164 @@
             sendBtn.disabled = chatInput.value.trim() === '';
         }
 
-        function getConversationHistory() {
+        // --- Suggested Questions ---
+        async function generateSuggestedQuestions() {
+            debugLog('Attempting to fetch suggested questions...');
+            try {
+                // Check if client-side key is provided
+                if (!CLIENT_GEMINI_API_KEY || CLIENT_GEMINI_API_KEY.includes('YOUR_KEY')) {
+                    debugLog('Client-side Gemini API key not configured. Using fallback questions.');
+                    displaySuggestedQuestions(FALLBACK_QUESTIONS);
+                    return;
+                }
+
+                const questions = await fetchSuggestedQuestions();
+                displaySuggestedQuestions(questions);
+                debugLog('Successfully fetched and displayed suggested questions.');
+            } catch (error) {
+                console.error('Failed to generate suggested questions:', error);
+                debugLog('Suggested questions error', { message: error.message });
+                displaySuggestedQuestions(FALLBACK_QUESTIONS); // Use fallback on error
+            }
+        }
+
+        async function fetchSuggestedQuestions() {
+            // Uses a separate Gemini endpoint client-side (requires key)
+            const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${CLIENT_GEMINI_API_KEY}`;
+            const prompt = {
+                contents: [{
+                    role: 'user',
+                    parts: [{
+                        text: `Generate 4 concise, diverse beauty-related questions a user might ask a chatbot for the online store Planet Beauty (${PLANET_BEAUTY_DOMAIN}). Focus on common needs: specific product types (e.g., "hydrating serum"), concerns (e.g., "sensitive skin"), features (e.g., "vegan"), or tasks (e.g., "compare foundations"). Avoid overly complex or niche questions. Return ONLY a valid JSON array of 4 unique strings, like ["Question 1", "Question 2", ...].`
+                    }]
+                }],
+                generationConfig: {
+                    temperature: 0.8, // Slightly higher temp for variety
+                    maxOutputTokens: 200,
+                    responseMimeType: 'application/json'
+                },
+                 safetySettings: [ // Add safety settings
+                    { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
+                    { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
+                    { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
+                    { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" }
+                ]
+            };
+
+            try {
+                const res = await axios.post(GEMINI_API_URL, prompt, {
+                    headers: { 'Content-Type': 'application/json' },
+                    timeout: 10000 // Shorter timeout for this non-critical feature
+                });
+                debugLog('Client-side Gemini response for suggestions', res.data);
+
+                 // Check for safety blocks
+                if (res.data?.promptFeedback?.blockReason) {
+                    throw new Error(`Suggestion generation blocked: ${res.data.promptFeedback.blockReason}`);
+                }
+
+                if (res.data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+                    const responseText = res.data.candidates[0].content.parts[0].text;
+                    try {
+                        // Attempt to parse the JSON directly (as requested by responseMimeType)
+                        const questions = JSON.parse(responseText);
+                        if (Array.isArray(questions) && questions.length >= 4 && questions.every(q => typeof q === 'string' && q.trim())) {
+                            return questions.slice(0, 4); // Take the first 4 valid ones
+                        }
+                        throw new Error('Invalid questions format received from API.');
+                    } catch (parseError) {
+                        console.error('JSON Parse Error for suggestions:', parseError, 'Raw text:', responseText);
+                        debugLog('Suggested questions JSON parse error', { error: parseError.message, raw: responseText });
+                        // Fallback if parsing fails despite requesting JSON
+                        return FALLBACK_QUESTIONS;
+                    }
+                }
+                 // Check finish reason if no valid text part
+                 const finishReason = res.data?.candidates?.[0]?.finishReason;
+                 if (finishReason && finishReason !== 'STOP') {
+                     throw new Error(`Suggestion generation stopped unexpectedly: ${finishReason}`);
+                 }
+
+                throw new Error('No valid response content from suggestion API.');
+            } catch (error) {
+                debugLog('Suggested questions fetch/process error', { error: error.message, response: error.response?.data });
+                // Don't throw here, just return fallback
+                return FALLBACK_QUESTIONS;
+            }
+        }
+
+        function displaySuggestedQuestions(questions) {
+            examplesContainer.innerHTML = ''; // Clear previous suggestions
+            if (!Array.isArray(questions)) {
+                console.error("Cannot display suggestions: input is not an array.", questions);
+                questions = FALLBACK_QUESTIONS; // Use fallback if input is invalid
+            }
+            questions.forEach((question, index) => {
+                if (typeof question !== 'string' || !question.trim()) {
+                    console.warn(`Skipping invalid suggestion at index ${index}:`, question);
+                    return; // Skip empty or non-string suggestions
+                }
+                const chip = document.createElement('button'); // Use button for better accessibility
+                chip.className = 'example-chip';
+                chip.setAttribute('data-q', question);
+                chip.setAttribute('aria-label', `Ask: ${question}`);
+                // Sanitize text content before setting
+                chip.textContent = DOMPurify.sanitize(question, { USE_PROFILES: { html: false } });
+                chip.addEventListener('click', handleExampleClick);
+                // No need for keypress listener on button element
+                examplesContainer.appendChild(chip);
+            });
+
+            // Animate chips appearing
+            anime({
+                targets: '.example-chip',
+                translateY: [10, 0],
+                opacity: [0, 1],
+                delay: anime.stagger(100),
+                duration: 500,
+                easing: 'easeOutQuad'
+            });
+        }
+
+        function handleExampleClick(event) {
+            const query = event.currentTarget.getAttribute('data-q');
+            if (query) {
+                chatInput.value = query;
+                updateSendButtonState();
+                sendMessage(); // Send the message immediately
+                debugLog('Example chip clicked', { query });
+                // Optional: Track with GA
+                // if (typeof gtag === 'function') {
+                //     gtag('event', 'example_chip_click', { event_category: 'Chatbot', event_label: query });
+                // }
+            }
+        }
+
+        // --- Core Chat Logic ---
+
+        // ** CRITICAL FIX: Format history correctly for the backend **
+        function getCurrentConversationHistory() {
             const history = [];
             const messages = chatArea.querySelectorAll('.user-message, .bot-message');
-            for (let i = Math.max(0, messages.length - 12); i < messages.length; i++) {
-                const msg = messages[i];
-                const role = msg.classList.contains('user-message') ? 'user' : 'assistant';
-                const content = msg.textContent;
-                const entry = { role, content };
-                if (role === 'assistant' && i === messages.length - 1 && lastRecommendedProducts.length > 0) {
-                    entry.products = lastRecommendedProducts;
+            // Limit history length sent to backend (e.g., last 10 messages / 5 turns)
+            const historyLimit = 10;
+            const startIndex = Math.max(0, messages.length - historyLimit);
+
+            for (let i = startIndex; i < messages.length; i++) {
+                const msgElement = messages[i];
+                const isUser = msgElement.classList.contains('user-message');
+                const role = isUser ? 'user' : 'model'; // Use 'model' for AI responses
+                // Get text content, trim whitespace
+                const text = msgElement.querySelector('.message-content')?.textContent.trim() || msgElement.textContent.trim();
+
+                if (text) { // Only add messages with actual text content
+                    history.push({
+                        role: role,
+                        parts: [{ text: text }] // Structure expected by Gemini API and backend prompt
+                    });
                 }
-                history.push(entry);
             }
+            debugLog('Formatted conversation history for backend', history);
             return history;
         }
 
@@ -813,6 +606,7 @@
             const now = Date.now();
             if (now - lastMessageTime < RATE_LIMIT_MS) {
                 displayError("Please wait a moment before sending another message.");
+                debugLog('Rate limit triggered');
                 return;
             }
             lastMessageTime = now;
@@ -820,67 +614,133 @@
             const rawMessage = chatInput.value.trim();
             if (!rawMessage) return;
 
+            // Sanitize user input before displaying
             const message = DOMPurify.sanitize(rawMessage, { USE_PROFILES: { html: false } });
             addMessage(message, 'user');
-
-            conversationHistory = getConversationHistory();
-            debugLog('Conversation history sent', conversationHistory);
-
             chatInput.value = '';
             updateSendButtonState();
             chatInput.disabled = true;
             sendBtn.disabled = true;
+            removeSuggestions(); // Hide suggestions after user sends message
 
             showTypingIndicator();
 
+            // Get the correctly formatted history *before* the API call
+            const currentHistory = getCurrentConversationHistory();
+
             try {
-                const encodedHistory = safeEncodeURIComponent(JSON.stringify(conversationHistory));
-                const res = await axios.get(`${WEB_APP_URL}?action=search&query=${encodeURIComponent(message)}&conversationHistory=${encodedHistory}`, {
-                    timeout: API_TIMEOUT
-                });
-                const { text, products, query_type, search_criteria } = res.data;
-                debugLog('Search response', { query_type, text, product_count: products.length, products: products.map(p => p.name), search_criteria });
-                hideTypingIndicator();
-                addMessage(text, 'bot');
-                conversationHistory.push({ role: 'assistant', content: text, products });
-                if (products && products.length > 0) {
-                    lastRecommendedProducts = products.map(p => ({ name: p.name, brand: p.brand, category: p.category }));
-                    debugLog('Updated lastRecommendedProducts', lastRecommendedProducts);
-                    addProductSection(products, message);
+                // Ensure the URL is set
+                if (!WEB_APP_URL || WEB_APP_URL.includes('YOUR_MACRO_ID')) {
+                     throw new Error("Web App URL is not configured in the script.");
                 }
+
+                // Encode history and query for URL parameters
+                const encodedHistory = safeEncodeURIComponent(JSON.stringify(currentHistory));
+                const encodedQuery = encodeURIComponent(message); // Use sanitized message for query
+
+                const requestUrl = `${WEB_APP_URL}?action=search&query=${encodedQuery}&conversationHistory=${encodedHistory}`;
+                debugLog('Sending request to backend', { urlLength: requestUrl.length });
+                 if (requestUrl.length > 2000) {
+                     debugLog('Warning: Request URL is long, might exceed limits.', { length: requestUrl.length });
+                     // Consider sending history via POST if it gets too long, but GET is simpler for Apps Script
+                 }
+
+                const res = await axios.get(requestUrl, { timeout: API_TIMEOUT });
+
+                debugLog('Raw backend response received', res.data);
+
+                // Check for explicit error from backend first
+                if (res.data && res.data.error) {
+                    throw new Error(`Backend Error: ${res.data.error}`);
+                }
+
+                // Validate expected structure
+                 if (!res.data || typeof res.data.text !== 'string') {
+                     throw new Error('Invalid response structure from backend.');
+                 }
+
+                const { text, products = [], query_type, search_criteria } = res.data;
+                debugLog('Processed backend response', { query_type, text_length: text.length, product_count: products.length, criteria: search_criteria });
+
+                hideTypingIndicator();
+
+                // Add bot response (sanitized)
+                addMessage(text, 'bot');
+
+                // Update client-side history *after* successful response (optional, as getCurrentConversationHistory reads DOM)
+                // conversationHistory.push({ role: 'user', parts: [{ text: message }] });
+                // conversationHistory.push({ role: 'model', parts: [{ text: text }] });
+
+                // Display products if any
+                if (Array.isArray(products) && products.length > 0) {
+                    lastRecommendedProducts = products.map(p => ({ name: p.name, brand: p.brand, category: p.category })); // Store basic info
+                    debugLog('Updating lastRecommendedProducts', lastRecommendedProducts);
+                    addProductSection(products, message);
+                } else {
+                    lastRecommendedProducts = []; // Clear recommendations if none received
+                }
+
             } catch (error) {
                 console.error('Error during message processing:', error);
-                debugLog('Message processing error', { error: error.message });
+                // Log detailed error info
+                debugLog('Message processing error', {
+                    message: error.message,
+                    url: error.config?.url, // Log URL if available (Axios error)
+                    responseStatus: error.response?.status,
+                    responseData: error.response?.data,
+                    stack: error.stack
+                 });
                 hideTypingIndicator();
-                let errorMessage = "I encountered an issue. Please try again.";
-                if (error.message.includes('timed out')) {
-                    errorMessage = "The request timed out. Check your connection and try again.";
-                } else if (error.message.includes('Invalid')) {
-                    errorMessage = "Please clarify your request, like specifying a product type (e.g., skincare or makeup).";
+
+                let errorMessage = "Sorry, I encountered an issue processing your request. Please try again.";
+                if (error.message.includes('timeout')) {
+                    errorMessage = "The request took too long to complete. Please check your connection and try again.";
+                } else if (error.message.includes('Network Error')) {
+                     errorMessage = "Could not connect to the server. Please check your internet connection.";
+                } else if (error.message.includes('Backend Error:')) {
+                    // Use the specific error message from the backend
+                    errorMessage = error.message.replace('Backend Error:', 'Sorry, there was a problem:');
+                } else if (error.message.includes('Invalid response structure')) {
+                     errorMessage = "Sorry, I received an unexpected response. Please try rephrasing your message.";
+                } else if (error.message.includes('Web App URL is not configured')) {
+                    errorMessage = "Chatbot configuration error. Please contact support."; // User-friendly config error
                 }
+                // Add more specific error handling based on potential issues
+
                 displayError(errorMessage);
             } finally {
+                // Re-enable input regardless of success or failure
                 chatInput.disabled = false;
                 updateSendButtonState();
                 chatInput.focus();
             }
         }
 
-        function addMessage(text, sender) {
+        // --- UI Update Functions ---
+        function addMessage(text, sender, isError = false) {
             const messageDiv = document.createElement('div');
-            messageDiv.className = sender === 'user' ? 'user-message animate-fade-in' : 'bot-message animate-fade-in';
-            messageDiv.innerHTML = DOMPurify.sanitize(text);
+            messageDiv.className = `${sender}-message message-base animate-fade-in`;
+            // Add a wrapper for content to easily select text later if needed
+            const contentSpan = document.createElement('span');
+            contentSpan.className = 'message-content';
+            // Sanitize the text before setting innerHTML
+            contentSpan.innerHTML = DOMPurify.sanitize(text, { USE_PROFILES: { html: true } }); // Allow basic HTML like links if AI provides them
+            messageDiv.appendChild(contentSpan);
+
             chatArea.appendChild(messageDiv);
-            chatArea.scrollTop = chatArea.scrollHeight;
+            scrollToBottom();
         }
 
         function showTypingIndicator() {
+            // Remove existing indicator first
+            hideTypingIndicator();
             const typingDiv = document.createElement('div');
             typingDiv.id = 'typing-indicator';
-            typingDiv.className = 'bot-message animate-fade-in';
-            typingDiv.innerHTML = '<span>Thinking</span><span class="dot dot-1"></span><span class="dot dot-2"></span><span class="dot dot-3"></span>';
+            // Apply bot message styling + animation
+            typingDiv.className = 'bot-message message-base animate-fade-in';
+            typingDiv.innerHTML = '<span class="message-content"><span>Thinking</span><span class="dot dot-1"></span><span class="dot dot-2"></span><span class="dot dot-3"></span></span>';
             chatArea.appendChild(typingDiv);
-            chatArea.scrollTop = chatArea.scrollHeight;
+            scrollToBottom();
         }
 
         function hideTypingIndicator() {
@@ -890,58 +750,197 @@
             }
         }
 
+         function removeSuggestions() {
+             if (examplesContainer) {
+                 anime({
+                     targets: '.example-chip',
+                     opacity: 0,
+                     translateY: 10,
+                     duration: 300,
+                     easing: 'easeInQuad',
+                     complete: () => { examplesContainer.innerHTML = ''; } // Clear after fade out
+                 });
+             }
+         }
+
+
         function displayError(message) {
             const errorDiv = document.createElement('div');
             errorDiv.className = 'error-message animate-fade-in';
-            errorDiv.innerHTML = DOMPurify.sanitize(`${message} <button class="retry-btn" onclick="document.getElementById('chat-input').focus()">Retry</button>`);
+            // Sanitize the core message part
+            const sanitizedMessage = DOMPurify.sanitize(message, { USE_PROFILES: { html: false } });
+            // Add retry button functionality
+            errorDiv.innerHTML = `<span class="message-content">${sanitizedMessage} <button class="retry-btn" onclick="retryLastMessage()">Retry</button></span>`;
             chatArea.appendChild(errorDiv);
-            chatArea.scrollTop = chatArea.scrollHeight;
+            scrollToBottom();
         }
 
+        // Simple retry function (assumes last user message is still relevant)
+        function retryLastMessage() {
+            const userMessages = chatArea.querySelectorAll('.user-message .message-content');
+            if (userMessages.length > 0) {
+                const lastQuery = userMessages[userMessages.length - 1].textContent.trim();
+                if (lastQuery) {
+                    debugLog('Retrying last message:', { query: lastQuery });
+                    // Remove the error message before retrying
+                    const errorMessages = chatArea.querySelectorAll('.error-message');
+                    if (errorMessages.length > 0) {
+                        errorMessages[errorMessages.length - 1].remove();
+                    }
+                    // Set input and send
+                    chatInput.value = lastQuery;
+                    sendMessage();
+                } else {
+                     debugLog('Retry failed: Could not find last user message text.');
+                }
+            } else {
+                 debugLog('Retry failed: No user messages found.');
+            }
+        }
+
+
         function addProductSection(products, query) {
-            debugLog('Displaying products for query', { query, products: products.map(p => p.name) });
+            debugLog('Displaying products', { count: products.length, for_query: query });
             const sectionDiv = document.createElement('div');
             sectionDiv.className = 'product-section animate-fade-in';
-            sectionDiv.innerHTML = '<div class="font-semibold text-sm mb-2">Recommended Products:</div>';
-            products.forEach((product, index) => {
-                const card = document.createElement('a');
-                card.href = product.url;
-                card.className = 'product-card';
-                card.setAttribute('target', '_blank');
-                card.setAttribute('rel', 'noopener noreferrer');
-                card.setAttribute('aria-label', `View ${product.name} on Planet Beauty`);
+            // Sanitize and add title
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'font-semibold text-sm mb-2';
+            titleDiv.textContent = 'Here are some products you might like:'; // Clearer title
+            sectionDiv.appendChild(titleDiv);
 
-                let imageHtml = `<div class="image-placeholder">Image not available</div>`;
-                if (product.image) {
-                    imageHtml = `<img src="${product.image}" alt="${product.name}" class="product-image lazyload">`;
+            products.forEach((product, index) => {
+                if (!product || !product.name || !product.url) {
+                    debugLog('Skipping invalid product object in display', { index, product });
+                    return; // Skip invalid product data
                 }
 
-                const truncatedName = product.name.length > 50 ? product.name.substring(0, 47) + '...' : product.name;
-                const truncatedDescription = product.description && product.description.length > 100 ? product.description.substring(0, 97) + '...' : product.description || 'No description available';
+                const card = document.createElement('a');
+                // Basic validation/sanitization for URL
+                let productUrl = '#'; // Default to '#' if URL is invalid
+                try {
+                    // Ensure URL is absolute and potentially fix common issues
+                    if (product.url && typeof product.url === 'string') {
+                         if (product.url.startsWith('//')) {
+                             productUrl = 'https:' + product.url;
+                         } else if (product.url.startsWith('/')) {
+                             // Try to prepend domain - might be incorrect if URL is relative to something else
+                             productUrl = PLANET_BEAUTY_DOMAIN + product.url;
+                         } else if (product.url.startsWith('http')) {
+                             productUrl = product.url;
+                         } else {
+                             // Assume it's a relative path from the domain root
+                             productUrl = PLANET_BEAUTY_DOMAIN + '/' + product.url;
+                         }
+                         // Basic check if it looks like a valid URL structure
+                         new URL(productUrl);
+                    }
+                } catch (urlError) {
+                    debugLog('Invalid product URL detected', { name: product.name, url: product.url, error: urlError.message });
+                    productUrl = '#'; // Fallback on error
+                }
+
+                card.href = productUrl;
+                card.className = 'product-card';
+                card.setAttribute('target', '_blank'); // Open in new tab
+                card.setAttribute('rel', 'noopener noreferrer');
+                // Sanitize name for aria-label
+                const safeName = DOMPurify.sanitize(product.name, { USE_PROFILES: { html: false } });
+                card.setAttribute('aria-label', `View ${safeName} on Planet Beauty`);
+
+                // Image handling with placeholder
+                let imageHtml = `<div class="image-placeholder"><i class="fas fa-image"></i></div>`; // FontAwesome placeholder
+                if (product.image && typeof product.image === 'string' && product.image.startsWith('https')) {
+                    // Use lazy loading: data-src for lazysizes
+                    imageHtml = `<img data-src="${product.image}" alt="${safeName}" class="product-image lazyload">`;
+                } else {
+                     debugLog('Product image missing or invalid', { name: product.name, image: product.image });
+                }
+
+                // Sanitize other text fields
+                const safeDescription = DOMPurify.sanitize(product.description || 'No description available.', { USE_PROFILES: { html: false } });
+                const safePrice = DOMPurify.sanitize(product.price || 'Price not available', { USE_PROFILES: { html: false } });
 
                 card.innerHTML = `
-                    ${imageHtml}
+                    <div class="product-image-container">
+                        ${imageHtml}
+                    </div>
                     <div class="product-info">
-                        <div class="product-name">${DOMPurify.sanitize(truncatedName)}</div>
-                        <div class="product-description">${DOMPurify.sanitize(truncatedDescription)}</div>
-                        <div class="product-price">${DOMPurify.sanitize(product.price || 'Price not available')}</div>
+                        <div class="product-name">${safeName}</div>
+                        <div class="product-description">${safeDescription}</div>
+                        <div class="product-price">${safePrice}</div>
                     </div>
                 `;
                 sectionDiv.appendChild(card);
 
+                // Add click tracking (optional)
                 card.addEventListener('click', (e) => {
-                    if (!card.href) {
-                        e.preventDefault();
-                        debugLog('Product card click failed: missing URL', { product: product.name });
+                    if (card.href === '#') {
+                        e.preventDefault(); // Prevent navigation if URL is invalid
+                        debugLog('Product card click prevented: invalid URL', { product: safeName });
                     }
-                    if (typeof gtag === 'function') {
-                        gtag('event', 'product_card_click', { event_category: 'Chatbot', event_label: product.name });
-                    }
+                    debugLog('Product card clicked', { product: safeName, url: card.href });
+                    // Optional: Track with GA
+                    // if (typeof gtag === 'function') {
+                    //     gtag('event', 'product_card_click', { event_category: 'Chatbot', event_label: safeName });
+                    // }
                 });
             });
             chatArea.appendChild(sectionDiv);
-            chatArea.scrollTop = chatArea.scrollHeight;
+            scrollToBottom();
+            // Trigger lazy loading check after adding new elements
+            if ('lazySizes' in window) {
+                lazySizes.loader.checkElems();
+            }
         }
+
+        function scrollToBottom() {
+            // Use smooth scrolling
+            chatArea.scrollTo({ top: chatArea.scrollHeight, behavior: 'smooth' });
+        }
+
+        // --- Utility Functions ---
+        function debugLog(message, data) {
+            if (!DEBUG_MODE) return;
+            console.log(`[DEBUG] ${message}`, data); // Log to console as well
+
+            const entry = document.createElement('div');
+            entry.className = 'debug-entry';
+            const timestamp = new Date().toLocaleTimeString([], { hour12: false });
+            let content = `<strong>[${timestamp}]</strong> ${message}`;
+
+            if (data !== undefined) {
+                try {
+                    // Use JSON.stringify with indentation for objects/arrays
+                    const dataString = JSON.stringify(data, null, 2);
+                    content += `<pre>${dataString}</pre>`;
+                } catch (e) {
+                    // Fallback for complex objects that might fail stringify (like DOM elements)
+                    content += ` <span style="color: #aaa;">[Data not serializable]</span>`;
+                }
+            }
+            entry.innerHTML = DOMPurify.sanitize(content, { USE_PROFILES: { html: true } }); // Sanitize debug output too
+            debugContent.appendChild(entry);
+            // Scroll debug panel to bottom
+            debugPanel.scrollTop = debugPanel.scrollHeight;
+        }
+
+        function safeEncodeURIComponent(str) {
+            try {
+                // Encode URI components, then manually encode remaining problematic characters
+                return encodeURIComponent(str)
+                    .replace(/!/g, '%21')
+                    .replace(/'/g, '%27')
+                    .replace(/\(/g, '%28')
+                    .replace(/\)/g, '%29')
+                    .replace(/\*/g, '%2A')
+                    .replace(/~/g, '%7E');
+            } catch (e) {
+                debugLog('URL encoding error', { error: e.message, input: str });
+                return ''; // Return empty string on error
+            }
+        }
+
     </script>
 </body>
 </html>
