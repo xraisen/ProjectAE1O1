@@ -3,29 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Planet Beauty AI Chatbot - Find personalized beauty products with our interactive assistant.">
+    <meta name="description" content="Planet Beauty AI Chatbot - Discover personalized beauty products with our smart assistant.">
+    <link rel="icon" href="https://placehold.co/16x16/E91e63/FFFFFF?text=PB" type="image/png" onerror="this.href='/images/favicon.png';">
     <title>Planet Beauty AI Chatbot</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lazysizes@5.3.2/lazysizes.min.js" async></script>
     <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
-    <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DLVD913P7M"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-        gtag('config', 'G-XXXXXXXXXX'); // Replace with your GA ID
+        gtag('config', 'G-DLVD913P7M');
     </script>
     <style>
+        :root {
+            --primary: #e91e63;
+            --primary-dark: #c2185b;
+            --bg-light: #f8f9fa;
+            --bg-dark: #1f2937;
+            --text-light: #1f2937;
+            --text-dark: #f3f4f6;
+        }
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f8f9fa;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
             margin: 0;
             overflow-x: hidden;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        body.dark-mode {
+            background-color: var(--bg-dark);
+            color: var(--text-dark);
         }
         #preloader {
             position: fixed;
@@ -33,83 +46,124 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: #f8f9fa;
+            background: var(--bg-light);
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             z-index: 1000;
             transition: opacity 0.5s ease;
         }
+        .dark-mode #preloader {
+            background: var(--bg-dark);
+        }
         #preloader .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #e91e63;
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--primary);
             border-top-color: transparent;
             border-radius: 50%;
             animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        #preloader .percentage {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--primary);
         }
         .chat-container {
-            max-width: 900px;
-            margin: 0 auto;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            border-radius: 12px;
+            max-width: 800px;
+            margin: 1rem auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-radius: 16px;
             background: white;
             display: flex;
             flex-direction: column;
-            height: calc(100vh - 140px);
-            max-height: 800px;
+            height: calc(100vh - 120px);
+            max-height: 900px;
+            overflow: hidden;
+        }
+        .dark-mode .chat-container {
+            background: #374151;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
         .chat-area {
             flex-grow: 1;
             overflow-y: auto;
-            padding: 1.5rem;
+            padding: 1rem;
             scroll-behavior: smooth;
-            will-change: scroll-position;
+        }
+        .dark-mode .chat-area {
+            background: #374151;
         }
         .user-message {
-            background: #e91e63;
+            background: var(--primary);
             color: white;
-            padding: .75rem 1rem;
-            border-radius: 15px 15px 0 15px;
-            max-width: 80%;
+            padding: 0.5rem 1rem;
+            border-radius: 12px 12px 0 12px;
+            max-width: 75%;
             margin-left: auto;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
             word-wrap: break-word;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         .bot-message {
-            background: #f0f0f0;
-            color: #333;
-            padding: .75rem 1rem;
-            border-radius: 15px 15px 15px 0;
-            max-width: 80%;
+            background: #e5e7eb;
+            color: var(--text-light);
+            padding: 0.5rem 1rem;
+            border-radius: 12px 12px 12px 0;
+            max-width: 75%;
             margin-right: auto;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
             word-wrap: break-word;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .dark-mode .bot-message {
+            background: #4b5563;
+            color: var(--text-dark);
+        }
+        .product-section {
+            background: #f1f5f9;
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+            max-width: 90%;
+            margin-right: auto;
+        }
+        .dark-mode .product-section {
+            background: #4b5563;
         }
         .product-card {
-            display: block;
+            display: flex;
+            align-items: center;
             border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
-            margin: 1rem 0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 0.5rem 0;
             text-decoration: none;
             color: inherit;
             background: white;
-            max-width: 80%;
-            margin-right: auto;
+            max-width: 100%;
+            cursor: pointer;
+            border: 1px solid #e5e7eb;
+        }
+        .dark-mode .product-card {
+            background: #6b7280;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            border-color: #4b5563;
         }
         .product-card:hover {
-            transform: scale(1.03);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+            transform: scale(1.02);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
         .product-image {
-            width: 100%;
-            height: 200px;
+            width: 80px;
+            height: 80px;
             object-fit: cover;
-            display: block;
+            flex-shrink: 0;
+            border-radius: 8px;
+            margin: 0.5rem;
         }
         .lazyload, .lazyloading {
             opacity: 0;
@@ -118,113 +172,134 @@
         .lazyloaded {
             opacity: 1;
         }
-        .image-loading {
-            position: relative;
-            height: 200px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #f5f5f5;
-        }
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(233, 30, 99, 0.2);
-            border-top-color: #e91e63;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
         .image-placeholder {
-            height: 200px;
+            width: 80px;
+            height: 80px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #f8f9fa, #e91e63);
-            color: white;
-            font-size: 0.9em;
+            background: #eee;
+            color: #666;
+            font-size: 0.75rem;
             text-align: center;
-            transition: opacity 0.3s ease;
+            border-radius: 8px;
+            margin: 0.5rem;
+            flex-shrink: 0;
         }
-        .image-placeholder:hover {
-            opacity: 0.9;
+        .dark-mode .image-placeholder {
+            background: #6b7280;
+            color: #d1d5db;
         }
         .product-info {
-            padding: 1rem;
+            padding: 0.5rem;
+            flex-grow: 1;
         }
         .product-name {
-            font-weight: 600;
-            margin-bottom: .25rem;
+            font-weight: 500;
+            font-size: 0.85rem;
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
         }
         .product-description {
-            font-size: 0.9rem;
-            color: #555;
-            margin-bottom: .5rem;
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-bottom: 0.25rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .dark-mode .product-description {
+            color: #d1d5db;
         }
         .product-price {
             font-weight: 500;
-            color: #e91e63;
+            font-size: 0.8rem;
+            color: var(--primary);
         }
         .examples-container {
             display: flex;
             flex-wrap: wrap;
-            gap: .5rem;
-            margin-bottom: 1rem;
-            max-width: 80%;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+            max-width: 90%;
         }
         .example-chip {
-            padding: .5rem 1rem;
-            background: #f0f0f0;
-            border: 1px solid #e0e0e0;
-            border-radius: 20px;
+            padding: 0.4rem 0.8rem;
+            background: #e5e7eb;
+            border: 1px solid #d1d5db;
+            border-radius: 16px;
             cursor: pointer;
             transition: transform 0.2s, background-color 0.3s, box-shadow 0.2s;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+        }
+        .dark-mode .example-chip {
+            background: #4b5563;
+            border-color: #6b7280;
+            color: var(--text-dark);
         }
         .example-chip:hover {
-            background: #e91e63;
+            background: var(--primary);
             color: white;
             transform: scale(1.05);
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         .example-chip:focus {
-            outline: 2px solid #e91e63;
+            outline: 2px solid var(--primary);
             outline-offset: 2px;
         }
         .input-area {
             display: flex;
-            padding: 1rem;
-            border-top: 1px solid #eee;
-            background: #fff;
+            padding: 0.75rem;
+            border-top: 1px solid #e5e7eb;
+            background: white;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .dark-mode .input-area {
+            background: #374151;
+            border-top-color: #4b5563;
         }
         .input-row {
             display: flex;
-            gap: 10px;
-            width: 100%;
+            gap: 8px;
+            flex-grow: 1;
         }
         input[type=text] {
             flex: 1;
-            padding: .75rem 1rem;
-            border: 1px solid #ddd;
-            border-radius: 25px;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 20px;
             outline: none;
             transition: border-color 0.3s;
+            font-size: 0.9rem;
+        }
+        .dark-mode input[type=text] {
+            background: #4b5563;
+            border-color: #6b7280;
+            color: var(--text-dark);
         }
         input[type=text]:focus {
-            border-color: #e91e63;
+            border-color: var(--primary);
         }
         input[type=text]:disabled {
             background-color: #f5f5f5;
+            cursor: not-allowed;
+        }
+        .dark-mode input[type=text]:disabled {
+            background-color: #6b7280;
         }
         .send-btn {
-            background: #e91e63;
+            background: var(--primary);
             color: white;
             border: none;
             border-radius: 50%;
-            width: 45px;
-            height: 45px;
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -233,243 +308,378 @@
             flex-shrink: 0;
         }
         .send-btn:hover {
-            background: #d81b60;
-            transform: scale(1.05);
+            background: var(--primary-dark);
+            transform: scale(1.1);
         }
         .send-btn:disabled {
-            background: #ccc;
+            background: #d1d5db;
             cursor: not-allowed;
             transform: none;
         }
+        .theme-toggle {
+            background: #e5e7eb;
+            color: var(--text-light);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .dark-mode .theme-toggle {
+            background: #4b5563;
+            color: var(--text-dark);
+        }
+        .theme-toggle:hover {
+            background: var(--primary);
+            color: white;
+        }
         .error-message {
-            background: #ffebee;
-            color: #c62828;
-            padding: .75rem 1rem;
-            border-radius: 15px;
-            margin-bottom: 1rem;
-            max-width: 80%;
+            background: #fef2f2;
+            color: #dc2626;
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+            max-width: 75%;
             margin-right: auto;
-            border: 1px solid #f4c7c7;
+            border: 1px solid #fecaca;
+            font-size: 0.85rem;
+        }
+        .dark-mode .error-message {
+            background: #7f1d1d;
+            color: #f87171;
+            border-color: #b91c1c;
         }
         .retry-btn {
             background: none;
             border: none;
-            color: #e91e63;
+            color: var(--primary);
             text-decoration: underline;
             cursor: pointer;
+            font-size: 0.85rem;
         }
         footer {
-            position: sticky;
-            bottom: 0;
             background: white;
             padding: 0.5rem 1rem;
-            color: #6c757d;
-            font-size: 0.875rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
+            color: #6b7280;
+            font-size: 0.8rem;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .dark-mode footer {
+            background: #374151;
+            color: #d1d5db;
         }
         footer a {
-            color: #e91e63;
+            color: var(--primary);
             text-decoration: none;
-            margin-left: 0.25rem;
         }
         footer a:hover {
             text-decoration: underline;
         }
-        #typing-indicator .typing-dots {
-            display: inline-block;
-            width: 1.5em;
-            text-align: left;
-            vertical-align: bottom;
+        #typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.85rem;
         }
+        #typing-indicator .dot {
+            width: 6px;
+            height: 6px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: inline-block;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+        .dot-1 { animation: bounce 0.5s infinite; }
+        .dot-2 { animation: bounce 0.5s infinite 0.15s; }
+        .dot-3 { animation: bounce 0.5s infinite 0.3s; }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
         .animate-fade-in {
-            animation: fadeIn 0.5s ease-out;
+            animation: fadeIn 0.4s ease-out;
+        }
+        #debug-panel {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            background: rgba(31, 41, 55, 0.9);
+            color: #f3f4f6;
+            padding: 0.75rem;
+            max-width: 280px;
+            max-height: 250px;
+            overflow: auto;
+            font-size: 0.75rem;
+            z-index: 1000;
+            border-top-left-radius: 8px;
+            display: none;
+        }
+        .debug-entry {
+            padding: 0.4rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .debug-button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            margin-top: 0.4rem;
+            cursor: pointer;
+            font-size: 0.75rem;
         }
         @media (max-width: 640px) {
-            body {
-                padding: 0;
-            }
+            body { padding: 0; }
             .chat-container {
+                margin: 0;
                 border-radius: 0;
                 max-width: 100%;
                 height: 100vh;
                 max-height: none;
-                margin: 0;
             }
-            .chat-area {
-                padding: 1rem;
+            .chat-area { padding: 0.75rem; }
+            .user-message, .bot-message, .product-section, .examples-container, .error-message {
+                max-width: 85%;
             }
-            .user-message, .bot-message, .product-card, .examples-container, .error-message {
-                max-width: 90%;
+            .input-area { padding: 0.5rem; }
+            input[type=text] { padding: 0.4rem 0.6rem; font-size: 0.85rem; }
+            .send-btn, .theme-toggle { width: 32px; height: 32px; }
+            footer { font-size: 0.75rem; padding-bottom: calc(0.5rem + env(safe-area-inset-bottom)); }
+            #debug-panel { max-width: 90%; }
+            .product-image, .image-placeholder {
+                width: 60px;
+                height: 60px;
+                margin: 0.4rem;
             }
-            .input-area {
-                padding: 0.75rem;
-            }
-            input[type=text] {
-                padding: 0.6rem 0.9rem;
-            }
-            .send-btn {
-                width: 40px;
-                height: 40px;
-            }
-            footer {
-                font-size: 0.8rem;
-                padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
-            }
+            .product-name { font-size: 0.8rem; }
+            .product-description { font-size: 0.7rem; -webkit-line-clamp: 1; }
+            .product-price { font-size: 0.75rem; }
         }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
-    <div id="preloader"><div class="spinner"></div></div>
-    <header class="text-center py-6 px-4 flex-shrink-0 bg-gradient-to-r from-pink-600 to-purple-700 text-white shadow-md animate-fade-in">
-        <h1 class="text-3xl sm:text-4xl font-bold">Planet Beauty</h1>
-        <p class="text-lg sm:text-xl">Your AI Beauty Assistant ✨</p>
+    <div id="preloader">
+        <div class="spinner"></div>
+        <div class="percentage">0%</div>
+    </div>
+    <header class="text-center py-4 px-4 flex-shrink-0 bg-gradient-to-r from-pink-600 to-purple-700 text-white shadow-md animate-fade-in">
+        <h1 class="text-2xl sm:text-3xl font-semibold">Planet Beauty</h1>
+        <p class="text-base sm:text-lg">Your AI Beauty Assistant ✨</p>
     </header>
-
     <main class="chat-container flex-grow animate-fade-in">
         <div id="chat-area" class="chat-area">
-            <div class="bot-message">Hi there! Welcome to Planet Beauty's AI Assistant. ✨ How can I help you find the perfect products today?</div>
+            <div class="bot-message">Hello! Welcome to Planet Beauty. I'm here to help with your beauty needs or just chat about what's on your mind. How can I assist you today? 😊</div>
             <div id="examples-container" class="examples-container"></div>
         </div>
-
         <div class="input-area">
             <div class="input-row">
-                <input id="chat-input" type="text" placeholder="Ask about beauty products..." autocomplete="off" aria-label="Type your beauty product question">
+                <input id="chat-input" type="text" placeholder="Ask about beauty products or chat..." autocomplete="off" aria-label="Type your beauty question or chat">
                 <button id="send-btn" class="send-btn" disabled aria-label="Send message"><i class="fas fa-paper-plane"></i></button>
             </div>
+            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode"><i class="fas fa-moon"></i></button>
         </div>
     </main>
-
     <footer>
         <span>Developed with ❤️ by</span>
         <a href="https://www.linkedin.com/in/joseespinosa" target="_blank" rel="noopener noreferrer">Jose Espinosa</a>
     </footer>
-
+    <div id="debug-panel">
+        <h3 class="font-semibold mb-1.5">Debug Information</h3>
+        <div id="debug-content"></div>
+        <button id="debug-clear" class="debug-button">Clear</button>
+        <button id="debug-close" class="debug-button ml-1.5">Close</button>
+    </div>
     <script>
-        // --- Configuration ---
-        const GEMINI_API_KEY = 'AIzaSyDLv0HUbLkt1mLf8_iWQnggj_8hof2ZMDs';
-        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`; // Placeholder; currently using gemini-1.5-flash
-        const API_TIMEOUT = 15000;
-        const IMAGE_TIMEOUT = 5000;
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwdo5jE7OUte_rGTJyH4DJuh-_w6MLEuM8zy9omr9b3px7MBBMj11sqdtYyH28Z8W0x/exec';
+        const API_TIMEOUT = 20000;
+        const PLANET_BEAUTY_DOMAIN = 'https://www.planetbeauty.com';
+        const DEBUG_MODE = true;
+        const RATE_LIMIT_MS = 1000;
 
-        // --- Fallback Questions ---
         const FALLBACK_QUESTIONS = [
-            "What products are best for sensitive skin?",
-            "Can you recommend a conditioner for curly hair?",
-            "What's a good cleanser for combination skin?",
-            "Which makeup is ideal for a natural look?"
+            "What shampoo is best for dry, color-treated hair?",
+            "Can you suggest a cleanser for oily, acne-prone skin?",
+            "Which products are best for someone with low vision?",
+            "What are the top 20 beauty products for 2025?",
+            "Do you have any LED masks for anti-aging?"
         ];
 
-        // --- Product Data ---
-        const products = [
-            { id: 'p1', name: 'Murad Acne Control Clarifying Cleanser', description: 'Clinically proven salicylic acid cleanser for acne.', price: '$34.00', image: 'https://www.murad.com/dw/image/v2/BBKT_PRD/on/demandware.static/-/Sites-murad-master-catalog/default/dw0e54978a/images/Products/M011201/AcneControlClarifyingCleanser_5oz_72DPI.png?sw=600&sh=600&sm=fit', url: 'https://www.planetbeauty.com/products/murad-acne-control-clarifying-cleanser' },
-            { id: 'p2', name: 'Dermalogica Daily Microfoliant', description: 'Gentle, rice-based powder exfoliant for smoother skin.', price: '$65.00', image: 'https://www.dermalogica.com/cdn/shop/products/daily-microfoliant-refill_117g_pack_ecom_us_800x.jpg?v=1665504452', url: 'https://www.planetbeauty.com/products/dermalogica-daily-microfoliant' },
-            { id: 'p3', name: 'Olaplex No. 4 Bond Maintenance Shampoo', description: 'Repairs and strengthens hair bonds.', price: '$30.00', image: 'https://olaplex.com/cdn/shop/products/NO4_250mL_Standard_Shadow_600x600.png?v=1647391142', url: 'https://www.planetbeauty.com/products/olaplex-no-4-bond-maintenance-shampoo' },
-            { id: 'p4', name: 'Juice Beauty Stem Cellular Anti-Wrinkle Moisturizer', description: 'Organic moisturizer reducing fine lines.', price: '$75.00', image: 'https://juicebeauty.com/cdn/shop/products/STEM_CELLULAR_Anti-Wrinkle_Moisturizer-1_480x480.jpg?v=1665177184', url: 'https://www.planetbeauty.com/products/juice-beauty-stem-cellular-anti-wrinkle-moisturizer' },
-            { id: 'p5', name: 'SkinMedica TNS Advanced+ Serum', description: 'Advanced serum for wrinkles, tone, and texture.', price: '$295.00', image: 'https://www.skinmedica.com/on/demandware.static/-/Sites-allergan-master-catalog/default/dw91d9950d/images/products/TNS_Advanced_Serum_PDP_Hero.png', url: 'https://www.planetbeauty.com/products/skinmedica-tns-advanced-serum' },
-            { id: 'p6', name: 'Oribe Dry Texturizing Spray', description: 'Invisible dry spray for volume and texture.', price: '$49.00', image: 'https://www.oribe.com/oribe/en/products/styling/oribe-dry-texturizing-spray/images/zoom/oribe-dry-texturizing-spray-zoom.jpg', url: 'https://www.planetbeauty.com/products/oribe-dry-texturizing-spray' },
-            { id: 'p7', name: 'Briogeo Don\'t Despair, Repair! Deep Conditioning Mask', description: 'Intensive weekly treatment for dry, damaged hair.', price: '$39.00', image: 'https://www.briogeohair.com/cdn/shop/files/Briogeo-DDR-Mask-8oz-Primary.jpg?v=1691769408&width=800', url: 'https://www.planetbeauty.com/products/briogeo-dont-despair-repair-conditioning-mask' },
-            { id: 'p8', name: 'Estée Lauder Double Wear Stay-in-Place Foundation', description: '24-hour wear, matte finish foundation.', price: '$49.00', image: 'https://www.esteelauder.com/media/export/cms/products/640x640/el_sku_6N1W01_640x640_0.jpg', url: 'https://www.planetbeauty.com/products/estee-lauder-double-wear-foundation' },
-            { id: 'p9', name: 'CeraVe Moisturizing Cream', description: 'Rich cream with ceramides for dry skin.', price: '$17.99', image: 'https://www.cerave.com/-/media/project/loreal/brand-sites/cerave/americas/us/product-images-new/moisturizing-cream/cerave-moisturizing-cream-16oz-jar-front-0000.png?h=600&w=600&la=en&hash=8686143ADDE64C66E8A0B807330819A8', url: 'https://www.planetbeauty.com/products/cerave-moisturizing-cream' },
-            { id: 'p10', name: 'Drunk Elephant C-Firma Fresh Day Serum', description: 'Potent Vitamin C serum for brightening and firming.', price: '$78.00', image: 'https://www.drunkelephant.com/cdn/shop/products/C-FIRMAFRESHDAYSERUM_PDP_RENDERGLOBE_TRANSPARENT_1080x.png?v=1645054823', url: 'https://www.planetbeauty.com/products/drunk-elephant-c-firma-fresh-day-serum' }
-        ];
-
-        // --- Backup Images ---
-        const backupImages = {
-            default: 'https://via.placeholder.com/600x400/E91e63/FFFFFF?text=Planet+Beauty',
-            acne: ['https://www.murad.com/dw/image/v2/BBKT_PRD/on/demandware.static/-/Sites-murad-master-catalog/default/dw0e54978a/images/Products/M011201/AcneControlClarifyingCleanser_5oz_72DPI.png?sw=600&sh=600&sm=fit'],
-            moisturizer: ['https://www.cerave.com/-/media/project/loreal/brand-sites/cerave/americas/us/product-images-new/moisturizing-cream/cerave-moisturizing-cream-16oz-jar-front-0000.png?h=600&w=600&la=en&hash=8686143ADDE64C66E8A0B807330819A8'],
-            shampoo: ['https://olaplex.com/cdn/shop/products/NO4_250mL_Standard_Shadow_600x600.png?v=1647391142'],
-            foundation: ['https://www.esteelauder.com/media/export/cms/products/640x640/el_sku_6N1W01_640x640_0.jpg'],
-            skincare: ['https://www.dermalogica.com/cdn/shop/products/daily-microfoliant-refill_117g_pack_ecom_us_800x.jpg?v=1665504452'],
-            haircare: ['https://www.briogeohair.com/cdn/shop/files/Briogeo-DDR-Mask-8oz-Primary.jpg?v=1691769408&width=800']
-        };
-
-        const productCategories = {
-            acne: ['p1'], moisturizer: ['p4', 'p9'], shampoo: ['p3', 'p7'], foundation: ['p8'],
-            skincare: ['p1', 'p2', 'p4', 'p5', 'p9', 'p10'], haircare: ['p3', 'p6', 'p7']
-        };
-
-        const categoryKeywords = {
-            acne: ['acne', 'blemish', 'pimple', 'breakout', 'clear skin', 'oily'],
-            moisturizer: ['moisturizer', 'hydrating', 'dry skin', 'hydration', 'cream'],
-            shampoo: ['shampoo', 'hair wash', 'clean hair'],
-            conditioner: ['conditioner', 'soften hair', 'detangle'],
-            hairmask: ['hair mask', 'treatment', 'damaged hair', 'repair hair'],
-            foundation: ['foundation', 'makeup base', 'cover', 'complexion', 'tone'],
-            serum: ['serum', 'treatment', 'concentrate'],
-            cleanser: ['cleanser', 'face wash', 'wash'],
-            exfoliant: ['exfoliant', 'scrub', 'peel', 'smooth skin'],
-            styling: ['styling', 'hairspray', 'texture', 'volume', 'hold'],
-            skincare: ['skincare', 'face care', 'complexion', 'skin health'],
-            haircare: ['haircare', 'hair product', 'mane']
-        };
-
-        // --- State ---
-        const userProfile = { skinType: null, skinTone: null, concerns: [] };
         let conversationHistory = [];
-        const MAX_HISTORY = 6;
-        const imageCache = JSON.parse(localStorage.getItem('imageCache')) || {};
+        let lastRecommendedProducts = [];
+        let lastMessageTime = 0;
 
-        // --- DOM Elements ---
         const chatArea = document.getElementById('chat-area');
         const chatInput = document.getElementById('chat-input');
         const sendBtn = document.getElementById('send-btn');
         const preloader = document.getElementById('preloader');
         const examplesContainer = document.getElementById('examples-container');
+        const debugPanel = document.getElementById('debug-panel');
+        const debugContent = document.getElementById('debug-content');
+        const themeToggle = document.getElementById('theme-toggle');
 
-        // --- Initialization ---
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            themeToggle.innerHTML = `<i class="fas fa-${isDark ? 'sun' : 'moon'}"></i>`;
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            if (typeof gtag === 'function') {
+                gtag('event', 'theme_toggle', { event_category: 'UI', event_label: isDark ? 'dark' : 'light' });
+            }
+        });
+
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+            themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        }
+
+        function debugLog(message, data) {
+            if (!DEBUG_MODE) return;
+            console.log(`[DEBUG] ${message}`, data);
+            const entry = document.createElement('div');
+            entry.className = 'debug-entry';
+            const timestamp = new Date().toLocaleTimeString();
+            let content = `<strong>[${timestamp}]</strong> ${message}`;
+            if (data !== undefined) {
+                if (typeof data === 'object') {
+                    try {
+                        content += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                    } catch (e) {
+                        content += `<pre>[Object]</pre>`;
+                    }
+                } else {
+                    content += ` ${data}`;
+                }
+            }
+            entry.innerHTML = content;
+            debugContent.appendChild(entry);
+            debugPanel.scrollTop = debugPanel.scrollHeight;
+            if (DEBUG_MODE && debugPanel.style.display === 'none') {
+                debugPanel.style.display = 'block';
+            }
+        }
+
+        document.getElementById('debug-clear').addEventListener('click', () => {
+            debugContent.innerHTML = '';
+        });
+
+        document.getElementById('debug-close').addEventListener('click', () => {
+            debugPanel.style.display = 'none';
+        });
+
+        function safeEncodeURIComponent(str) {
+            try {
+                return encodeURIComponent(str).replace(/[!'()*]/g, escape);
+            } catch (e) {
+                debugLog('URL encoding error', { error: e.message });
+                return '';
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
-            setTimeout(() => {
+            let percentage = 0;
+            const percentageElement = preloader.querySelector('.percentage');
+            const animatePercentage = () => {
+                return new Promise(resolve => {
+                    anime({
+                        targets: { value: percentage },
+                        value: 90,
+                        duration: 1500,
+                        easing: 'easeOutQuad',
+                        update: (anim) => {
+                            percentage = Math.round(anim.animatables[0].target.value);
+                            percentageElement.textContent = `${percentage}%`;
+                        },
+                        complete: () => resolve()
+                    });
+                });
+            };
+
+            const minDurationPromise = new Promise(resolve => setTimeout(resolve, 800));
+            const maxDurationPromise = new Promise(resolve => setTimeout(resolve, 8000));
+            const animationPromise = animatePercentage();
+            let initializationSuccess = true;
+
+            try {
+                debugLog('Initializing Planet Beauty AI Assistant');
+                await new Promise(resolve => setTimeout(resolve, 800));
+            } catch (error) {
+                console.error('Initialization error:', error);
+                debugLog('Initialization error', error);
+                percentageElement.textContent = 'Error';
+                percentageElement.style.color = '#dc2626';
+                addMessage("Sorry, I couldn't initialize properly. Please refresh the page.", 'bot');
+                initializationSuccess = false;
+            } finally {
+                try {
+                    await generateSuggestedQuestions();
+                } catch (error) {
+                    debugLog('Failed to generate suggested questions during init', error);
+                }
+                await Promise.race([Promise.all([minDurationPromise, animationPromise]), maxDurationPromise]);
+                await anime({
+                    targets: { value: percentage },
+                    value: 100,
+                    duration: 200,
+                    easing: 'easeOutQuad',
+                    update: (anim) => {
+                        percentageElement.textContent = `${Math.round(anim.animatables[0].target.value)}%`;
+                    }
+                }).finished;
                 preloader.style.opacity = '0';
-                setTimeout(() => preloader.remove(), 500);
-            }, 1000);
+                setTimeout(() => {
+                    if (preloader && preloader.parentNode) {
+                        preloader.remove();
+                        debugLog('Preloader removed', { timedOut: !initializationSuccess });
+                    }
+                }, 400);
+            }
 
             anime({
                 targets: 'header',
-                translateY: [-20, 0],
+                translateY: [-15, 0],
                 opacity: [0, 1],
-                duration: 800,
+                duration: 600,
                 easing: 'easeOutQuad'
             });
-
-            await generateSuggestedQuestions();
 
             chatInput.addEventListener('keyup', handleInputKeyup);
             chatInput.addEventListener('input', handleInputChange);
             sendBtn.addEventListener('click', () => {
                 sendMessage();
-                gtag('event', 'send_message', { event_category: 'Chatbot', event_label: chatInput.value });
+                if (typeof gtag === 'function') {
+                    gtag('event', 'send_message', { event_category: 'Chatbot', event_label: chatInput.value });
+                }
             });
             chatInput.focus();
             updateSendButtonState();
-            preloadImages();
         });
 
-        // --- Suggested Questions ---
         async function generateSuggestedQuestions() {
             try {
                 const questions = await fetchSuggestedQuestions();
                 displaySuggestedQuestions(questions);
             } catch (error) {
                 console.error('Failed to generate suggested questions:', error);
+                debugLog('Suggested questions error', error);
                 displaySuggestedQuestions(FALLBACK_QUESTIONS);
             }
         }
 
         async function fetchSuggestedQuestions() {
+            const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyCpI-eNfqWk_ZiK2qHOj_tD2NzeAJ_U398`;
             const prompt = {
                 contents: [{
                     role: 'user',
                     parts: [{
-                        text: `Generate 4 concise, varied, and helpful beauty-related questions for a chatbot. Questions should be relevant to skincare, haircare, or makeup, addressing common user needs (e.g., product recommendations for specific skin types or hair concerns). Return the response as a JSON array of strings. Example:
-                        ["What's the best moisturizer for oily skin?", "Can you recommend a shampoo for dry hair?", "What foundation suits sensitive skin?", "Which serum helps with fine lines?"]`
+                        text: `Generate 5 concise, varied beauty-related questions for a chatbot exclusive to Planet Beauty (${PLANET_BEAUTY_DOMAIN}). Questions MUST focus on products likely available in the Planet Beauty catalog and address specific user concerns (e.g., skin type, accessibility, devices, 2025 trends like sustainability or inclusivity). Return ONLY a valid JSON array of 5 strings.`
                     }]
                 }],
                 generationConfig: {
@@ -487,133 +697,90 @@
                 ]
             };
 
-            const res = await axios.post(GEMINI_API_URL, prompt, {
-                headers: { 'Content-Type': 'application/json' },
-                timeout: API_TIMEOUT
-            });
+            try {
+                const res = await axios.post(GEMINI_API_URL, prompt, {
+                    headers: { 'Content-Type': 'application/json' },
+                    timeout: API_TIMEOUT
+                });
 
-            if (res.data && res.data.candidates && res.data.candidates[0] &&
-                res.data.candidates[0].content && res.data.candidates[0].content.parts &&
-                res.data.candidates[0].content.parts[0] && res.data.candidates[0].content.parts[0].text) {
-                const responseText = res.data.candidates[0].content.parts[0].text;
-                try {
-                    const questions = JSON.parse(responseText);
-                    if (Array.isArray(questions) && questions.length >= 4) {
-                        return questions.slice(0, 4);
+                if (res.data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+                    const responseText = res.data.candidates[0].content.parts[0].text;
+                    try {
+                        const cleanedText = responseText.replace(/^```json\s*|```$/g, '').trim();
+                        const questions = JSON.parse(cleanedText);
+                        if (Array.isArray(questions) && questions.length >= 5 && questions.every(q => typeof q === 'string' && q.trim())) {
+                            return questions.slice(0, 5);
+                        }
+                        throw new Error('Invalid questions format');
+                    } catch (parseError) {
+                        console.error('JSON Parse Error:', parseError, 'Raw text:', responseText);
+                        debugLog('Suggested questions JSON parse error', { error: parseError.message, raw: responseText });
+                        return FALLBACK_QUESTIONS;
                     }
-                } catch (parseError) {
-                    console.error('JSON Parse Error for questions:', parseError);
                 }
+                throw new Error('No valid response from API');
+            } catch (error) {
+                debugLog('Suggested questions fetch error', { error: error.message });
+                return FALLBACK_QUESTIONS;
             }
-            throw new Error('Failed to fetch valid questions.');
         }
 
         function displaySuggestedQuestions(questions) {
             examplesContainer.innerHTML = '';
+            if (!Array.isArray(questions)) {
+                console.error("Cannot display suggestions: not an array.", questions);
+                questions = FALLBACK_QUESTIONS;
+            }
             questions.forEach((question, index) => {
+                if (typeof question !== 'string' || !question.trim()) {
+                    console.warn(`Skipping invalid suggestion at index ${index}:`, question);
+                    return;
+                }
                 const chip = document.createElement('div');
                 chip.className = 'example-chip';
                 chip.setAttribute('data-q', question);
                 chip.setAttribute('role', 'button');
+                chip.tabIndex = 0;
                 chip.setAttribute('aria-label', `Ask: ${question}`);
                 chip.textContent = question;
                 chip.addEventListener('click', handleExampleClick);
                 chip.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter' || e.key === ' ') handleExampleClick(e);
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleExampleClick(e);
+                    }
                 });
                 examplesContainer.appendChild(chip);
             });
 
             anime({
                 targets: '.example-chip',
-                translateX: [-20, 0],
+                translateX: [-15, 0],
                 opacity: [0, 1],
-                delay: anime.stagger(100),
-                duration: 600,
+                delay: anime.stagger(80),
+                duration: 500,
                 easing: 'easeOutQuad'
             });
         }
 
-        // --- Utilities ---
-        function isValidImageUrl(url) {
-            return new Promise((resolve) => {
-                if (!url || typeof url !== 'string' || !url.match(/^https?:\/\/.*\.(jpg|jpeg|png|gif|webp)$/i)) {
-                    return resolve(false);
-                }
-                if (imageCache[url] === true) return resolve(true);
-                if (imageCache[url] === false) return resolve(false);
-                const img = new Image();
-                const timeout = setTimeout(() => {
-                    img.src = '';
-                    imageCache[url] = false;
-                    localStorage.setItem('imageCache', JSON.stringify(imageCache));
-                    resolve(false);
-                }, IMAGE_TIMEOUT);
-                img.onload = () => {
-                    clearTimeout(timeout);
-                    imageCache[url] = true;
-                    localStorage.setItem('imageCache', JSON.stringify(imageCache));
-                    resolve(true);
-                };
-                img.onerror = () => {
-                    clearTimeout(timeout);
-                    imageCache[url] = false;
-                    localStorage.setItem('imageCache', JSON.stringify(imageCache));
-                    resolve(false);
-                };
-                img.src = url;
-            });
-        }
-
-        function formatProductUrl(productName) {
-            if (!productName) return '#';
-            return 'https://www.planetbeauty.com/products/' +
-                productName.toLowerCase()
-                    .replace(/[^\w\s-]/g, '')
-                    .trim()
-                    .replace(/\s+/g, '-')
-                    .replace(/-+/g, '-');
-        }
-
-        function getBackupImage(query) {
-            const queryLower = query.toLowerCase();
-            for (const [category, keywords] of Object.entries(categoryKeywords)) {
-                if (keywords.some(keyword => queryLower.includes(keyword))) {
-                    const imageArray = backupImages[category];
-                    if (imageArray && imageArray.length > 0) {
-                        return imageArray[Math.floor(Math.random() * imageArray.length)];
-                    }
-                }
-            }
-            return backupImages.default;
-        }
-
-        function preloadImages() {
-            const preloadImages = products.map(p => p.image).filter(Boolean);
-            preloadImages.forEach(src => {
-                const link = document.createElement('link');
-                link.rel = 'preload';
-                link.as = 'image';
-                link.href = src;
-                document.head.appendChild(link);
-            });
-        }
-
-        // --- Event Handlers ---
         function handleExampleClick(event) {
-            const query = event.target.getAttribute('data-q');
+            const query = event.currentTarget.getAttribute('data-q');
             if (query) {
                 chatInput.value = query;
                 updateSendButtonState();
                 sendMessage();
-                gtag('event', 'example_chip_click', { event_category: 'Chatbot', event_label: query });
+                if (typeof gtag === 'function') {
+                    gtag('event', 'example_chip_click', { event_category: 'Chatbot', event_label: query });
+                }
             }
         }
 
         function handleInputKeyup(event) {
             if (event.key === 'Enter' && !sendBtn.disabled) {
                 sendMessage();
-                gtag('event', 'send_message', { event_category: 'Chatbot', event_label: chatInput.value });
+                if (typeof gtag === 'function') {
+                    gtag('event', 'send_message_enter', { event_category: 'Chatbot', event_label: chatInput.value });
+                }
             }
         }
 
@@ -625,15 +792,38 @@
             sendBtn.disabled = chatInput.value.trim() === '';
         }
 
-        // --- Core Functions ---
+        function getConversationHistory() {
+            const history = [];
+            const messages = chatArea.querySelectorAll('.user-message, .bot-message');
+            for (let i = Math.max(0, messages.length - 12); i < messages.length; i++) {
+                const msg = messages[i];
+                const role = msg.classList.contains('user-message') ? 'user' : 'assistant';
+                const content = msg.textContent;
+                const entry = { role, content };
+                if (role === 'assistant' && i === messages.length - 1 && lastRecommendedProducts.length > 0) {
+                    entry.products = lastRecommendedProducts;
+                }
+                history.push(entry);
+            }
+            return history;
+        }
+
         async function sendMessage() {
+            const now = Date.now();
+            if (now - lastMessageTime < RATE_LIMIT_MS) {
+                displayError("Please wait a moment before sending another message.");
+                return;
+            }
+            lastMessageTime = now;
+
             const rawMessage = chatInput.value.trim();
             if (!rawMessage) return;
-            const message = DOMPurify.sanitize(rawMessage);
 
+            const message = DOMPurify.sanitize(rawMessage, { USE_PROFILES: { html: false } });
             addMessage(message, 'user');
-            const userMessageEntry = { role: 'user', parts: [{ text: message }] };
-            conversationHistory.push(userMessageEntry);
+
+            conversationHistory = getConversationHistory();
+            debugLog('Conversation history sent', conversationHistory);
 
             chatInput.value = '';
             updateSendButtonState();
@@ -643,18 +833,31 @@
             showTypingIndicator();
 
             try {
-                const response = await callGeminiAPI(userMessageEntry);
-                processResponse(response, message);
-            } catch (error) {
-                console.error('Error:', error);
+                const encodedHistory = safeEncodeURIComponent(JSON.stringify(conversationHistory));
+                const res = await axios.get(`${WEB_APP_URL}?action=search&query=${encodeURIComponent(message)}&conversationHistory=${encodedHistory}`, {
+                    timeout: API_TIMEOUT
+                });
+                const { text, products, query_type, search_criteria } = res.data;
+                debugLog('Search response', { query_type, text, product_count: products.length, products: products.map(p => p.name), search_criteria });
                 hideTypingIndicator();
-                displayError("Sorry, I encountered an issue. Please try again or browse our products below:");
-                const fallbackProducts = fallbackSearch(message);
-                if (fallbackProducts.length > 0) {
-                    fallbackProducts.forEach(p => addProductCard(p, message));
-                } else {
-                    addMessage("I couldn't find relevant products. Try another query!", 'bot');
+                addMessage(text, 'bot');
+                conversationHistory.push({ role: 'assistant', content: text, products });
+                if (products && products.length > 0) {
+                    lastRecommendedProducts = products.map(p => ({ name: p.name, brand: p.brand, category: p.category }));
+                    debugLog('Updated lastRecommendedProducts', lastRecommendedProducts);
+                    addProductSection(products, message);
                 }
+            } catch (error) {
+                console.error('Error during message processing:', error);
+                debugLog('Message processing error', { error: error.message });
+                hideTypingIndicator();
+                let errorMessage = "I encountered an issue. Please try again.";
+                if (error.message.includes('timed out')) {
+                    errorMessage = "The request timed out. Check your connection and try again.";
+                } else if (error.message.includes('Invalid')) {
+                    errorMessage = "Please clarify your request, like specifying a product type (e.g., skincare or makeup).";
+                }
+                displayError(errorMessage);
             } finally {
                 chatInput.disabled = false;
                 updateSendButtonState();
@@ -662,317 +865,81 @@
             }
         }
 
-        async function callGeminiAPI(lastUserMessage) {
-            if (conversationHistory.length > MAX_HISTORY) {
-                conversationHistory = conversationHistory.slice(-MAX_HISTORY);
-            }
-
-            const prompt = createPrompt();
-            const payload = {
-                contents: prompt,
-                generationConfig: {
-                    temperature: 0.4,
-                    topP: 0.95,
-                    topK: 40,
-                    maxOutputTokens: 1024,
-                    responseMimeType: 'application/json'
-                },
-                safetySettings: [
-                    { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
-                    { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
-                    { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
-                    { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" }
-                ]
-            };
-
-            try {
-                const res = await axios.post(GEMINI_API_URL, payload, {
-                    headers: { 'Content-Type': 'application/json' },
-                    timeout: API_TIMEOUT
-                });
-
-                if (res.data && res.data.candidates && res.data.candidates[0] &&
-                    res.data.candidates[0].content && res.data.candidates[0].content.parts &&
-                    res.data.candidates[0].content.parts[0] && res.data.candidates[0].content.parts[0].text) {
-                    const responseText = res.data.candidates[0].content.parts[0].text;
-                    let parsedResponse;
-                    try {
-                        parsedResponse = JSON.parse(responseText);
-                        conversationHistory.push({ role: 'model', parts: [{ text: responseText }] });
-                        return parsedResponse;
-                    } catch (parseError) {
-                        console.error('JSON Parse Error:', parseError);
-                        const fallbackResponse = { text: responseText, query_type: 'other', products: [] };
-                        conversationHistory.push({ role: 'model', parts: [{ text: responseText }] });
-                        return fallbackResponse;
-                    }
-                } else if (res.data && res.data.promptFeedback && res.data.promptFeedback.blockReason) {
-                    throw new Error(`Request blocked: ${res.data.promptFeedback.blockReason}. Please rephrase your query.`);
-                } else {
-                    throw new Error('Unexpected response format.');
-                }
-            } catch (error) {
-                if (error.response) {
-                    throw new Error(`API Error: ${error.response.status} - ${error.response.data?.error?.message || 'Unknown error'}`);
-                } else if (error.request) {
-                    throw new Error('Request timed out.');
-                } else {
-                    throw new Error(`Request error: ${error.message}`);
-                }
-            }
-        }
-
-        function createPrompt() {
-            const systemInstruction = {
-                role: 'user',
-                parts: [{
-                    text: `You are a friendly AI assistant for Planet Beauty. Your goal is to assist users with beauty product queries and engage in natural conversation. For each user message, determine the query type and respond accordingly.
-
-- If the user is greeting or engaging in casual conversation (e.g., "hi," "hello," "how are you"), set "query_type": "greeting" and respond with a friendly message without recommending products.
-- If the user is asking for product recommendations or mentioning a beauty concern, set "query_type": "product" and provide a concise response (max 150 words) along with 1-3 product recommendations in the "products" array.
-- For other types of messages, set "query_type": "other" and respond appropriately.
-
-Always include "text", "query_type", and "products" in your JSON response. Use conversation history for context.
-
-Examples:
-1. User: Hi
-Assistant: {"text": "Hello! How can I assist you with your beauty needs today?", "query_type": "greeting", "products": []}
-2. User: I need a moisturizer for dry skin
-Assistant: {"text": "For dry skin, try these: ✨", "query_type": "product", "products": [{"name": "CeraVe Moisturizing Cream", "description": "Rich cream with ceramides.", "price": "$17.99", "image": "https://www.cerave.com/image.png", "url": "https://www.planetbeauty.com/products/cerave-moisturizing-cream"}]}
-3. User: Thank you!
-Assistant: {"text": "You're welcome! Anything else I can help with?", "query_type": "other", "products": []}
-4. User: Bye
-Assistant: {"text": "Goodbye! Have a beautiful day!", "query_type": "greeting", "products": []}
-5. User: Hi, can you recommend a shampoo for oily hair?
-Assistant: {"text": "Hi! For oily hair, try these shampoos: ✨", "query_type": "product", "products": [{"name": "Olaplex No. 4 Bond Maintenance Shampoo", "description": "Repairs and strengthens hair bonds.", "price": "$30.00", "image": "https://olaplex.com/image.png", "url": "https://www.planetbeauty.com/products/olaplex-no-4-bond-maintenance-shampoo"}]}`
-                }]
-            };
-            return [systemInstruction, ...conversationHistory];
-        }
-
-        function fallbackSearch(query) {
-            const queryLower = query.toLowerCase();
-            const keywords = queryLower.split(/\s+/).filter(word => word.length > 2 && !['the', 'a', 'an', 'is', 'for', 'what', 'can', 'you', 'recommend', 'find', 'me', 'i', 'need'].includes(word));
-
-            let categoryMatches = [];
-            for (const [category, catKeywords] of Object.entries(categoryKeywords)) {
-                if (catKeywords.some(kw => queryLower.includes(kw))) {
-                    const productIds = productCategories[category] || [];
-                    productIds.forEach(id => {
-                        const product = products.find(p => p.id === id);
-                        if (product && !categoryMatches.some(pm => pm.id === product.id)) {
-                            categoryMatches.push(product);
-                        }
-                    });
-                }
-            }
-            if (categoryMatches.length >= 2) return categoryMatches.slice(0, 3);
-
-            const scoredProducts = products.map(product => {
-                let score = 0;
-                const nameLower = product.name.toLowerCase();
-                const descLower = product.description.toLowerCase();
-                if (categoryMatches.some(pm => pm.id === product.id)) score += 5;
-                keywords.forEach(term => {
-                    if (nameLower.includes(term)) score += 3;
-                    if (descLower.includes(term)) score += 1;
-                });
-                return { product, score };
-            });
-
-            const relevantProducts = scoredProducts
-                .filter(item => item.score > 0)
-                .sort((a, b) => b.score - a.score)
-                .map(item => item.product);
-
-            const combined = [...categoryMatches];
-            relevantProducts.forEach(p => {
-                if (!combined.some(cp => cp.id === p.id)) combined.push(p);
-            });
-
-            return combined.slice(0, 3);
-        }
-
-        function processResponse(response, userQuery) {
-            hideTypingIndicator();
-
-            if (response && response.text) {
-                addMessage(DOMPurify.sanitize(response.text), 'bot');
-                updateUserProfile(response.text);
-            } else {
-                addMessage("Here's what I found:", 'bot');
-            }
-
-            let productsToShow = [];
-            const queryType = response.query_type || 'other'; // Default to 'other' if not provided
-
-            if (response && response.products && response.products.length > 0) {
-                productsToShow = response.products.map(p => ({
-                    name: p.name || "Unknown Product",
-                    description: p.description || "No description available.",
-                    price: p.price || "Price not available",
-                    image: p.image || getBackupImage(p.name || userQuery),
-                    url: p.url && p.url.startsWith('https://www.planetbeauty.com/products/') ? p.url : formatProductUrl(p.name),
-                    id: products.find(prod => prod.name === p.name)?.id || `api-${Date.now()}`
-                }));
-            } else if (queryType === 'product') {
-                console.log("API returned no products for product query, using fallback search.");
-                productsToShow = fallbackSearch(userQuery);
-                if (productsToShow.length === 0) {
-                    addMessage("I couldn't find specific products for that, but perhaps browse our categories?", 'bot');
-                }
-            }
-
-            if (productsToShow.length > 0) {
-                productsToShow.forEach(p => addProductCard(p, userQuery));
-            }
-        }
-
-        // --- UI Functions ---
         function addMessage(text, sender) {
-            const div = document.createElement('div');
-            div.className = sender === 'user' ? 'user-message' : 'bot-message';
-            div.innerHTML = text;
-            chatArea.appendChild(div);
-            anime({
-                targets: div,
-                translateX: sender === 'user' ? [20, 0] : [-20, 0],
-                opacity: [0, 1],
-                duration: 400,
-                easing: 'easeOutQuad'
-            });
-            scrollToBottom();
+            const messageDiv = document.createElement('div');
+            messageDiv.className = sender === 'user' ? 'user-message animate-fade-in' : 'bot-message animate-fade-in';
+            messageDiv.innerHTML = DOMPurify.sanitize(text);
+            chatArea.appendChild(messageDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
         }
 
         function showTypingIndicator() {
-            hideTypingIndicator();
-            const div = document.createElement('div');
-            div.id = 'typing-indicator';
-            div.className = 'bot-message';
-            div.innerHTML = '<span>Thinking</span><span class="typing-dots">.</span>';
-            chatArea.appendChild(div);
-            scrollToBottom();
-            let dotCount = 1;
-            const intervalId = setInterval(() => {
-                dotCount = (dotCount % 3) + 1;
-                div.querySelector('.typing-dots').textContent = '.'.repeat(dotCount);
-            }, 400);
-            div.dataset.intervalId = intervalId;
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'typing-indicator';
+            typingDiv.className = 'bot-message animate-fade-in';
+            typingDiv.innerHTML = '<span>Thinking</span><span class="dot dot-1"></span><span class="dot dot-2"></span><span class="dot dot-3"></span>';
+            chatArea.appendChild(typingDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
         }
 
         function hideTypingIndicator() {
-            const indicator = document.getElementById('typing-indicator');
-            if (indicator) {
-                const intervalId = indicator.dataset.intervalId;
-                if (intervalId) clearInterval(parseInt(intervalId));
-                indicator.remove();
+            const typingDiv = document.getElementById('typing-indicator');
+            if (typingDiv) {
+                typingDiv.remove();
             }
         }
 
         function displayError(message) {
             const errorDiv = document.createElement('div');
-            errorDiv.className = 'error-message';
-            errorDiv.innerHTML = DOMPurify.sanitize(`
-                ${message}
-                <button class="retry-btn mt-2 text-pink-600 underline" aria-label="Retry request">Try Again</button>
-            `);
-            errorDiv.querySelector('.retry-btn').addEventListener('click', () => {
-                if (chatInput.value.trim()) sendMessage();
-            });
+            errorDiv.className = 'error-message animate-fade-in';
+            errorDiv.innerHTML = DOMPurify.sanitize(`${message} <button class="retry-btn" onclick="document.getElementById('chat-input').focus()">Retry</button>`);
             chatArea.appendChild(errorDiv);
-            scrollToBottom();
+            chatArea.scrollTop = chatArea.scrollHeight;
         }
 
-        async function addProductCard(p, queryContext) {
-            const card = document.createElement('a');
-            card.href = p.url || formatProductUrl(p.name);
-            card.target = '_blank';
-            card.rel = 'noopener noreferrer';
-            card.className = 'product-card';
-            card.addEventListener('click', () => {
-                gtag('event', 'product_click', { event_category: 'Chatbot', event_label: p.name });
-            });
+        function addProductSection(products, query) {
+            debugLog('Displaying products for query', { query, products: products.map(p => p.name) });
+            const sectionDiv = document.createElement('div');
+            sectionDiv.className = 'product-section animate-fade-in';
+            sectionDiv.innerHTML = '<div class="font-semibold text-sm mb-2">Recommended Products:</div>';
+            products.forEach((product, index) => {
+                const card = document.createElement('a');
+                card.href = product.url;
+                card.className = 'product-card';
+                card.setAttribute('target', '_blank');
+                card.setAttribute('rel', 'noopener noreferrer');
+                card.setAttribute('aria-label', `View ${product.name} on Planet Beauty`);
 
-            const imageContainer = document.createElement('div');
-            imageContainer.className = 'image-loading';
-            const spinner = document.createElement('div');
-            spinner.className = 'spinner';
-            imageContainer.appendChild(spinner);
-            card.appendChild(imageContainer);
-
-            const img = document.createElement('img');
-            img.alt = p.name || "Product Image";
-            img.className = 'product-image lazyload';
-            img.dataset.src = p.image || getBackupImage(p.name || queryContext);
-            img.style.display = 'none';
-
-            const imageSources = [
-                p.image,
-                getBackupImage(p.name || queryContext),
-                backupImages.default
-            ].filter(url => url && typeof url === 'string' && url.trim() !== '');
-
-            let currentAttempt = 0;
-            const tryLoadNextImage = async () => {
-                if (currentAttempt >= imageSources.length) {
-                    console.warn(`Failed to load any image for product: ${p.name}`);
-                    imageContainer.innerHTML = `
-                        <div class="image-placeholder">
-                            <span>Image Unavailable</span>
-                        </div>`;
-                    return;
+                let imageHtml = `<div class="image-placeholder">Image not available</div>`;
+                if (product.image) {
+                    imageHtml = `<img src="${product.image}" alt="${product.name}" class="product-image lazyload">`;
                 }
-                const url = imageSources[currentAttempt];
-                if (await isValidImageUrl(url)) {
-                    img.dataset.src = url;
-                    img.classList.add('lazyload');
-                    if (img.classList.contains('lazyloaded')) {
-                        imageContainer.replaceWith(img);
-                        img.style.display = 'block';
+
+                const truncatedName = product.name.length > 50 ? product.name.substring(0, 47) + '...' : product.name;
+                const truncatedDescription = product.description && product.description.length > 100 ? product.description.substring(0, 97) + '...' : product.description || 'No description available';
+
+                card.innerHTML = `
+                    ${imageHtml}
+                    <div class="product-info">
+                        <div class="product-name">${DOMPurify.sanitize(truncatedName)}</div>
+                        <div class="product-description">${DOMPurify.sanitize(truncatedDescription)}</div>
+                        <div class="product-price">${DOMPurify.sanitize(product.price || 'Price not available')}</div>
+                    </div>
+                `;
+                sectionDiv.appendChild(card);
+
+                card.addEventListener('click', (e) => {
+                    if (!card.href) {
+                        e.preventDefault();
+                        debugLog('Product card click failed: missing URL', { product: product.name });
                     }
-                } else {
-                    currentAttempt++;
-                    tryLoadNextImage();
-                }
-            };
-
-            img.addEventListener('load', () => {
-                imageContainer.replaceWith(img);
-                img.style.display = 'block';
+                    if (typeof gtag === 'function') {
+                        gtag('event', 'product_card_click', { event_category: 'Chatbot', event_label: product.name });
+                    }
+                });
             });
-
-            img.addEventListener('error', () => {
-                console.warn(`Image failed to load: ${img.dataset.src}`);
-                currentAttempt++;
-                tryLoadNextImage();
-            });
-
-            await tryLoadNextImage();
-
-            const infoDiv = document.createElement('div');
-            infoDiv.className = 'product-info';
-            infoDiv.innerHTML = DOMPurify.sanitize(`
-                <div class="product-name">${p.name || "Unnamed Product"}</div>
-                <div class="product-description">${p.description || "Click for details."}</div>
-                <div class="product-price">${p.price || ""}</div>
-            `);
-            card.appendChild(infoDiv);
-            chatArea.appendChild(card);
-            scrollToBottom();
-        }
-
-        function scrollToBottom() {
-            requestAnimationFrame(() => {
-                chatArea.scrollTop = chatArea.scrollHeight;
-            });
-        }
-
-        function updateUserProfile(botResponseText) {
-            const textLower = botResponseText.toLowerCase();
-            if (textLower.includes('dry skin')) userProfile.skinType = 'Dry';
-            if (textLower.includes('oily skin')) userProfile.skinType = 'Oily';
-            if (textLower.includes('acne')) userProfile.concerns.push('Acne');
-            console.log('Updated Profile:', userProfile);
+            chatArea.appendChild(sectionDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
         }
     </script>
 </body>
