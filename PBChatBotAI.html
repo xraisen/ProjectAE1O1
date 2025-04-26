@@ -10,9 +10,7 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Axios is NO LONGER NEEDED for JSONP calls to Apps Script -->
-    <!-- Axios *might* still be used for generateSuggestedQuestions if preferred, but fetch is used below -->
-    <!-- <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script> -->
+    <!-- Axios is NOT needed for JSONP calls to Apps Script -->
     <script src="https://cdn.jsdelivr.net/npm/lazysizes@5.3.2/lazysizes.min.js" async></script>
     <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js"></script>
@@ -281,14 +279,14 @@
     <script>
         // --- Configuration ---
         // CRITICAL: Replace with your DEPLOYED Google Apps Script Web App URL
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyDHxHWAwUpnFmaY8cXs6SnrVMAzBVjvofKK5I-l9IeJmOr-dg_1tz9bxynXL-cGYCD/exec'; // <--- USE YOUR LATEST DEPLOYMENT URL
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzJlXluVk1JL0xKQJ3D3qo5lS-Nz6TwllF8g-3dTQJYrBurhCS1ONv4jRPhmTZeLhPy/exec'; // <--- USE YOUR LATEST DEPLOYMENT URL
 
         // Client-side Gemini Key (Optional: for suggested questions - BEWARE of exposure)
-        const CLIENT_GEMINI_API_KEY = null; // Set to your key or null 'AIzaSyCpI-eNfqWk_ZiK2qHOj_tD2NzeAJ_U398';
+        const CLIENT_GEMINI_API_KEY = 'AIzaSyCpI-eNfqWk_ZiK2qHOj_tD2NzeAJ_U398'; // Set to your key or null 'AIzaSyCpI-eNfqWk_ZiK2qHOj_tD2NzeAJ_U398';
 
         const API_TIMEOUT = 15000; // Timeout for suggested questions API (milliseconds)
         const PLANET_BEAUTY_DOMAIN = 'https://www.planetbeauty.com'; // Used in prompts/URLs
-        const DEBUG_MODE = true; // Set to false for production
+        const DEBUG_MODE = false; // Set to false for production
         const RATE_LIMIT_MS = 1000; // Min time between user messages
 
         const FALLBACK_QUESTIONS = [
@@ -406,7 +404,7 @@
         }
 
 
-        // --- Suggested Questions (FIXED to use fetch API) ---
+        // --- Suggested Questions (Using fetch API) ---
         async function generateSuggestedQuestions() {
             debugLog('Attempting to fetch suggested questions (Client-side)...');
             const controller = new AbortController(); // For timeout
@@ -436,14 +434,12 @@
                 clearTimeout(timeoutId); // Clear the timeout if fetch completes
 
                 if (!response.ok) {
-                    // Throw error for bad HTTP status codes (4xx, 5xx)
-                    const errorText = await response.text(); // Try to get error text
+                    const errorText = await response.text();
                     throw new Error(`HTTP error! status: ${response.status} ${response.statusText}. Body: ${errorText.substring(0, 200)}`);
                 }
 
-                const data = await response.json(); // Parse the JSON response body
+                const data = await response.json();
 
-                // Process the response data
                 debugLog('Client-side Gemini response for suggestions', data);
                 if (data?.promptFeedback?.blockReason) throw new Error(`Suggestion generation blocked: ${data.promptFeedback.blockReason}`);
 
@@ -454,10 +450,9 @@
                         if (Array.isArray(questions) && questions.length >= 4 && questions.every(q => typeof q === 'string' && q.trim())) {
                              displaySuggestedQuestions(questions.slice(0, 4));
                              debugLog('Successfully fetched and displayed suggested questions.');
-                             return; // Exit successfully
+                             return;
                         } throw new Error('Invalid questions format received.');
                     } catch (parseError) {
-                        // Handle cases where the response text isn't valid JSON
                         throw new Error(`JSON Parse Error: ${parseError.message}. Raw: ${responseText.substring(0,100)}`);
                     }
                 }
@@ -466,17 +461,15 @@
                 throw new Error('No valid response content from suggestion API.');
 
             } catch (error) {
-                clearTimeout(timeoutId); // Ensure timeout is cleared on error too
+                clearTimeout(timeoutId);
                  if (error.name === 'AbortError') {
-                     // Handle timeout specifically
                      console.error('Failed to generate suggested questions: Request timed out.');
                      debugLog('Suggested questions error (client-side)', { message: 'Request timed out' });
                  } else {
-                     // Handle other errors (network, HTTP, parsing, etc.)
                      console.error('Failed to generate suggested questions:', error);
                      debugLog('Suggested questions error (client-side)', { message: error.message });
                  }
-                displaySuggestedQuestions(FALLBACK_QUESTIONS); // Use fallback on any error
+                displaySuggestedQuestions(FALLBACK_QUESTIONS);
             }
         }
 
@@ -502,7 +495,7 @@
             if (query) {
                 chatInput.value = query;
                 updateSendButtonState();
-                sendMessage(query); // Send the message immediately using the main function
+                sendMessage(query);
                 debugLog('Example chip clicked', { query });
             }
         }
@@ -553,6 +546,7 @@
             const callbackName = 'jsonpCallback_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
             debugLog('Initiating JSONP request', { callback: callbackName });
 
+            // Define the global callback function *before* creating the script tag
             window[callbackName] = function(data) {
                 debugLog('JSONP response received', data);
                 try {
@@ -562,20 +556,23 @@
                      debugLog("Error processing JSONP response", { message: handlerError.message, stack: handlerError.stack });
                      displayError("Sorry, I had trouble processing the response.");
                 } finally {
+                    // Cleanup is crucial
                     delete window[callbackName];
                     const scriptTag = document.getElementById(callbackName);
-                    if (scriptTag?.parentNode) { // Check parentNode before removing
+                    if (scriptTag?.parentNode) {
                         scriptTag.parentNode.removeChild(scriptTag);
                         debugLog('Cleaned up JSONP script tag', { id: callbackName });
                     } else if (scriptTag) {
                          debugLog('Could not remove script tag, parentNode not found', { id: callbackName });
                     }
+                    // Re-enable input AFTER processing or error
                     chatInput.disabled = false;
                     updateSendButtonState();
                     chatInput.focus();
                 }
             };
 
+            // Create and append the script tag
             try {
                 if (!WEB_APP_URL || WEB_APP_URL.includes('YOUR_MACRO_ID')) {
                      throw new Error("Web App URL is not configured in the script.");
@@ -586,21 +583,23 @@
 
                 const requestUrl = `${WEB_APP_URL}?action=search&query=${encodedQuery}&conversationHistory=${encodedHistory}&callback=${callbackName}`;
                 debugLog('Sending JSONP request to backend', { urlLength: requestUrl.length });
-                 if (requestUrl.length > 7500) {
+                 if (requestUrl.length > 7500) { // Increased warning threshold
                      debugLog('Warning: Request URL is very long, might exceed limits.', { length: requestUrl.length });
                  }
 
                 const script = document.createElement('script');
-                script.id = callbackName;
+                script.id = callbackName; // Assign ID for easy removal
                 script.src = requestUrl;
                 script.onerror = function(event) { // Add event parameter
-                    // Log the event for more details if available
-                    console.error('JSONP script failed to load:', event);
-                    debugLog('JSONP script loading error', { url: requestUrl, errorEvent: event });
+                    console.error('JSONP script failed to load:', event); // Log the event object
+                    debugLog('JSONP script loading error', { url: requestUrl, errorEvent: event }); // Log event object
                     hideTypingIndicator();
-                    displayError("Failed to communicate with the server. Please check your connection or the server status.");
+                    // More specific error message based on common causes
+                    displayError("Failed to communicate with the server. Please check deployment permissions (set to 'Anyone') and ensure the correct URL is used.");
+                    // Cleanup in case of error
                     delete window[callbackName];
                     if (script.parentNode) script.parentNode.removeChild(script);
+                    // Re-enable input on error
                     chatInput.disabled = false;
                     updateSendButtonState();
                     chatInput.focus();
@@ -608,13 +607,16 @@
                 document.body.appendChild(script);
 
             } catch (error) {
+                // Catch errors during URL construction or script injection setup
                 console.error('Error setting up JSONP request:', error);
                 debugLog('Error setting up JSONP request', { message: error.message });
                 hideTypingIndicator();
                 displayError("An error occurred before sending the message.");
+                 // Re-enable input on setup error
                 chatInput.disabled = false;
                 updateSendButtonState();
                 chatInput.focus();
+                // Clean up potentially defined callback
                 delete window[callbackName];
             }
             // --- End JSONP Implementation ---
@@ -719,7 +721,6 @@
             sectionDiv.appendChild(titleDiv);
 
             products.forEach((product, index) => {
-                // Add check for product.image existence
                 if (!product || !product.name || !product.url) {
                     debugLog('Skipping invalid product object in display', { index, product_name: product?.name });
                     return;
@@ -748,7 +749,7 @@
                 card.setAttribute('aria-label', `View ${safeName} on Planet Beauty`);
 
                 let imageHtml = `<div class="image-placeholder"><i class="fas fa-image"></i></div>`;
-                // Check product.image before using it
+                // Use product.image (corrected field name)
                 if (product.image && typeof product.image === 'string' && product.image.startsWith('https')) {
                     imageHtml = `<img data-src="${product.image}" alt="${safeName}" class="product-image lazyload" onerror="this.parentElement.innerHTML = '<div class=\\'image-placeholder\\'><i class=\\'fas fa-image-slash\\'></i></div>'; this.onerror=null;">`;
                 } else {
@@ -796,16 +797,26 @@
 
             if (data !== undefined) {
                 try {
-                    const dataString = JSON.stringify(data, null, 2);
+                    // Handle potential circular structures or large objects safely
+                    const dataString = JSON.stringify(data, (key, value) => {
+                        // Basic circular reference check (might not catch all)
+                        if (typeof value === 'object' && value !== null) {
+                            if (seen.has(value)) { return '[Circular]'; }
+                            seen.add(value);
+                        }
+                        return value;
+                    }, 2); // Indent for readability
+                    var seen = new Set(); // Reset seen set for each stringify call
                     content += `<pre>${DOMPurify.sanitize(dataString)}</pre>`;
                 } catch (e) {
-                    content += ` <span style="color: #aaa;">[Data not serializable]</span>`;
+                    content += ` <span style="color: #aaa;">[Data not serializable: ${e.message}]</span>`;
                 }
             }
-            entry.innerHTML = content;
+            entry.innerHTML = content; // Assumes content is safe after sanitization
             debugContent.appendChild(entry);
             debugPanel.scrollTop = debugPanel.scrollHeight;
         }
+
 
         function safeEncodeURIComponent(str) {
             try {
