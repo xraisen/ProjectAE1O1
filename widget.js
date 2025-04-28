@@ -11,7 +11,7 @@
   // Configuration aligned with index.html
   const DEFAULT_CONFIG = {
     apiUrl:
-      "https://script.google.com/macros/s/AKfycbys0cIz4SYCFS3h7xue2TFPHBe8RiT94Bbgb0Gg0sg4fJF4OY-NoLUiCfxcvIFuStrS/exec",
+      "https://script.google.com/macros/s/AKfycbyjv_fyFQGYPOyt23FF6ilir4QrwN28DXDkpIi4WF5LgG_rIIGSuwhTUCAsiEBeqT5f/exec",
     primaryColor: "#e91e63", // --primary
     primaryDark: "#c2185b", // --primary-dark
     textColor: "#ffffff", // White for contrast
