@@ -8,7 +8,7 @@
   // Configuration
   const DEFAULT_CONFIG = {
     apiUrl:
-      "https://script.google.com/macros/s/AKfycbys0cIz4SYCFS3h7xue2TFPHBe8RiT94Bbgb0Gg0sg4fJF4OY-NoLUiCfxcvIFuStrS/exec", // Google Apps Script URL
+      "https://script.google.com/macros/s/AKfycbwxBPdBePvHxJLHzCiFEZaZupmtEepcAIZoTkJYEvELIiGRn6TFGuVedkKdzDyTa6YN/exec", // Google Apps Script URL
     primaryColor: "#e91e63",
     textColor: "#ffffff",
     position: "bottom-right",
