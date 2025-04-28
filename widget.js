@@ -1,7 +1,7 @@
 /**
  * Planet Beauty AI Chatbot Widget
- * Enhanced version with robust JSONP handling, aligned styling with index.html, and improved error handling.
- * Matches color theme and logic to index.html for consistency.
+ * Enhanced version with fixed JSONP callback handling for initial data fetch.
+ * Matches color theme and logic with index.html, optimized for Shopify.
  */
 
 ;(() => {
@@ -309,7 +309,7 @@
       }
       .ai-chatbot-typing-dot:nth-child(1) { animation: bounce 0.6s infinite ease-in-out; }
       .ai-chatbot-typing-dot:nth-child(2) { animation: bounce 0.6s infinite 0.1s ease-in-out; }
-      .ai-chatbot-typing-dot:nth-child(3) { animation: bouncedal 0.6s infinite 0.2s ease-in-out; }
+      .ai-chatbot-typing-dot:nth-child(3) { animation: bounce 0.6s infinite 0.2s ease-in-out; }
       .ai-chatbot-suggested-questions {
         display: flex;
         flex-wrap: wrap;
@@ -355,7 +355,7 @@
       }
       .ai-chatbot-input-field:focus {
         border-color: ${config.primaryDark};
-        box-shadow: 0 0 5px rgba(233, 30手段: 0.3s;
+        box-shadow: 0 0 5px rgba(233, 30, 99, 0.3);
       }
       .ai-chatbot-send-button {
         background-color: ${config.primaryColor};
@@ -529,8 +529,12 @@
 
     document.body.appendChild(widget);
 
-    // Fetch initial data
-    fetchInitialData();
+    // Fetch initial data after DOM is ready
+    if (document.readyState === "complete" || document.readyState === "interactive") {
+      fetchInitialData();
+    } else {
+      document.addEventListener("DOMContentLoaded", fetchInitialData);
+    }
 
     return {
       widget,
@@ -542,37 +546,27 @@
     };
   }
 
-  // Fetch initial welcome message and suggested questions
-  // Fetch initial welcome message and suggested questions
+  // Fetch initial welcome message and suggested questions (Fixed JSONP handling)
   function fetchInitialData() {
     const callbackName = `chatbotInitCallback_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
-    let script = null; // Initialize script variable
-    let timeoutId = null; // Variable to hold the timeout ID
+    let script;
+    let timeoutId;
 
-    // Define cleanup function within scope to access callbackName, script, timeoutId
-    function cleanup() {
-      // Clear the timeout just in case cleanup is called before timeout fires
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-        timeoutId = null; // Nullify the ID after clearing
+    // Define cleanup function
+    const cleanup = () => {
+      if (window[callbackName]) {
+        delete window[callbackName];
       }
-      // Remove the callback function from the window object safely
-      if (window.hasOwnProperty(callbackName)) {
-         try {
-             delete window[callbackName];
-         } catch (e) {
-             window[callbackName] = undefined; // Fallback for environments where delete might fail
-             console.warn(`Could not delete window.${callbackName}, setting to undefined.`, e);
-         }
-      }
-      // Remove the script tag from the DOM
       if (script && script.parentNode) {
         script.parentNode.removeChild(script);
-        script = null; // Nullify the script variable
       }
-    }
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
 
     try {
+      // Build URL
       const url = new URL(config.apiUrl);
       url.searchParams.append("action", "get_initial_data");
       if (config.apiKey) {
@@ -582,16 +576,11 @@
 
       // Define callback before appending script
       window[callbackName] = (data) => {
-        // IMPORTANT: Clear the timeout now that the callback has executed
-        if (timeoutId) {
-            clearTimeout(timeoutId);
-            timeoutId = null;
-        }
-
         try {
           if (data.error) {
-            addErrorMessage(`Error loading initial data: ${sanitizeText(data.error)}`); // Sanitize error
-            addMessage("Welcome to Planet Beauty! How can I help you today?", "bot");
+            console.error("Initial data error:", data.error);
+            addErrorMessage(`Error loading initial data: ${sanitizeText(data.error)}`);
+            addMessage(config.welcomeMessage, "bot");
           } else {
             addMessage(data.welcomeMessage || config.welcomeMessage, "bot");
             if (data.suggestedQuestions?.length > 0) {
@@ -600,56 +589,53 @@
           }
         } catch (error) {
           console.error("Error processing initial data:", error);
-          addErrorMessage("Failed to load initial data. Please try again.");
+          addErrorMessage("Failed to process initial data.");
+          addMessage(config.welcomeMessage, "bot");
         } finally {
-          // Clean up after processing
           cleanup();
         }
       };
 
+      // Create and append script
       script = document.createElement("script");
       script.src = url.toString();
       script.async = true;
 
+      // Handle script load errors
       script.onerror = () => {
-        // IMPORTANT: Clear the timeout if the script fails to load
-        if (timeoutId) {
-            clearTimeout(timeoutId);
-            timeoutId = null;
-        }
         console.error("Failed to load initial data script.");
-        addErrorMessage("Network error loading initial data.");
-        addMessage("Welcome to Planet Beauty! How can I help you today?", "bot");
-        // Clean up on error
+        addErrorMessage("Network error loading initial data. Please check your connection.");
+        addMessage(config.welcomeMessage, "bot");
         cleanup();
       };
 
-      document.head.appendChild(script);
+      // Ensure script loads after DOM is ready
+      if (document.head) {
+        document.head.appendChild(script);
+      } else {
+        console.error("Document head not available.");
+        addErrorMessage("Error initializing chatbot.");
+        addMessage(config.welcomeMessage, "bot");
+        cleanup();
+        return;
+      }
 
-      // Timeout: Only run error logic if the callback hasn't executed yet
+      // Set timeout
       timeoutId = setTimeout(() => {
-        // Check if the callback function *still exists*. If it does, it means
-        // neither the success nor the error handler has run and cleaned up.
-        if (window[callbackName]) {
-            console.warn(`Initial data request timed out for ${callbackName}.`);
-            addErrorMessage("Initial data request timed out.");
-            addMessage("Welcome to Planet Beauty! How can I help you today?", "bot");
-            // Perform cleanup because the request genuinely timed out
-            cleanup();
-        }
-        // If window[callbackName] doesn't exist, it means cleanup already happened
-        // (either via success or error), so do nothing more here.
-        timeoutId = null; // Nullify the ID after timeout logic runs
+        console.warn("Initial data request timed out.");
+        addErrorMessage("Initial data request timed out. Using default welcome message.");
+        addMessage(config.welcomeMessage, "bot");
+        cleanup();
       }, config.apiTimeout);
 
     } catch (error) {
-      console.error("Error setting up initial data fetch:", error); // Changed log message
-      addErrorMessage("Error initializing chatbot.");
-      addMessage("Welcome to Planet Beauty! How can I help you today?", "bot");
-      // Ensure cleanup happens even if setup fails (e.g., new URL fails)
+      console.error("Error setting up initial data fetch:", error);
+      addErrorMessage(`Error initializing chatbot: ${sanitizeText(error.message)}`);
+      addMessage(config.welcomeMessage, "bot");
       cleanup();
     }
   }
+
   // Add suggested questions
   function addSuggestedQuestions(questions) {
     if (!Array.isArray(questions) || questions.length === 0) return;
@@ -699,7 +685,7 @@
     elements.messagesArea.appendChild(messageEl);
   }
 
-  // Sanitize HTML (aligned with index.html)
+  // Sanitize HTML
   function sanitizeHtml(html) {
     if (typeof DOMPurify !== "undefined" && DOMPurify.sanitize) {
       return DOMPurify.sanitize(html, {
@@ -863,6 +849,20 @@
 
     const callbackName = `chatbotCallback_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
     let script;
+    let timeoutId;
+
+    // Define cleanup for sendMessage
+    const cleanup = () => {
+      if (window[callbackName]) {
+        delete window[callbackName];
+      }
+      if (script && script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
 
     try {
       const url = new URL(config.apiUrl);
@@ -900,31 +900,29 @@
         addErrorMessage("Network error sending message.", message);
         cleanup();
       };
-      document.head.appendChild(script);
 
-      setTimeout(() => {
-        if (window[callbackName]) {
-          hideTypingIndicator();
-          addErrorMessage("Request timed out.", message);
-          cleanup();
-        }
+      if (document.head) {
+        document.head.appendChild(script);
+      } else {
+        console.error("Document head not available.");
+        hideTypingIndicator();
+        addErrorMessage("Error sending message.", message);
+        cleanup();
+        return;
+      }
+
+      timeoutId = setTimeout(() => {
+        console.warn("Message request timed out.");
+        hideTypingIndicator();
+        addErrorMessage("Request timed out.", message);
+        cleanup();
       }, config.apiTimeout);
 
-      function cleanup() {
-        if (window[callbackName]) {
-          delete window[callbackName];
-        }
-        if (script?.parentNode) {
-          script.parentNode.removeChild(script);
-        }
-      }
     } catch (error) {
       console.error("Error sending message:", error);
       hideTypingIndicator();
-      addErrorMessage(`Error: ${error.message}`, message);
-      if (script?.parentNode) {
-        script.parentNode.removeChild(script);
-      }
+      addErrorMessage(`Error: ${sanitizeText(error.message)}`, message);
+      cleanup();
     }
   }
 
