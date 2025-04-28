@@ -1,6 +1,8 @@
 /**
  * Planet Beauty AI Chatbot Widget
- * Updated product card design to match clean look with underlined links.
+ * Updated to use fetch API with CORS instead of JSONP to comply with CSP.
+ * Product card displays quantitative match score (e.g., "Match: 40.5%").
+ * Clean design with underlined product name links, clickable cards.
  * Responsive: 100% width on mobile, 30% on desktop.
  * Matches color theme and logic with index.html, optimized for Shopify.
  */
@@ -54,7 +56,7 @@
   // Client-side cache
   const messageCache = new Map();
 
-  // Inject styles aligned with index.html and updated product card design
+  // Inject styles aligned with index.html and product card design
   function injectStyles() {
     const style = document.createElement("style");
     style.textContent = `
@@ -224,7 +226,6 @@
         background: ${config.cardBgLight};
         cursor: pointer;
         border: 1px solid ${config.borderLight};
-        /* Desktop: 30% of viewport width */
         width: 30vw;
         max-width: 400px;
       }
@@ -280,10 +281,16 @@
         color: ${config.primaryColor};
         margin-bottom: 0.2rem;
       }
+      .ai-chatbot-product-score {
+        font-size: 0.75rem;
+        color: #777;
+        margin-top: 0.1rem;
+      }
       .ai-chatbot-product-match {
-        font-size: 0.8rem;
+        font-size: 0.7rem;
         color: ${config.matchReasonColorLight};
-        font-style: normal;
+        margin-top: 0.1rem;
+        font-style: italic;
       }
       .ai-chatbot-typing {
         display: flex;
@@ -426,7 +433,7 @@
           transform: translateX(-50%) translateY(0) scale(1);
         }
         .ai-chatbot-product {
-          width: 100%; /* Full width on mobile */
+          width: 100%;
           max-width: none;
         }
         .ai-chatbot-product-image {
@@ -441,10 +448,19 @@
           font-size: 0.8rem;
           min-height: 2.4em;
         }
-        .ai-chatbot-product-price,
-        .ai-chatbot-product-match {
+        .ai-chatbot-product-price {
           font-size: 0.85rem;
         }
+        .ai-chatbot-product-score,
+        .ai-chatbot-product-match {
+          font-size: 0.75rem;
+        }
+      }
+      .ai-chatbot-widget.dark-mode .ai-chatbot-product-score {
+        color: #a0aec0;
+      }
+      .ai-chatbot-widget.dark-mode .ai-chatbot-product-match {
+        color: #a0aec0;
       }
     `;
     document.head.appendChild(style);
@@ -455,18 +471,15 @@
     const widget = document.createElement("div");
     widget.className = `ai-chatbot-widget ${config.position}`;
 
-    // Toggle button
     const toggle = document.createElement("button");
     toggle.className = "ai-chatbot-toggle";
     toggle.setAttribute("aria-label", "Open chat");
     toggle.innerHTML = getIconSvg(config.icon);
     toggle.addEventListener("click", toggleChat);
 
-    // Chat container
     const container = document.createElement("div");
     container.className = "ai-chatbot-container";
 
-    // Header
     const header = document.createElement("div");
     header.className = "ai-chatbot-header";
 
@@ -495,11 +508,9 @@
     header.appendChild(headerTitle);
     header.appendChild(headerActions);
 
-    // Messages area
     const messagesArea = document.createElement("div");
     messagesArea.className = "ai-chatbot-messages";
 
-    // Input area
     const inputArea = document.createElement("div");
     inputArea.className = "ai-chatbot-input";
 
@@ -527,18 +538,15 @@
     inputArea.appendChild(inputField);
     inputArea.appendChild(sendButton);
 
-    // Assemble container
     container.appendChild(header);
     container.appendChild(messagesArea);
     container.appendChild(inputArea);
 
-    // Assemble widget
     widget.appendChild(toggle);
     widget.appendChild(container);
 
     document.body.appendChild(widget);
 
-    // Delay fetchInitialData until window is fully loaded
     if (document.readyState === "complete") {
       setTimeout(fetchInitialData, 100);
     } else {
@@ -555,95 +563,53 @@
     };
   }
 
-  // Fetch initial welcome message and suggested questions
-  function fetchInitialData() {
-    const callbackName = `chatbotInitCallback_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
-    let script;
-    let timeoutId;
-
-    console.log(`[Chatbot] Registering callback: ${callbackName}`);
-
-    const cleanup = () => {
-      console.log(`[Chatbot] Cleaning up callback: ${callbackName}`);
-      if (window[callbackName]) {
-        delete window[callbackName];
-      }
-      if (script && script.parentNode) {
-        script.parentNode.removeChild(script);
-      }
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    };
-
+  // Fetch initial welcome message and suggested questions using fetch
+  async function fetchInitialData() {
     try {
-      const url = new URL(config.apiUrl);
-      url.searchParams.append("action", "get_initial_data");
-      if (config.apiKey) {
-        url.searchParams.append("apiKey", config.apiKey);
-      }
-      url.searchParams.append("callback", callbackName);
+      const payload = {
+        action: "get_initial_data",
+        apiKey: config.apiKey,
+      };
 
-      window[callbackName] = (data) => {
-        console.log(`[Chatbot] Callback ${callbackName} executed with data:`, data);
+      const response = await fetch(config.apiUrl, {
+        method: "POST",
+        mode: "cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(config.apiTimeout),
+      });
+
+      if (!response.ok) {
+        let errorText = `Error: ${response.status} ${response.statusText}`;
         try {
-          if (data.error) {
-            console.error("Initial data error:", data.error);
-            addErrorMessage(`Error loading initial data: ${sanitizeText(data.error)}`);
-            addMessage(config.welcomeMessage, "bot");
-          } else {
-            addMessage(data.welcomeMessage || config.welcomeMessage, "bot");
-            if (data.suggestedQuestions?.length > 0) {
-              addSuggestedQuestions(data.suggestedQuestions);
-            }
-          }
-        } catch (error) {
-          console.error("Error processing initial data:", error);
-          addErrorMessage(`Failed to process initial data: ${sanitizeText(error.message)}`);
-          addMessage(config.welcomeMessage, "bot");
-        } finally {
-          cleanup();
-        }
-      };
-
-      script = document.createElement("script");
-      script.src = url.toString();
-      script.async = true;
-
-      script.onerror = (event) => {
-        console.error(`[Chatbot] Failed to load script for ${callbackName}:`, event);
-        addErrorMessage("Network or CSP error loading initial data. Please check your connection or browser settings.");
-        addMessage(config.welcomeMessage, "bot");
-        cleanup();
-      };
-
-      script.onload = () => {
-        console.log(`[Chatbot] Script for ${callbackName} loaded successfully.`);
-      };
-
-      if (document.head) {
-        document.head.appendChild(script);
-        console.log(`[Chatbot] Script appended for ${callbackName}: ${url}`);
-      } else {
-        console.error("[Chatbot] Document head not available.");
-        addErrorMessage("Error initializing chatbot: Document head not found.");
-        addMessage(config.welcomeMessage, "bot");
-        cleanup();
-        return;
+          const errorData = await response.json();
+          errorText = errorData.error || errorText;
+        } catch (e) {}
+        throw new Error(errorText);
       }
 
-      timeoutId = setTimeout(() => {
-        console.warn(`[Chatbot] Initial data request timed out for ${callbackName}.`);
-        addErrorMessage("Initial data request timed out. Using default welcome message.");
-        addMessage(config.welcomeMessage, "bot");
-        cleanup();
-      }, config.apiTimeout);
+      const data = await response.json();
 
+      if (data.error) {
+        console.error("Initial data error:", data.error);
+        addErrorMessage(`Error loading initial data: ${sanitizeText(data.error)}`);
+        addMessage(config.welcomeMessage, "bot");
+      } else {
+        addMessage(data.welcomeMessage || config.welcomeMessage, "bot");
+        if (data.suggestedQuestions?.length > 0) {
+          addSuggestedQuestions(data.suggestedQuestions);
+        }
+      }
     } catch (error) {
-      console.error("[Chatbot] Error setting up initial data fetch:", error);
-      addErrorMessage(`Error initializing chatbot: ${sanitizeText(error.message)}`);
+      console.error("[Chatbot] Error fetching initial data:", error);
+      let errorMsg = `Failed to load initial data: ${sanitizeText(error.message)}`;
+      if (error.name === "TimeoutError" || error.name === "AbortError") {
+        errorMsg = "Initial data request timed out.";
+      } else if (error instanceof TypeError) {
+        errorMsg = "Network error or CORS issue loading initial data.";
+      }
+      addErrorMessage(errorMsg);
       addMessage(config.welcomeMessage, "bot");
-      cleanup();
     }
   }
 
@@ -773,7 +739,7 @@
     scrollToBottom();
   }
 
-  // Display products (Updated to match clean design with underlined links)
+  // Display products
   function displayProducts(products) {
     if (!Array.isArray(products) || products.length === 0) return;
 
@@ -804,11 +770,24 @@
 
       const infoDiv = document.createElement("div");
       infoDiv.className = "ai-chatbot-product-info";
+
+      let scoreHtml = '';
+      if (typeof product.score === 'number' && isFinite(product.score)) {
+        const clampedScore = Math.max(0, Math.min(1, product.score));
+        scoreHtml = `<div class="ai-chatbot-product-score">Match: ${(clampedScore * 100).toFixed(1)}%</div>`;
+      }
+
+      let reasonHtml = '';
+      if (product.match_reason) {
+        reasonHtml = `<div class="ai-chatbot-product-match">${sanitizeText(product.match_reason)}</div>`;
+      }
+
       infoDiv.innerHTML = `
         <div class="ai-chatbot-product-name">${sanitizeText(product.name || "Unnamed Product")}</div>
         <div class="ai-chatbot-product-description">${sanitizeText(product.description || "No description available.")}</div>
         ${product.price ? `<div class="ai-chatbot-product-price">${sanitizeText(product.price)}</div>` : ""}
-        ${product.match_reason ? `<div class="ai-chatbot-product-match">Match: ${sanitizeText(product.match_reason)}</div>` : ""}
+        ${scoreHtml}
+        ${reasonHtml}
       `;
 
       productCard.appendChild(imageContainer);
@@ -820,8 +799,8 @@
     scrollToBottom();
   }
 
-  // Send message
-  function sendMessage(customMessage = null) {
+  // Send message using fetch
+  async function sendMessage(customMessage = null) {
     const message = customMessage || elements.inputField.value.trim();
     if (!message) return;
 
@@ -848,98 +827,60 @@
       return;
     }
 
-    const history = messages
-      .filter((msg) => msg.sender === "user" || msg.sender === "bot")
-      .slice(-6)
-      .map((msg) => ({
-        role: msg.sender === "user" ? "user" : "model",
-        parts: [{ text: msg.text }],
-      }));
-
-    const callbackName = `chatbotCallback_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
-    let script;
-    let timeoutId;
-
-    console.log(`[Chatbot] Registering send callback: ${callbackName}`);
-
-    const cleanup = () => {
-      console.log(`[Chatbot] Cleaning up send callback: ${callbackName}`);
-      if (window[callbackName]) {
-        delete window[callbackName];
-      }
-      if (script && script.parentNode) {
-        script.parentNode.removeChild(script);
-      }
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    };
-
     try {
-      const url = new URL(config.apiUrl);
-      url.searchParams.append("action", "search");
-      url.searchParams.append("query", encodeURIComponent(message));
-      url.searchParams.append("conversationHistory", encodeURIComponent(JSON.stringify(history)));
-      if (config.apiKey) {
-        url.searchParams.append("apiKey", config.apiKey);
-      }
-      url.searchParams.append("callback", callbackName);
+      const history = messages
+        .filter((msg) => msg.sender === "user" || msg.sender === "bot")
+        .slice(-6)
+        .map((msg) => ({
+          role: msg.sender === "user" ? "user" : "model",
+          parts: [{ text: msg.text }],
+        }));
 
-      window[callbackName] = (data) => {
-        console.log(`[Chatbot] Send callback ${callbackName} executed with data:`, data);
+      const payload = {
+        action: "search",
+        query: message,
+        conversationHistory: history,
+        apiKey: config.apiKey,
+      };
+
+      const response = await fetch(config.apiUrl, {
+        method: "POST",
+        mode: "cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(config.apiTimeout),
+      });
+
+      hideTypingIndicator();
+
+      if (!response.ok) {
+        let errorText = `Error: ${response.status} ${response.statusText}`;
         try {
-          hideTypingIndicator();
-          if (data.error) {
-            addErrorMessage(`Assistant error: ${sanitizeText(data.error)}`, message);
-          } else {
-            setCachedResponse(message, data);
-            handleResponse(data);
-          }
-        } catch (error) {
-          console.error("[Chatbot] Error processing response:", error);
-          addErrorMessage(`Error processing response: ${sanitizeText(error.message)}`, message);
-        } finally {
-          cleanup();
-        }
-      };
-
-      script = document.createElement("script");
-      script.src = url.toString();
-      script.async = true;
-      script.onerror = (event) => {
-        console.error(`[Chatbot] Failed to load send script for ${callbackName}:`, event);
-        hideTypingIndicator();
-        addErrorMessage("Network or CSP error sending message.", message);
-        cleanup();
-      };
-
-      script.onload = () => {
-        console.log(`[Chatbot] Send script for ${callbackName} loaded successfully.`);
-      };
-
-      if (document.head) {
-        document.head.appendChild(script);
-        console.log(`[Chatbot] Send script appended for ${callbackName}: ${url}`);
-      } else {
-        console.error("[Chatbot] Document head not available for send message.");
-        hideTypingIndicator();
-        addErrorMessage("Error sending message: Document head not found.", message);
-        cleanup();
+          const errorData = await response.json();
+          errorText = errorData.error || errorText;
+        } catch (e) {}
+        addErrorMessage(`Assistant error: ${sanitizeText(errorText)}`, message);
         return;
       }
 
-      timeoutId = setTimeout(() => {
-        console.warn(`[Chatbot] Send request timed out for ${callbackName}.`);
-        hideTypingIndicator();
-        addErrorMessage("Request timed out.", message);
-        cleanup();
-      }, config.apiTimeout);
+      const data = await response.json();
 
+      if (data.error) {
+        addErrorMessage(`Assistant error: ${sanitizeText(data.error)}`, message);
+      } else {
+        setCachedResponse(message, data);
+        handleResponse(data);
+      }
     } catch (error) {
-      console.error("[Chatbot] Error sending message:", error);
       hideTypingIndicator();
-      addErrorMessage(`Error: ${sanitizeText(error.message)}`, message);
-      cleanup();
+      console.error("[Chatbot] Fetch error:", error);
+      let errorMsg = `Error sending message: ${sanitizeText(error.message)}`;
+      if (error.name === "TimeoutError" || error.name === "AbortError") {
+        errorMsg = "Request timed out.";
+      } else if (error instanceof TypeError) {
+        errorMsg = "Network error or CORS issue sending message.";
+      }
+      addErrorMessage(errorMsg, message);
     }
   }
 
@@ -984,7 +925,7 @@
     messageCache.set(key, { data, timestamp: Date.now() });
   }
 
-  // Simple hash
+  // Simple hash for caching
   function simpleHash(str) {
     let hash = 0;
     if (str.length === 0) return "pb_h_0";
