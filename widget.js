@@ -1,36 +1,43 @@
 /**
- * Shopify AI Chatbot Widget
- * This script creates and manages the chatbot widget that appears on your Shopify store.
+ * Enhanced Shopify AI Chatbot Widget for Planet Beauty
+ * This script creates and manages the chatbot widget with improved UI/UX
  */
 
 ;(() => {
   // Configuration
   const DEFAULT_CONFIG = {
-    apiUrl:
-      "https://script.google.com/macros/s/AKfycbys0cIz4SYCFS3h7xue2TFPHBe8RiT94Bbgb0Gg0sg4fJF4OY-NoLUiCfxcvIFuStrS/exec", // Google Apps Script URL
+    apiUrl: "https://script.google.com/macros/s/AKfycbys0cIz4SYCFS3h7xue2TFPHBe8RiT94Bbgb0Gg0sg4fJF4OY-NoLUiCfxcvIFuStrS/exec",
     primaryColor: "#e91e63",
+    secondaryColor: "#ff80ab",
     textColor: "#ffffff",
     position: "bottom-right",
     icon: "message-circle",
-    welcomeMessage: "Hi there! 👋 I'm your AI shopping assistant. How can I help you today?",
+    botName: "Bella",
+    welcomeMessage: "Hi! I'm Bella, your AI beauty guide. Ready to find your next favorite product or get some tips? ✨",
+    typingIndicatorText: "Bella is typing...",
+    responseDelay: 800, // ms to simulate typing
+    maxMessageHistory: 8,
   }
 
-  // Get configuration from script tag data attributes
+  // Get configuration from script tag
   const scriptTag = document.getElementById("ai-chatbot-script")
   const config = {
     ...DEFAULT_CONFIG,
     apiUrl: scriptTag?.getAttribute("data-api-url") || DEFAULT_CONFIG.apiUrl,
     apiKey: scriptTag?.getAttribute("data-api-key") || "",
     primaryColor: scriptTag?.getAttribute("data-primary-color") || DEFAULT_CONFIG.primaryColor,
+    secondaryColor: scriptTag?.getAttribute("data-secondary-color") || DEFAULT_CONFIG.secondaryColor,
     textColor: scriptTag?.getAttribute("data-text-color") || DEFAULT_CONFIG.textColor,
     position: scriptTag?.getAttribute("data-position") || DEFAULT_CONFIG.position,
-    welcomeMessage: scriptTag?.getAttribute("data-welcome-message") || DEFAULT_CONFIG.welcomeMessage,
+    botName: scriptTag?.getAttribute("data-bot-name") || DEFAULT_CONFIG.botName,
+    welcomeMessage: scriptTag?.getAttribute("data-welcome-message") || DEFAULT_CONFIG.welcomeMessage.replace("Bella", scriptTag?.getAttribute("data-bot-name") || "Bella"),
   }
 
   // State
   let isOpen = false
   const messages = []
   let isTyping = false
+  let typingTimeout = null
 
   // Create and inject styles
   function injectStyles() {
@@ -39,6 +46,8 @@
       .ai-chatbot-widget * {
         box-sizing: border-box;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        margin: 0;
+        padding: 0;
       }
       
       .ai-chatbot-widget {
@@ -70,11 +79,12 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         border: none;
         outline: none;
-        transition: transform 0.2s ease;
+        transition: all 0.3s ease;
       }
       
       .ai-chatbot-toggle:hover {
         transform: scale(1.05);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
       }
       
       .ai-chatbot-toggle svg {
@@ -85,17 +95,17 @@
       .ai-chatbot-container {
         position: absolute;
         bottom: 70px;
-        width: 350px;
-        height: 500px;
+        width: 380px;
+        height: 550px;
         background: white;
-        border-radius: 12px;
-        box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
         display: flex;
         flex-direction: column;
         overflow: hidden;
-        transition: all 0.3s ease;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         opacity: 0;
-        transform: translateY(20px) scale(0.9);
+        transform: translateY(20px) scale(0.95);
         pointer-events: none;
       }
       
@@ -114,45 +124,49 @@
       }
       
       .ai-chatbot-header {
-        background-color: ${config.primaryColor};
+        background: linear-gradient(135deg, ${config.primaryColor}, ${config.secondaryColor});
         color: ${config.textColor};
-        padding: 15px;
+        padding: 16px;
         display: flex;
         align-items: center;
         justify-content: space-between;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
       }
       
       .ai-chatbot-header-title {
         display: flex;
         align-items: center;
         font-weight: 600;
+        font-size: 16px;
+        gap: 8px;
       }
       
       .ai-chatbot-header-title svg {
-        margin-right: 8px;
         width: 20px;
         height: 20px;
       }
       
       .ai-chatbot-header-actions {
         display: flex;
+        gap: 4px;
       }
       
       .ai-chatbot-header-button {
-        background: transparent;
+        background: rgba(255, 255, 255, 0.2);
         border: none;
         color: ${config.textColor};
         cursor: pointer;
-        padding: 5px;
-        margin-left: 5px;
-        border-radius: 4px;
+        padding: 6px;
+        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
+        transition: all 0.2s;
       }
       
       .ai-chatbot-header-button:hover {
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.1);
       }
       
       .ai-chatbot-header-button svg {
@@ -163,46 +177,76 @@
       .ai-chatbot-messages {
         flex: 1;
         overflow-y: auto;
-        padding: 15px;
+        padding: 16px;
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 12px;
+        background-color: #fafafa;
       }
       
       .ai-chatbot-message {
-        max-width: 80%;
-        padding: 10px 14px;
+        max-width: 85%;
+        padding: 12px 16px;
         border-radius: 18px;
         font-size: 14px;
-        line-height: 1.4;
+        line-height: 1.5;
+        animation: fadeIn 0.3s ease;
       }
       
       .ai-chatbot-message.bot {
         align-self: flex-start;
-        background-color: #f0f0f0;
+        background-color: white;
         border-bottom-left-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        border: 1px solid #eee;
       }
       
       .ai-chatbot-message.user {
         align-self: flex-end;
-        background-color: ${config.primaryColor};
+        background: linear-gradient(135deg, ${config.primaryColor}, ${config.secondaryColor});
         color: ${config.textColor};
         border-bottom-right-radius: 4px;
+      }
+      
+      .ai-chatbot-message-time {
+        font-size: 10px;
+        opacity: 0.7;
+        margin-top: 4px;
+        text-align: right;
+      }
+      
+      .ai-chatbot-message ul,
+      .ai-chatbot-message ol {
+        padding-left: 20px;
+        margin: 8px 0;
+      }
+      
+      .ai-chatbot-message li {
+        margin-bottom: 6px;
       }
       
       .ai-chatbot-product {
         background: white;
         border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        margin: 5px 0;
+        border-radius: 10px;
+        margin: 8px 0;
         overflow: hidden;
         display: flex;
         max-width: 100%;
+        transition: all 0.2s;
+        text-decoration: none;
+        color: inherit;
+      }
+      
+      .ai-chatbot-product:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-color: ${config.primaryColor};
       }
       
       .ai-chatbot-product-image {
-        width: 70px;
-        height: 70px;
+        width: 80px;
+        height: 80px;
         background: #f5f5f5;
         display: flex;
         align-items: center;
@@ -211,21 +255,21 @@
       }
       
       .ai-chatbot-product-image img {
-        max-width: 100%;
-        max-height: 100%;
+        width: 100%;
+        height: 100%;
         object-fit: cover;
       }
       
       .ai-chatbot-product-info {
-        padding: 8px;
+        padding: 10px;
         flex: 1;
         min-width: 0;
       }
       
       .ai-chatbot-product-name {
         font-weight: 600;
-        font-size: 13px;
-        margin-bottom: 3px;
+        font-size: 14px;
+        margin-bottom: 4px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -234,24 +278,41 @@
       .ai-chatbot-product-price {
         font-weight: 600;
         color: ${config.primaryColor};
-        font-size: 13px;
+        font-size: 14px;
+        margin-bottom: 4px;
       }
       
       .ai-chatbot-product-description {
         font-size: 12px;
         color: #666;
-        margin: 3px 0;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
       }
       
-      .ai-chatbot-typing {
+      .ai-chatbot-typing-indicator {
         display: flex;
         align-items: center;
-        margin-top: 5px;
-        margin-bottom: 5px;
+        gap: 8px;
+        padding: 12px 16px;
+        background-color: white;
+        border-radius: 18px;
+        border-bottom-left-radius: 4px;
+        align-self: flex-start;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        border: 1px solid #eee;
+        max-width: 85%;
+      }
+      
+      .ai-chatbot-typing-text {
+        font-size: 13px;
+        color: #666;
+      }
+      
+      .ai-chatbot-typing-dots {
+        display: flex;
+        gap: 4px;
       }
       
       .ai-chatbot-typing-dot {
@@ -259,8 +320,7 @@
         height: 8px;
         background: ${config.primaryColor};
         border-radius: 50%;
-        margin-right: 4px;
-        animation: typing-dot 1s infinite ease-in-out;
+        animation: typing-dot 1.4s infinite ease-in-out;
       }
       
       .ai-chatbot-typing-dot:nth-child(1) { animation-delay: 0s; }
@@ -268,54 +328,66 @@
       .ai-chatbot-typing-dot:nth-child(3) { animation-delay: 0.4s; }
       
       @keyframes typing-dot {
-        0%, 60%, 100% { transform: translateY(0); }
-        30% { transform: translateY(-5px); }
+        0%, 60%, 100% { transform: translateY(0); opacity: 0.6; }
+        30% { transform: translateY(-3px); opacity: 1; }
       }
       
-      .ai-chatbot-input {
-        padding: 15px;
-        border-top: 1px solid #e0e0e0;
+      .ai-chatbot-input-area {
+        padding: 16px;
+        border-top: 1px solid #eee;
+        background-color: white;
+      }
+      
+      .ai-chatbot-input-container {
         display: flex;
         align-items: center;
+        gap: 10px;
       }
       
       .ai-chatbot-input-field {
         flex: 1;
         border: 1px solid #e0e0e0;
-        border-radius: 20px;
-        padding: 8px 15px;
+        border-radius: 24px;
+        padding: 10px 16px;
         font-size: 14px;
         outline: none;
-        transition: border-color 0.2s;
+        transition: all 0.2s;
+        min-height: 40px;
+        max-height: 120px;
+        resize: none;
       }
       
       .ai-chatbot-input-field:focus {
         border-color: ${config.primaryColor};
+        box-shadow: 0 0 0 2px rgba(${hexToRgb(config.primaryColor)}, 0.1);
       }
       
       .ai-chatbot-send-button {
-        background-color: ${config.primaryColor};
+        background: linear-gradient(135deg, ${config.primaryColor}, ${config.secondaryColor});
         color: ${config.textColor};
         border: none;
         border-radius: 50%;
-        width: 36px;
-        height: 36px;
-        margin-left: 10px;
+        width: 40px;
+        height: 40px;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        transition: transform 0.2s;
+        transition: all 0.2s;
+        flex-shrink: 0;
       }
       
       .ai-chatbot-send-button:hover {
         transform: scale(1.05);
+        box-shadow: 0 2px 8px rgba(${hexToRgb(config.primaryColor)}, 0.3);
       }
       
       .ai-chatbot-send-button:disabled {
-        background-color: #cccccc;
+        background: #e0e0e0;
+        color: #999;
         cursor: not-allowed;
         transform: none;
+        box-shadow: none;
       }
       
       .ai-chatbot-send-button svg {
@@ -327,17 +399,17 @@
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
-        margin-top: 10px;
+        margin-top: 12px;
       }
       
       .ai-chatbot-suggested-question {
         background-color: #f5f5f5;
         border: 1px solid #e0e0e0;
         border-radius: 16px;
-        padding: 6px 12px;
+        padding: 8px 12px;
         font-size: 12px;
         cursor: pointer;
-        transition: background-color 0.2s;
+        transition: all 0.2s;
         max-width: 100%;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -346,20 +418,42 @@
       
       .ai-chatbot-suggested-question:hover {
         background-color: #e8e8e8;
+        transform: translateY(-1px);
+      }
+      
+      .ai-chatbot-divider {
+        display: flex;
+        align-items: center;
+        margin: 12px 0;
+        color: #999;
+        font-size: 12px;
+      }
+      
+      .ai-chatbot-divider::before,
+      .ai-chatbot-divider::after {
+        content: "";
+        flex: 1;
+        border-bottom: 1px solid #eee;
+        margin: 0 8px;
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(5px); }
+        to { opacity: 1; transform: translateY(0); }
       }
       
       @media (max-width: 480px) {
         .ai-chatbot-container {
           width: calc(100vw - 40px);
-          height: 60vh;
-          max-height: 500px;
+          height: 65vh;
+          max-height: 600px;
         }
         
         .ai-chatbot-widget.bottom-right .ai-chatbot-container,
         .ai-chatbot-widget.bottom-left .ai-chatbot-container {
           left: 50%;
           right: auto;
-          transform: translateX(-50%) translateY(20px) scale(0.9);
+          transform: translateX(-50%) translateY(20px) scale(0.95);
         }
         
         .ai-chatbot-widget.open .ai-chatbot-container {
@@ -368,6 +462,14 @@
       }
     `
     document.head.appendChild(style)
+  }
+
+  // Helper function to convert hex to rgb
+  function hexToRgb(hex) {
+    const r = parseInt(hex.slice(1, 3), 16)
+    const g = parseInt(hex.slice(3, 5), 16)
+    const b = parseInt(hex.slice(5, 7), 16)
+    return `${r}, ${g}, ${b}`
   }
 
   // Create widget DOM
@@ -392,7 +494,7 @@
 
     const headerTitle = document.createElement("div")
     headerTitle.className = "ai-chatbot-header-title"
-    headerTitle.innerHTML = `${getIconSvg("message-circle")} <span>Beauty Assistant</span>`
+    headerTitle.innerHTML = `${getIconSvg("message-circle")} <span>${config.botName}</span>`
 
     const headerActions = document.createElement("div")
     headerActions.className = "ai-chatbot-header-actions"
@@ -421,19 +523,26 @@
 
     // Input area
     const inputArea = document.createElement("div")
-    inputArea.className = "ai-chatbot-input"
+    inputArea.className = "ai-chatbot-input-area"
 
-    const inputField = document.createElement("input")
+    const inputContainer = document.createElement("div")
+    inputContainer.className = "ai-chatbot-input-container"
+
+    const inputField = document.createElement("textarea")
     inputField.className = "ai-chatbot-input-field"
-    inputField.type = "text"
-    inputField.placeholder = "Type your message..."
-    inputField.addEventListener("keypress", (e) => {
-      if (e.key === "Enter" && !sendButton.disabled) {
+    inputField.placeholder = "Type your beauty question..."
+    inputField.rows = 1
+    inputField.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey && !sendButton.disabled) {
+        e.preventDefault()
         sendMessage()
       }
     })
     inputField.addEventListener("input", () => {
       sendButton.disabled = !inputField.value.trim()
+      // Auto-resize textarea
+      inputField.style.height = "auto"
+      inputField.style.height = `${Math.min(inputField.scrollHeight, 120)}px`
     })
 
     const sendButton = document.createElement("button")
@@ -443,8 +552,9 @@
     sendButton.disabled = true
     sendButton.addEventListener("click", sendMessage)
 
-    inputArea.appendChild(inputField)
-    inputArea.appendChild(sendButton)
+    inputContainer.appendChild(inputField)
+    inputContainer.appendChild(sendButton)
+    inputArea.appendChild(inputContainer)
 
     // Assemble container
     container.appendChild(header)
@@ -457,8 +567,10 @@
 
     document.body.appendChild(widget)
 
-    // Add initial welcome message and fetch suggested questions
-    fetchInitialData()
+    // Add initial welcome message
+    setTimeout(() => {
+      fetchInitialData()
+    }, 500)
 
     return {
       widget,
@@ -485,10 +597,10 @@
 
       window[callbackName] = (data) => {
         if (data.error) {
-          addMessage("Welcome to Planet Beauty! How can I help you today?", "bot")
+          addMessage(config.welcomeMessage, "bot")
         } else {
           // Add welcome message
-          addMessage(data.welcomeMessage || "Welcome to Planet Beauty! How can I help you today?", "bot")
+          addMessage(data.welcomeMessage || config.welcomeMessage, "bot")
 
           // Add suggested questions if available
           if (data.suggestedQuestions && data.suggestedQuestions.length > 0) {
@@ -510,13 +622,13 @@
           delete window[callbackName]
           document.head.removeChild(script)
           // Fallback welcome message
-          addMessage("Welcome to Planet Beauty! How can I help you today?", "bot")
+          addMessage(config.welcomeMessage, "bot")
         }
       }, 5000)
     } catch (error) {
       console.error("Error fetching initial data:", error)
       // Fallback welcome message
-      addMessage("Welcome to Planet Beauty! How can I help you today?", "bot")
+      addMessage(config.welcomeMessage, "bot")
     }
   }
 
@@ -533,6 +645,7 @@
       questionButton.textContent = question
       questionButton.addEventListener("click", () => {
         elements.inputField.value = question
+        elements.inputField.dispatchEvent(new Event('input'))
         sendMessage()
       })
       suggestedQuestionsContainer.appendChild(questionButton)
@@ -553,6 +666,7 @@
 
     if (isOpen) {
       elements.inputField.focus()
+      scrollToBottom()
     }
   }
 
@@ -572,9 +686,26 @@
 
   // Render a message in the chat
   function renderMessage(message) {
+    // Clear typing indicator if it exists
+    hideTypingIndicator()
+
     const messageEl = document.createElement("div")
     messageEl.className = `ai-chatbot-message ${message.sender}`
-    messageEl.textContent = message.text
+    
+    // Process message text to handle HTML content
+    if (message.text.includes('<') && message.text.includes('>')) {
+      const tempDiv = document.createElement('div')
+      tempDiv.innerHTML = message.text
+      messageEl.appendChild(tempDiv)
+    } else {
+      messageEl.textContent = message.text
+    }
+
+    // Add timestamp
+    const timeEl = document.createElement("div")
+    timeEl.className = "ai-chatbot-message-time"
+    timeEl.textContent = formatTime(message.timestamp)
+    messageEl.appendChild(timeEl)
 
     elements.messagesArea.appendChild(messageEl)
 
@@ -584,11 +715,18 @@
       productsContainer.className = "ai-chatbot-message bot"
       productsContainer.style.width = "100%"
 
+      // Add divider
+      const divider = document.createElement("div")
+      divider.className = "ai-chatbot-divider"
+      divider.textContent = "Recommended Products"
+      productsContainer.appendChild(divider)
+
       message.products.forEach((product) => {
         const productEl = document.createElement("a")
         productEl.className = "ai-chatbot-product"
         productEl.href = product.url || "#"
         productEl.target = "_blank"
+        productEl.rel = "noopener noreferrer"
 
         const imageContainer = document.createElement("div")
         imageContainer.className = "ai-chatbot-product-image"
@@ -598,6 +736,7 @@
           product.image ||
           'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3E%3Crect x="3" y="3" width="18" height="18" rx="2" ry="2"%3E%3C/rect%3E%3Ccircle cx="8.5" cy="8.5" r="1.5"%3E%3C/circle%3E%3Cpolyline points="21 15 16 10 5 21"%3E%3C/polyline%3E%3C/svg%3E'
         img.alt = product.name || "Product"
+        img.loading = "lazy"
 
         imageContainer.appendChild(img)
 
@@ -614,11 +753,11 @@
 
         const priceEl = document.createElement("div")
         priceEl.className = "ai-chatbot-product-price"
-        priceEl.textContent = product.price || ""
+        priceEl.textContent = product.price ? `$${product.price}` : ""
 
         infoContainer.appendChild(nameEl)
-        infoContainer.appendChild(descriptionEl)
         infoContainer.appendChild(priceEl)
+        infoContainer.appendChild(descriptionEl)
 
         productEl.appendChild(imageContainer)
         productEl.appendChild(infoContainer)
@@ -628,6 +767,13 @@
 
       elements.messagesArea.appendChild(productsContainer)
     }
+    
+    scrollToBottom()
+  }
+
+  // Format time for display
+  function formatTime(date) {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   }
 
   // Show typing indicator
@@ -637,13 +783,23 @@
     isTyping = true
 
     const typingIndicator = document.createElement("div")
-    typingIndicator.className = "ai-chatbot-message bot ai-chatbot-typing"
+    typingIndicator.className = "ai-chatbot-typing-indicator"
+
+    const typingText = document.createElement("div")
+    typingText.className = "ai-chatbot-typing-text"
+    typingText.textContent = config.typingIndicatorText
+
+    const typingDots = document.createElement("div")
+    typingDots.className = "ai-chatbot-typing-dots"
 
     for (let i = 0; i < 3; i++) {
       const dot = document.createElement("div")
       dot.className = "ai-chatbot-typing-dot"
-      typingIndicator.appendChild(dot)
+      typingDots.appendChild(dot)
     }
+
+    typingIndicator.appendChild(typingText)
+    typingIndicator.appendChild(typingDots)
 
     elements.messagesArea.appendChild(typingIndicator)
     scrollToBottom()
@@ -653,12 +809,16 @@
   function hideTypingIndicator() {
     if (!isTyping) return
 
-    const typingIndicator = elements.messagesArea.querySelector(".ai-chatbot-typing")
+    const typingIndicator = elements.messagesArea.querySelector(".ai-chatbot-typing-indicator")
     if (typingIndicator) {
       typingIndicator.remove()
     }
 
     isTyping = false
+    if (typingTimeout) {
+      clearTimeout(typingTimeout)
+      typingTimeout = null
+    }
   }
 
   // Send a message
@@ -668,6 +828,7 @@
 
     // Clear input
     elements.inputField.value = ""
+    elements.inputField.style.height = "auto"
     elements.sendButton.disabled = true
 
     // Add user message to chat
@@ -676,27 +837,29 @@
     // Show typing indicator
     showTypingIndicator()
 
-    // Send to backend
-    fetchResponse(text)
-      .then((response) => {
-        // Hide typing indicator
-        hideTypingIndicator()
+    // Send to backend with simulated delay
+    typingTimeout = setTimeout(() => {
+      fetchResponse(text)
+        .then((response) => {
+          // Hide typing indicator
+          hideTypingIndicator()
 
-        // Add bot response
-        addMessage(response.text, "bot", response.products || [])
-      })
-      .catch((error) => {
-        console.error("Error fetching response:", error)
-        hideTypingIndicator()
-        addMessage("Sorry, I encountered an error. Please try again.", "bot")
-      })
+          // Add bot response
+          addMessage(response.text, "bot", response.products || [])
+        })
+        .catch((error) => {
+          console.error("Error fetching response:", error)
+          hideTypingIndicator()
+          addMessage("Sorry, I encountered an error. Please try again.", "bot")
+        })
+    }, config.responseDelay)
   }
 
   // Fetch response from backend
   async function fetchResponse(query) {
     try {
       // Format the conversation history for the Google Apps Script
-      const history = messages.slice(-6).map((msg) => ({
+      const history = messages.slice(-config.maxMessageHistory).map((msg) => ({
         role: msg.sender === "user" ? "user" : "assistant",
         content: msg.text,
       }))
@@ -749,7 +912,10 @@
 
   // Scroll messages to bottom
   function scrollToBottom() {
-    elements.messagesArea.scrollTop = elements.messagesArea.scrollHeight
+    elements.messagesArea.scrollTo({
+      top: elements.messagesArea.scrollHeight,
+      behavior: 'smooth'
+    })
   }
 
   // Get SVG icon
