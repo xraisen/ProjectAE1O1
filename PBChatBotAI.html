@@ -246,7 +246,7 @@
         <div id="chat-area" class="chat-area">
             <!-- Initial Bot Message -->
             <div class="bot-message message-base animate-fade-in">
-                 <span class="message-content">Hello! Welcome to Planet Beauty. I'm here to help with your beauty needs, find products, or just chat. How can I assist you today? 😊</span>
+                 <span class="message-content">Hello! Welcome to Planet Beauty. I'm Bella, your friendly AI assistant. I'm here to help with your beauty needs, find products, or just chat. How can I assist you today? 😊</span>
             </div>
             <!-- Example Questions Container -->
             <div id="examples-container" class="examples-container animate-fade-in" style="animation-delay: 0.2s;"></div>
@@ -279,14 +279,15 @@
     <script>
         // --- Configuration ---
         // CRITICAL: Replace with your DEPLOYED Google Apps Script Web App URL
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzJlXluVk1JL0xKQJ3D3qo5lS-Nz6TwllF8g-3dTQJYrBurhCS1ONv4jRPhmTZeLhPy/exec'; // <--- USE YOUR LATEST DEPLOYMENT URL
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx8XzPSdOOAXyQfXy-KTBfadcSbf0fcnmYqrvW3h0mzLpau6EqLLS43GlzdUO-Wp2B6/exec'; // <--- USE YOUR LATEST DEPLOYMENT URL
 
         // Client-side Gemini Key (Optional: for suggested questions - BEWARE of exposure)
-        const CLIENT_GEMINI_API_KEY = 'AIzaSyCpI-eNfqWk_ZiK2qHOj_tD2NzeAJ_U398'; // Set to your key or null 'AIzaSyCpI-eNfqWk_ZiK2qHOj_tD2NzeAJ_U398';
+        // Set to your key or null/empty string to disable and use fallbacks only.
+        const CLIENT_GEMINI_API_KEY = 'AIzaSyCpI-eNfqWk_ZiK2qHOj_tD2NzeAJ_U398'; // Example: 'AIzaSy...' or ''
 
         const API_TIMEOUT = 15000; // Timeout for suggested questions API (milliseconds)
         const PLANET_BEAUTY_DOMAIN = 'https://www.planetbeauty.com'; // Used in prompts/URLs
-        const DEBUG_MODE = false; // Set to false for production
+        const DEBUG_MODE = true; // Set to false for production
         const RATE_LIMIT_MS = 1000; // Min time between user messages
 
         const FALLBACK_QUESTIONS = [
@@ -301,6 +302,7 @@
         let lastRecommendedProducts = [];
         let lastMessageTime = 0;
         let lastUserMessage = '';
+        let domPurifyLoaded = false;
 
         // --- DOM Elements ---
         const chatArea = document.getElementById('chat-area');
@@ -314,21 +316,56 @@
 
         // --- Initialization ---
         document.addEventListener('DOMContentLoaded', async () => {
+            checkDomPurify(); // Check if DOMPurify loaded
             setupTheme();
             await runPreloader();
             setupEventListeners();
             if (DEBUG_MODE) {
                 debugPanel.style.display = 'block';
             }
-            debugLog('Chatbot Initialized (Using JSONP)', { webAppUrl: WEB_APP_URL || "NOT SET!" });
+            debugLog('Chatbot Initialized (Using JSONP)', { webAppUrl: WEB_APP_URL || "NOT SET!", domPurifyLoaded });
             chatInput.focus();
             updateSendButtonState();
-            if (CLIENT_GEMINI_API_KEY) {
-                generateSuggestedQuestions(); // Call the fixed function
+
+            if (CLIENT_GEMINI_API_KEY && domPurifyLoaded) { // Only try if key exists and DOMPurify loaded
+                generateSuggestedQuestions();
             } else {
+                if (!CLIENT_GEMINI_API_KEY) debugLog('Client Gemini API Key not set, using fallback questions.');
+                if (!domPurifyLoaded) debugLog('DOMPurify not loaded, using fallback questions.');
                 displaySuggestedQuestions(FALLBACK_QUESTIONS);
             }
         });
+
+        // --- DOMPurify Check ---
+        function checkDomPurify() {
+            if (typeof DOMPurify !== 'undefined' && DOMPurify.sanitize) {
+                domPurifyLoaded = true;
+            } else {
+                console.error("DOMPurify failed to load! Sanitization might be compromised.");
+                // Optionally display a non-intrusive warning to the user
+            }
+        }
+
+        // --- Safe Sanitization ---
+        function sanitizeHtml(html) {
+            if (domPurifyLoaded) {
+                return DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });
+            }
+            console.warn("DOMPurify not loaded, using basic text conversion for HTML.");
+            // Basic fallback: create a temporary element to extract text content
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html; // Assign potentially unsafe HTML
+            return tempDiv.textContent || tempDiv.innerText || ""; // Extract text only
+        }
+
+        function sanitizeText(text) {
+             if (domPurifyLoaded) {
+                 return DOMPurify.sanitize(text, { USE_PROFILES: { html: false } });
+             }
+             console.warn("DOMPurify not loaded, returning raw text.");
+             return text; // Less safe fallback
+        }
+
 
         // --- Theme Handling ---
         function setupTheme() {
@@ -352,7 +389,8 @@
 
         // --- Preloader Logic ---
         async function runPreloader() {
-            let percentage = 0;
+            // ... (keep existing preloader logic) ...
+             let percentage = 0;
             const percentageElement = preloader.querySelector('.percentage');
             const updateTarget = { value: 0 };
 
@@ -407,15 +445,25 @@
         // --- Suggested Questions (Using fetch API) ---
         async function generateSuggestedQuestions() {
             debugLog('Attempting to fetch suggested questions (Client-side)...');
+            if (!CLIENT_GEMINI_API_KEY) {
+                 debugLog('Client Gemini API Key not provided. Skipping generation.');
+                 displaySuggestedQuestions(FALLBACK_QUESTIONS);
+                 return;
+            }
+             if (!domPurifyLoaded) {
+                 debugLog('DOMPurify not loaded. Skipping generation for safety.');
+                 displaySuggestedQuestions(FALLBACK_QUESTIONS);
+                 return;
+             }
+
             const controller = new AbortController(); // For timeout
             const timeoutId = setTimeout(() => {
                 controller.abort();
                 debugLog('Suggested questions request timed out.');
-            }, API_TIMEOUT); // Use configured timeout
+                displaySuggestedQuestions(FALLBACK_QUESTIONS); // Fallback on timeout
+            }, API_TIMEOUT);
 
             try {
-                if (!CLIENT_GEMINI_API_KEY) throw new Error('Client-side API key not set.');
-
                 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${CLIENT_GEMINI_API_KEY}`;
                 const prompt = {
                      contents: [{ role: 'user', parts: [{ text: `Generate 4 concise, diverse beauty-related questions a user might ask a chatbot for the online store Planet Beauty (${PLANET_BEAUTY_DOMAIN}). Focus on common needs: specific product types (e.g., "hydrating serum"), concerns (e.g., "sensitive skin"), features (e.g., "vegan"), or tasks (e.g., "compare foundations"). Avoid overly complex or niche questions. Return ONLY a valid JSON array of 4 unique strings, like ["Question 1", "Question 2", ...].` }] }],
@@ -423,15 +471,14 @@
                      safetySettings: [ { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" }, { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_MEDIUM_AND_ABOVE" }, { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_MEDIUM_AND_ABOVE" }, { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" } ]
                  };
 
-                // Use fetch instead of axios
                 const response = await fetch(GEMINI_API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(prompt),
-                    signal: controller.signal // Link fetch to AbortController
+                    signal: controller.signal
                 });
 
-                clearTimeout(timeoutId); // Clear the timeout if fetch completes
+                clearTimeout(timeoutId);
 
                 if (!response.ok) {
                     const errorText = await response.text();
@@ -439,9 +486,11 @@
                 }
 
                 const data = await response.json();
-
                 debugLog('Client-side Gemini response for suggestions', data);
-                if (data?.promptFeedback?.blockReason) throw new Error(`Suggestion generation blocked: ${data.promptFeedback.blockReason}`);
+
+                if (data?.promptFeedback?.blockReason) {
+                    throw new Error(`Suggestion generation blocked: ${data.promptFeedback.blockReason}`);
+                }
 
                 if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
                     const responseText = data.candidates[0].content.parts[0].text;
@@ -450,44 +499,51 @@
                         if (Array.isArray(questions) && questions.length >= 4 && questions.every(q => typeof q === 'string' && q.trim())) {
                              displaySuggestedQuestions(questions.slice(0, 4));
                              debugLog('Successfully fetched and displayed suggested questions.');
-                             return;
-                        } throw new Error('Invalid questions format received.');
+                             return; // Success
+                        }
+                        throw new Error('Invalid questions format received.');
                     } catch (parseError) {
                         throw new Error(`JSON Parse Error: ${parseError.message}. Raw: ${responseText.substring(0,100)}`);
                     }
                 }
                 const finishReason = data?.candidates?.[0]?.finishReason;
-                if (finishReason && finishReason !== 'STOP') throw new Error(`Suggestion generation stopped: ${finishReason}`);
+                if (finishReason && finishReason !== 'STOP') {
+                    throw new Error(`Suggestion generation stopped: ${finishReason}`);
+                }
                 throw new Error('No valid response content from suggestion API.');
 
             } catch (error) {
-                clearTimeout(timeoutId);
+                clearTimeout(timeoutId); // Ensure timeout is cleared on error too
                  if (error.name === 'AbortError') {
                      console.error('Failed to generate suggested questions: Request timed out.');
                      debugLog('Suggested questions error (client-side)', { message: 'Request timed out' });
                  } else {
                      console.error('Failed to generate suggested questions:', error);
-                     debugLog('Suggested questions error (client-side)', { message: error.message });
+                     debugLog('Suggested questions error (client-side)', { message: error.message, stack: error.stack });
                  }
-                displaySuggestedQuestions(FALLBACK_QUESTIONS);
+                displaySuggestedQuestions(FALLBACK_QUESTIONS); // Fallback on any error
             }
         }
 
 
         function displaySuggestedQuestions(questions) {
             examplesContainer.innerHTML = '';
-            if (!Array.isArray(questions)) questions = FALLBACK_QUESTIONS;
+            if (!Array.isArray(questions)) questions = FALLBACK_QUESTIONS; // Ensure it's an array
             questions.forEach((question, index) => {
                 if (typeof question !== 'string' || !question.trim()) return;
                 const chip = document.createElement('button');
                 chip.className = 'example-chip';
                 chip.setAttribute('data-q', question);
-                chip.setAttribute('aria-label', `Ask: ${question}`);
-                chip.textContent = DOMPurify.sanitize(question, { USE_PROFILES: { html: false } });
+                const sanitizedQuestion = sanitizeText(question); // Sanitize text
+                chip.setAttribute('aria-label', `Ask: ${sanitizedQuestion}`);
+                chip.textContent = sanitizedQuestion;
                 chip.addEventListener('click', handleExampleClick);
                 examplesContainer.appendChild(chip);
             });
-            anime({ targets: '.example-chip', translateY: [10, 0], opacity: [0, 1], delay: anime.stagger(100), duration: 500, easing: 'easeOutQuad' });
+            // Animate only if chips were added
+            if (examplesContainer.children.length > 0) {
+                anime({ targets: '.example-chip', translateY: [10, 0], opacity: [0, 1], delay: anime.stagger(100), duration: 500, easing: 'easeOutQuad' });
+            }
         }
 
         function handleExampleClick(event) {
@@ -495,7 +551,7 @@
             if (query) {
                 chatInput.value = query;
                 updateSendButtonState();
-                sendMessage(query);
+                sendMessage(query); // Send the message automatically
                 debugLog('Example chip clicked', { query });
             }
         }
@@ -504,20 +560,25 @@
         function getCurrentConversationHistory() {
             const history = [];
             const messages = chatArea.querySelectorAll('.user-message, .bot-message');
-            const historyLimit = 12;
+            const historyLimit = 12; // Keep history reasonably sized
             const startIndex = Math.max(0, messages.length - historyLimit);
 
             for (let i = startIndex; i < messages.length; i++) {
                 const msgElement = messages[i];
+                // Skip typing indicator
+                if (msgElement.id === 'typing-indicator') continue;
+
                 const isUser = msgElement.classList.contains('user-message');
-                const role = isUser ? 'user' : 'model';
+                const role = isUser ? 'user' : 'model'; // Gemini uses 'model' for bot
                 const contentSpan = msgElement.querySelector('.message-content');
                 const text = contentSpan ? contentSpan.textContent.trim() : msgElement.textContent.trim();
 
-                if (text && !msgElement.id?.includes('typing')) {
+                if (text) {
+                    // Structure matches Gemini's expected format
                     history.push({ role: role, parts: [{ text: text }] });
                 }
             }
+            debugLog("Generated history for backend:", history);
             return history;
         }
 
@@ -529,9 +590,9 @@
                 return;
             }
             lastMessageTime = now;
-            lastUserMessage = message;
+            lastUserMessage = message; // Store for potential retry
 
-            const sanitizedMessage = DOMPurify.sanitize(message, { USE_PROFILES: { html: false } });
+            const sanitizedMessage = sanitizeText(message); // Sanitize user input
             addMessage(sanitizedMessage, 'user');
             chatInput.value = '';
             updateSendButtonState();
@@ -550,21 +611,14 @@
             window[callbackName] = function(data) {
                 debugLog('JSONP response received', data);
                 try {
-                    handleJsonResponse(data, message);
+                    handleJsonResponse(data, message); // Pass original query for context
                 } catch (handlerError) {
                      console.error("Error processing JSONP response:", handlerError);
-                     debugLog("Error processing JSONP response", { message: handlerError.message, stack: handlerError.stack });
-                     displayError("Sorry, I had trouble processing the response.");
+                     debugLog("Error processing JSONP response", { message: handlerError.message, stack: handlerError.stack, responseData: data });
+                     displayError("Sorry, I had trouble processing the response. Please check the debug logs if enabled.");
                 } finally {
                     // Cleanup is crucial
-                    delete window[callbackName];
-                    const scriptTag = document.getElementById(callbackName);
-                    if (scriptTag?.parentNode) {
-                        scriptTag.parentNode.removeChild(scriptTag);
-                        debugLog('Cleaned up JSONP script tag', { id: callbackName });
-                    } else if (scriptTag) {
-                         debugLog('Could not remove script tag, parentNode not found', { id: callbackName });
-                    }
+                    cleanupJsonp(callbackName);
                     // Re-enable input AFTER processing or error
                     chatInput.disabled = false;
                     updateSendButtonState();
@@ -574,31 +628,33 @@
 
             // Create and append the script tag
             try {
-                if (!WEB_APP_URL || WEB_APP_URL.includes('YOUR_MACRO_ID')) {
-                     throw new Error("Web App URL is not configured in the script.");
+                if (!WEB_APP_URL || WEB_APP_URL.includes('YOUR_MACRO_ID') || WEB_APP_URL.includes('AKfycb') === false) { // Basic check
+                     throw new Error("Web App URL is not configured correctly in the script.");
                 }
 
                 const encodedHistory = safeEncodeURIComponent(JSON.stringify(currentHistory));
-                const encodedQuery = encodeURIComponent(message);
+                const encodedQuery = safeEncodeURIComponent(message); // Encode the user message
 
                 const requestUrl = `${WEB_APP_URL}?action=search&query=${encodedQuery}&conversationHistory=${encodedHistory}&callback=${callbackName}`;
                 debugLog('Sending JSONP request to backend', { urlLength: requestUrl.length });
-                 if (requestUrl.length > 7500) { // Increased warning threshold
-                     debugLog('Warning: Request URL is very long, might exceed limits.', { length: requestUrl.length });
+                 if (requestUrl.length > 8000) { // Standard URL length limit warning
+                     debugLog('Warning: Request URL is very long, might exceed browser/server limits.', { length: requestUrl.length });
+                     // Consider alternative (POST request via proxy if needed, but JSONP is simpler for Apps Script)
                  }
 
                 const script = document.createElement('script');
                 script.id = callbackName; // Assign ID for easy removal
                 script.src = requestUrl;
-                script.onerror = function(event) { // Add event parameter
-                    console.error('JSONP script failed to load:', event); // Log the event object
-                    debugLog('JSONP script loading error', { url: requestUrl, errorEvent: event }); // Log event object
+                script.onerror = function(event) {
+                    console.error('JSONP script failed to load:', event);
+                    debugLog('JSONP script loading error', {
+                        url: requestUrl,
+                        targetSrc: event?.target?.src, // Log the src that failed
+                        errorMessage: 'Script onerror triggered. Check Network tab for details (e.g., 404, CORS, permissions).'
+                    });
                     hideTypingIndicator();
-                    // More specific error message based on common causes
-                    displayError("Failed to communicate with the server. Please check deployment permissions (set to 'Anyone') and ensure the correct URL is used.");
-                    // Cleanup in case of error
-                    delete window[callbackName];
-                    if (script.parentNode) script.parentNode.removeChild(script);
+                    displayError("Failed to communicate with the server. Please check deployment permissions (set to 'Anyone') and ensure the correct URL is used. Check the browser console (F12) Network tab for more details.");
+                    cleanupJsonp(callbackName); // Cleanup on error
                     // Re-enable input on error
                     chatInput.disabled = false;
                     updateSendButtonState();
@@ -609,47 +665,78 @@
             } catch (error) {
                 // Catch errors during URL construction or script injection setup
                 console.error('Error setting up JSONP request:', error);
-                debugLog('Error setting up JSONP request', { message: error.message });
+                debugLog('Error setting up JSONP request', { message: error.message, stack: error.stack });
                 hideTypingIndicator();
-                displayError("An error occurred before sending the message.");
+                displayError("An error occurred before sending the message: " + error.message);
                  // Re-enable input on setup error
                 chatInput.disabled = false;
                 updateSendButtonState();
                 chatInput.focus();
                 // Clean up potentially defined callback
-                delete window[callbackName];
+                cleanupJsonp(callbackName);
             }
             // --- End JSONP Implementation ---
+        }
+
+        function cleanupJsonp(callbackName) {
+             // Remove the global callback function
+             try {
+                 delete window[callbackName];
+             } catch (e) {
+                 window[callbackName] = undefined; // Fallback for older browsers
+             }
+             // Remove the script tag
+             const scriptTag = document.getElementById(callbackName);
+             if (scriptTag?.parentNode) {
+                 scriptTag.parentNode.removeChild(scriptTag);
+                 debugLog('Cleaned up JSONP resources', { id: callbackName });
+             } else if (scriptTag) {
+                  debugLog('Could not remove script tag, parentNode not found', { id: callbackName });
+             }
         }
 
         function handleJsonResponse(data, originalQuery) {
              hideTypingIndicator();
 
-             if (data && data.error) {
-                 console.error("Backend Error:", data.error, data.details);
-                 debugLog("Backend Error received", { error: data.error, details: data.details });
-                 displayError(data.error + (data.details ? `: ${data.details}` : ''));
+             if (!data) {
+                 console.error("Empty response received from backend.");
+                 debugLog("Empty/null response received", { data });
+                 displayError('Received an empty response from the server.');
                  return;
              }
 
-             if (!data || typeof data.text !== 'string') {
-                  console.error("Invalid response structure from backend:", data);
-                  debugLog("Invalid response structure", data);
-                  displayError('Received an invalid response from the server.');
+             if (data.error) {
+                 console.error("Backend Error:", data.error, data.details);
+                 debugLog("Backend Error received", { error: data.error, details: data.details });
+                 // Display a user-friendly message, potentially hiding technical details
+                 displayError(`Sorry, something went wrong on the server: ${data.error}. Please try again later or rephrase your query.`);
+                 return;
+             }
+
+             // Expecting text and products array
+             if (typeof data.text !== 'string') {
+                  console.error("Invalid response structure from backend (missing/invalid text):", data);
+                  debugLog("Invalid response structure (text)", data);
+                  displayError('Received an invalid response format from the server.');
                   return;
              }
 
              const { text, products = [], query_type, search_criteria_used } = data;
              debugLog('Processing backend response', { query_type, text_length: text.length, product_count: products.length, criteria_used: search_criteria_used });
 
-             addMessage(text, 'bot');
+             addMessage(text, 'bot'); // Display the AI's textual response
 
+             // Check if products is an array before processing
              if (Array.isArray(products) && products.length > 0) {
-                 lastRecommendedProducts = products.map(p => ({ name: p.name, brand: p.brand }));
+                 lastRecommendedProducts = products.map(p => ({ name: p.name, brand: p.brand })); // Store basic info
                  debugLog('Updating lastRecommendedProducts', lastRecommendedProducts.map(p=>p.name));
-                 addProductSection(products, originalQuery);
+                 addProductSection(products, originalQuery); // Display product cards
              } else {
-                 lastRecommendedProducts = [];
+                 lastRecommendedProducts = []; // Clear if no products returned
+                 if (query_type === 'product' || query_type === 'list') {
+                     debugLog('No products returned for a product/list query type.');
+                     // Optionally add a message like "I couldn't find specific products for that, but..."
+                 }
              }
         }
 
@@ -660,17 +747,20 @@
             messageDiv.className = `${sender}-message message-base animate-fade-in`;
             const contentSpan = document.createElement('span');
             contentSpan.className = 'message-content';
-            contentSpan.innerHTML = DOMPurify.sanitize(text, { USE_PROFILES: { html: true } });
+            // Use the appropriate sanitizer based on expected content type
+            contentSpan.innerHTML = sanitizeHtml(text); // Sanitize HTML content from bot or user
             messageDiv.appendChild(contentSpan);
             chatArea.appendChild(messageDiv);
             scrollToBottom();
         }
 
         function showTypingIndicator() {
-            hideTypingIndicator();
+            hideTypingIndicator(); // Remove existing one if any
             const typingDiv = document.createElement('div');
             typingDiv.id = 'typing-indicator';
+            // Apply bot message styling but identify it uniquely
             typingDiv.className = 'bot-message message-base animate-fade-in';
+            // Content doesn't need complex sanitization here
             typingDiv.innerHTML = '<span class="message-content"><span>Thinking</span><span class="dot dot-1"></span><span class="dot dot-2"></span><span class="dot dot-3"></span></span>';
             chatArea.appendChild(typingDiv);
             scrollToBottom();
@@ -684,8 +774,15 @@
          function removeSuggestions() {
              if (examplesContainer && examplesContainer.children.length > 0) {
                  anime({
-                     targets: '.example-chip', opacity: 0, translateY: 10, duration: 300, easing: 'easeInQuad',
-                     complete: () => { examplesContainer.innerHTML = ''; }
+                     targets: '.example-chip',
+                     opacity: 0,
+                     translateY: 10,
+                     duration: 300,
+                     easing: 'easeInQuad',
+                     complete: () => {
+                         // Check again before clearing, in case new suggestions were added rapidly
+                         if (examplesContainer) examplesContainer.innerHTML = '';
+                     }
                  });
              }
          }
@@ -693,8 +790,14 @@
         function displayError(message) {
             const errorDiv = document.createElement('div');
             errorDiv.className = 'error-message animate-fade-in';
-            const sanitizedMessage = DOMPurify.sanitize(message, { USE_PROFILES: { html: false } });
-            errorDiv.innerHTML = `<span class="message-content">${sanitizedMessage} <button class="retry-btn" onclick="retryLastMessage()">Retry</button></span>`;
+            // Sanitize the error message itself (treat as plain text)
+            const sanitizedMessage = sanitizeText(message);
+            // Add retry button functionality
+            errorDiv.innerHTML = `<span class="message-content">${sanitizedMessage} <button class="retry-btn" aria-label="Retry last message">Retry</button></span>`;
+            const retryButton = errorDiv.querySelector('.retry-btn');
+            if (retryButton) {
+                retryButton.onclick = retryLastMessage; // Assign function directly
+            }
             chatArea.appendChild(errorDiv);
             scrollToBottom();
         }
@@ -702,12 +805,16 @@
         function retryLastMessage() {
             if (lastUserMessage) {
                 debugLog('Retrying last message:', { query: lastUserMessage });
+                // Remove the specific error message containing the button that was clicked
                 const errorMessages = chatArea.querySelectorAll('.error-message');
-                if (errorMessages.length > 0) errorMessages[errorMessages.length - 1].remove();
-                sendMessage(lastUserMessage);
+                if (errorMessages.length > 0) {
+                    // Remove the *last* error message added
+                    errorMessages[errorMessages.length - 1].remove();
+                }
+                sendMessage(lastUserMessage); // Resend the last stored user message
             } else {
                  debugLog('Retry failed: No last user message stored.');
-                 displayError("Could not retrieve the last message to retry.");
+                 addMessage("Could not retrieve the last message to retry.", 'bot'); // Inform user in chat
             }
         }
 
@@ -717,72 +824,103 @@
             sectionDiv.className = 'product-section animate-fade-in';
             const titleDiv = document.createElement('div');
             titleDiv.className = 'font-semibold text-sm mb-2';
-            titleDiv.textContent = 'Here are some products you might like:';
+            // Sanitize title text
+            titleDiv.textContent = sanitizeText('Here are some products you might like:');
             sectionDiv.appendChild(titleDiv);
 
             products.forEach((product, index) => {
-                if (!product || !product.name || !product.url) {
-                    debugLog('Skipping invalid product object in display', { index, product_name: product?.name });
+                // Basic validation of product object structure
+                if (!product || typeof product !== 'object' || !product.name || !product.url) {
+                    debugLog('Skipping invalid product object in display', { index, product_data: product });
                     return;
                 }
 
                 const card = document.createElement('a');
-                let productUrl = '#';
+                let productUrl = '#'; // Default to '#' if URL is invalid
                 try {
+                    // Validate and normalize URL
                     if (product.url && typeof product.url === 'string') {
-                         let tempUrl = product.url;
-                         if (tempUrl.startsWith('//')) tempUrl = 'https:' + tempUrl;
-                         else if (tempUrl.startsWith('/')) tempUrl = PLANET_BEAUTY_DOMAIN + tempUrl;
-                         else if (!tempUrl.startsWith('http')) tempUrl = PLANET_BEAUTY_DOMAIN + '/' + tempUrl;
-                         new URL(tempUrl);
+                         let tempUrl = product.url.trim();
+                         if (tempUrl.startsWith('//')) {
+                             tempUrl = 'https:' + tempUrl;
+                         } else if (tempUrl.startsWith('/')) {
+                             tempUrl = PLANET_BEAUTY_DOMAIN + tempUrl;
+                         } else if (!tempUrl.startsWith('http://') && !tempUrl.startsWith('https://')) {
+                             // Assume relative path from domain root if no protocol and not starting with /
+                             tempUrl = PLANET_BEAUTY_DOMAIN + '/' + tempUrl;
+                         }
+                         // Final check if it looks like a valid URL
+                         new URL(tempUrl); // This will throw if invalid
                          productUrl = tempUrl;
+                    } else {
+                        debugLog('Product URL missing or not a string', { name: product.name, url: product.url });
                     }
                 } catch (urlError) {
-                    debugLog('Invalid product URL detected', { name: product.name, url: product.url, error: urlError.message });
+                    debugLog('Invalid product URL detected, using fallback "#"', { name: product.name, url: product.url, error: urlError.message });
                 }
 
                 card.href = productUrl;
                 card.className = 'product-card';
-                card.setAttribute('target', '_blank');
-                card.setAttribute('rel', 'noopener noreferrer');
-                const safeName = DOMPurify.sanitize(product.name, { USE_PROFILES: { html: false } });
-                card.setAttribute('aria-label', `View ${safeName} on Planet Beauty`);
+                card.setAttribute('target', '_blank'); // Open in new tab
+                card.setAttribute('rel', 'noopener noreferrer'); // Security best practice
 
-                let imageHtml = `<div class="image-placeholder"><i class="fas fa-image"></i></div>`;
-                // Use product.image (corrected field name)
-                if (product.image && typeof product.image === 'string' && product.image.startsWith('https')) {
-                    imageHtml = `<img data-src="${product.image}" alt="${safeName}" class="product-image lazyload" onerror="this.parentElement.innerHTML = '<div class=\\'image-placeholder\\'><i class=\\'fas fa-image-slash\\'></i></div>'; this.onerror=null;">`;
+                // Sanitize all text content before displaying
+                const safeName = sanitizeText(product.name);
+                const safeDescription = sanitizeText(product.description || 'No description available.');
+                const safePrice = sanitizeText(product.price || 'Price not available');
+                const safeBrand = sanitizeText(product.brand || ''); // Handle potentially missing brand
+
+                card.setAttribute('aria-label', `View ${safeName} ${safeBrand ? 'by ' + safeBrand : ''} on Planet Beauty`);
+
+                let imageHtml = `<div class="image-placeholder"><i class="fas fa-image"></i></div>`; // Default placeholder
+                // Use product.image for the image source
+                if (product.image && typeof product.image === 'string' && product.image.trim().toLowerCase().startsWith('https')) {
+                    const safeImageUrl = sanitizeText(product.image.trim()); // Sanitize URL just in case
+                    imageHtml = `<img data-src="${safeImageUrl}" alt="${safeName}" class="product-image lazyload" onerror="this.parentElement.innerHTML = '<div class=\\'image-placeholder\\'><i class=\\'fas fa-image-slash\\'></i></div>'; this.onerror=null; console.warn('Failed to load image:', this.src);">`;
                 } else {
-                     debugLog('Product image missing or invalid', { name: product.name, image: product.image });
+                     debugLog('Product image missing, invalid, or not HTTPS', { name: product.name, image: product.image });
                 }
 
-                const safeDescription = DOMPurify.sanitize(product.description || 'No description available.', { USE_PROFILES: { html: false } });
-                const safePrice = DOMPurify.sanitize(product.price || 'Price not available', { USE_PROFILES: { html: false } });
-
+                // Construct inner HTML using sanitized values
                 card.innerHTML = `
                     <div class="product-image-container">
                         ${imageHtml}
                     </div>
                     <div class="product-info">
-                        <div class="product-name" title="${safeName}">${safeName}</div>
+                        <div class="product-name" title="${safeName} ${safeBrand ? '- ' + safeBrand : ''}">${safeName} ${safeBrand ? `<span style="font-weight:400; font-size:0.8em; color: #777;">(${safeBrand})</span>` : ''}</div>
                         <div class="product-description">${safeDescription}</div>
                         <div class="product-price">${safePrice}</div>
                     </div>
                 `;
                 sectionDiv.appendChild(card);
 
+                // Add click listener for debugging/analytics if needed
                 card.addEventListener('click', (e) => {
-                    if (card.href === '#') e.preventDefault();
-                    debugLog('Product card clicked', { product: safeName, url: card.href });
+                    if (card.href === '#') {
+                        e.preventDefault(); // Prevent navigation if URL was invalid
+                        debugLog('Product card clicked but URL is invalid', { product: safeName });
+                    } else {
+                        debugLog('Product card clicked', { product: safeName, url: card.href });
+                        // Example: Track click with analytics
+                        // if (typeof gtag === 'function') {
+                        //     gtag('event', 'select_content', { content_type: 'product', item_id: safeName });
+                        // }
+                    }
                 });
             });
             chatArea.appendChild(sectionDiv);
             scrollToBottom();
-            if ('lazySizes' in window) lazySizes.loader.checkElems();
+            // Ensure lazySizes processes the new images
+            if ('lazySizes' in window) {
+                lazySizes.loader.checkElems();
+            }
         }
 
         function scrollToBottom() {
-            chatArea.scrollTo({ top: chatArea.scrollHeight, behavior: 'smooth' });
+            // Use requestAnimationFrame for smoother scrolling after DOM updates
+            requestAnimationFrame(() => {
+                chatArea.scrollTo({ top: chatArea.scrollHeight, behavior: 'smooth' });
+            });
         }
 
         // --- Utility Functions ---
@@ -793,39 +931,53 @@
             const entry = document.createElement('div');
             entry.className = 'debug-entry';
             const timestamp = new Date().toLocaleTimeString([], { hour12: false });
-            let content = `<strong>[${timestamp}]</strong> ${DOMPurify.sanitize(message, { USE_PROFILES: { html: false } })}`;
+            // Sanitize the main message string
+            let content = `<strong>[${timestamp}]</strong> ${sanitizeText(message)}`;
 
             if (data !== undefined) {
                 try {
-                    // Handle potential circular structures or large objects safely
+                    // Use a replacer function to handle potential issues during stringification
+                    const seen = new Set();
                     const dataString = JSON.stringify(data, (key, value) => {
-                        // Basic circular reference check (might not catch all)
                         if (typeof value === 'object' && value !== null) {
-                            if (seen.has(value)) { return '[Circular]'; }
+                            if (seen.has(value)) { return '[Circular Reference]'; }
                             seen.add(value);
+                        }
+                        // Optional: Truncate long strings within the data
+                        if (typeof value === 'string' && value.length > 200) {
+                            return value.substring(0, 197) + '...';
                         }
                         return value;
                     }, 2); // Indent for readability
-                    var seen = new Set(); // Reset seen set for each stringify call
-                    content += `<pre>${DOMPurify.sanitize(dataString)}</pre>`;
+
+                    // Sanitize the resulting JSON string before displaying as <pre>
+                    content += `<pre>${sanitizeText(dataString)}</pre>`;
                 } catch (e) {
-                    content += ` <span style="color: #aaa;">[Data not serializable: ${e.message}]</span>`;
+                    console.warn("Error stringifying debug data:", e);
+                    // Display a safe fallback message
+                    content += ` <span style="color: #aaa;">[Data could not be fully displayed: ${sanitizeText(e.message)}]</span>`;
                 }
             }
-            entry.innerHTML = content; // Assumes content is safe after sanitization
+            entry.innerHTML = content; // Assign the constructed, sanitized HTML
             debugContent.appendChild(entry);
+            // Scroll debug panel to bottom
             debugPanel.scrollTop = debugPanel.scrollHeight;
         }
 
 
         function safeEncodeURIComponent(str) {
             try {
+                // Standard encoding + encode problematic characters for URLs
                 return encodeURIComponent(str)
-                    .replace(/!/g, '%21').replace(/'/g, '%27').replace(/\(/g, '%28')
-                    .replace(/\)/g, '%29').replace(/\*/g, '%2A').replace(/~/g, '%7E');
+                    .replace(/!/g, '%21')
+                    .replace(/'/g, '%27')
+                    .replace(/\(/g, '%28')
+                    .replace(/\)/g, '%29')
+                    .replace(/\*/g, '%2A')
+                    .replace(/~/g, '%7E');
             } catch (e) {
-                debugLog('URL encoding error', { error: e.message });
-                return '';
+                debugLog('URL encoding error', { error: e.message, inputString: str });
+                return ''; // Return empty string on error
             }
         }
 
