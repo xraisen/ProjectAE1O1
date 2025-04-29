@@ -1,24 +1,25 @@
 /**
  * Planet Beauty AI Chatbot Widget
- * Enhanced version with full-screen mobile view, larger desktop view, bubble effects, and improved typing animation
+ * This script creates and manages the chatbot widget that appears on your Shopify store.
+ * Enhanced version with improved UI, typing indicators, and better interactions.
  */
 
 ;(() => {
   // Configuration
   const DEFAULT_CONFIG = {
     apiUrl:
-      "https://script.google.com/macros/s/AKfycbwxBPdBePvHxJLHzCiFEZaZupmtEepcAIZoTkJYEvELIiGRn6TFGuVedkKdzDyTa6YN/exec",
+      "https://script.google.com/macros/s/AKfycbys0cIz4SYCFS3h7xue2TFPHBe8RiT94Bbgb0Gg0sg4fJF4OY-NoLUiCfxcvIFuStrS/exec", // Google Apps Script URL
     primaryColor: "#e91e63",
     textColor: "#ffffff",
     position: "bottom-right",
     icon: "message-circle",
     welcomeMessage:
       "Hi! I'm Bella, your AI beauty guide. Ready to find your next favorite product or get some tips? ✨",
-    botName: "Bella",
-    apiTimeout: 30000,
-    clientCacheTTL: 3600 * 1000,
-    clientCacheSize: 50,
-    rateLimit: 1000,
+    botName: "Bella", // Name of the AI assistant
+    apiTimeout: 30000, // 30 seconds timeout for API calls
+    clientCacheTTL: 3600 * 1000, // 1 hour in milliseconds
+    clientCacheSize: 50, // Max number of cached responses
+    rateLimit: 1000, // Minimum time between messages in ms
   }
 
   // Get configuration from script tag data attributes
@@ -71,8 +72,8 @@
       }
       
       .ai-chatbot-toggle {
-        width: 70px;
-        height: 70px;
+        width: 60px;
+        height: 60px;
         border-radius: 50%;
         background-color: ${config.primaryColor};
         color: ${config.textColor};
@@ -83,27 +84,25 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         border: none;
         outline: none;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        animation: bubblePulse 2s infinite ease-in-out;
+        transition: transform 0.2s ease;
       }
       
       .ai-chatbot-toggle:hover {
-        transform: scale(1.1);
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        transform: scale(1.05);
       }
       
       .ai-chatbot-toggle svg {
-        width: 32px;
-        height: 32px;
+        width: 28px;
+        height: 28px;
       }
       
       .ai-chatbot-container {
         position: absolute;
-        bottom: 80px;
-        width: 525px;
-        height: 750px;
+        bottom: 70px;
+        width: 350px;
+        height: 500px;
         background: white;
-        border-radius: 16px;
+        border-radius: 12px;
         box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
         display: flex;
         flex-direction: column;
@@ -131,7 +130,7 @@
       .ai-chatbot-header {
         background: linear-gradient(to right, ${config.primaryColor}, ${adjustColor(config.primaryColor, -20)});
         color: ${config.textColor};
-        padding: 20px;
+        padding: 15px;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -141,13 +140,12 @@
         display: flex;
         align-items: center;
         font-weight: 600;
-        font-size: 18px;
       }
       
       .ai-chatbot-header-title svg {
-        margin-right: 10px;
-        width: 24px;
-        height: 24px;
+        margin-right: 8px;
+        width: 20px;
+        height: 20px;
       }
       
       .ai-chatbot-header-actions {
@@ -159,13 +157,12 @@
         border: none;
         color: ${config.textColor};
         cursor: pointer;
-        padding: 6px;
-        margin-left: 6px;
+        padding: 5px;
+        margin-left: 5px;
         border-radius: 4px;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: background 0.2s ease;
       }
       
       .ai-chatbot-header-button:hover {
@@ -173,39 +170,32 @@
       }
       
       .ai-chatbot-header-button svg {
-        width: 18px;
-        height: 18px;
+        width: 16px;
+        height: 16px;
       }
       
       .ai-chatbot-messages {
         flex: 1;
         overflow-y: auto;
-        padding: 20px;
+        padding: 15px;
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 10px;
         scroll-behavior: smooth;
       }
       
       .ai-chatbot-message {
         max-width: 80%;
-        padding: 12px 16px;
-        border-radius: 20px;
-        font-size: 15px;
-        line-height: 1.5;
-        animation: bubblePop 0.3s ease-out forwards;
-        position: relative;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        padding: 10px 14px;
+        border-radius: 18px;
+        font-size: 14px;
+        line-height: 1.4;
+        animation: fadeIn 0.3s ease-out forwards;
       }
       
-      @keyframes bubblePop {
-        0% { opacity: 0; transform: scale(0.8) translateY(10px); }
-        100% { opacity: 1; transform: scale(1) translateY(0); }
-      }
-      
-      @keyframes bubblePulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.05); }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
       }
       
       .ai-chatbot-message.bot {
@@ -223,22 +213,22 @@
       
       .ai-chatbot-product-section {
         background: #f9f9f9;
-        padding: 1rem;
-        border-radius: 14px;
-        margin-bottom: 1rem;
+        padding: 0.75rem;
+        border-radius: 12px;
+        margin-bottom: 0.75rem;
         max-width: 95%;
         margin-right: auto;
-        animation: bubblePop 0.5s ease-out forwards;
+        animation: fadeIn 0.5s ease-out forwards;
       }
       
       .ai-chatbot-product {
         display: flex;
         align-items: center;
-        border-radius: 12px;
+        border-radius: 10px;
         overflow: hidden;
         box-shadow: 0 2px 6px rgba(0,0,0,0.08);
         transition: transform 0.2s, box-shadow 0.2s;
-        margin: 0.75rem 0;
+        margin: 0.5rem 0;
         text-decoration: none;
         color: inherit;
         background: white;
@@ -253,11 +243,11 @@
       }
       
       .ai-chatbot-product-image {
-        width: 100px;
-        height: 100px;
+        width: 80px;
+        height: 80px;
         flex-shrink: 0;
-        margin: 0.75rem;
-        border-radius: 10px;
+        margin: 0.5rem;
+        border-radius: 8px;
         overflow: hidden;
         background: #eee;
         display: flex;
@@ -272,24 +262,24 @@
       }
       
       .ai-chatbot-product-info {
-        padding: 10px;
+        padding: 8px;
         flex: 1;
         min-width: 0;
       }
       
       .ai-chatbot-product-name {
         font-weight: 600;
-        font-size: 14px;
-        margin-bottom: 4px;
+        font-size: 13px;
+        margin-bottom: 3px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
       }
       
       .ai-chatbot-product-description {
-        font-size: 13px;
+        font-size: 12px;
         color: #666;
-        margin: 4px 0;
+        margin: 3px 0;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
@@ -299,88 +289,84 @@
       .ai-chatbot-product-price {
         font-weight: 600;
         color: ${config.primaryColor};
-        font-size: 14px;
+        font-size: 13px;
       }
       
       .ai-chatbot-product-match {
-        font-size: 0.8rem;
+        font-size: 0.7rem;
         color: #777;
-        margin-top: 0.2rem;
+        margin-top: 0.1rem;
         font-style: italic;
       }
       
       .ai-chatbot-typing {
         display: flex;
         align-items: center;
-        gap: 0.3rem;
-        padding: 12px 16px;
-        border-radius: 20px;
+        gap: 0.25rem;
+        padding: 10px 14px;
+        border-radius: 18px;
         font-size: 14px;
         max-width: 80%;
         align-self: flex-start;
         background-color: #f5f5f5;
         border-bottom-left-radius: 4px;
-        animation: bubblePop 0.3s ease-out forwards;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        animation: fadeIn 0.3s ease-out forwards;
       }
       
       .ai-chatbot-typing-text {
-        font-size: 0.9rem;
-        opacity: 0.8;
+        font-size: 0.85rem;
+        opacity: 0.7;
       }
       
       .ai-chatbot-typing-dot {
-        width: 8px;
-        height: 8px;
+        width: 7px;
+        height: 7px;
         background: ${config.primaryColor};
         border-radius: 50%;
         display: inline-block;
-        animation: typingWave 1.2s infinite ease-in-out;
       }
       
-      @keyframes typingWave {
-        0%, 100% { transform: translateY(0); opacity: 0.4; }
-        50% { transform: translateY(-6px); opacity: 1; }
+      @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
       }
       
-      .ai-chatbot-typing-dot:nth-child(1) { animation-delay: 0s; }
-      .ai-chatbot-typing-dot:nth-child(2) { animation-delay: 0.2s; }
-      .ai-chatbot-typing-dot:nth-child(3) { animation-delay: 0.4s; }
+      .ai-chatbot-typing-dot:nth-child(1) { animation: bounce 0.6s infinite ease-in-out; }
+      .ai-chatbot-typing-dot:nth-child(2) { animation: bounce 0.6s infinite 0.1s ease-in-out; }
+      .ai-chatbot-typing-dot:nth-child(3) { animation: bounce 0.6s infinite 0.2s ease-in-out; }
       
       .ai-chatbot-suggested-questions {
         display: flex;
         flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 12px;
-        margin-bottom: 12px;
+        gap: 8px;
+        margin-top: 10px;
+        margin-bottom: 10px;
         max-width: 95%;
-        animation: bubblePop 0.5s ease-out forwards;
+        animation: fadeIn 0.5s ease-out forwards;
       }
       
       .ai-chatbot-suggested-question {
         background-color: #f5f5f5;
         border: 1px solid ${config.primaryColor};
-        border-radius: 22px;
-        padding: 10px 14px;
-        font-size: 13px;
+        border-radius: 20px;
+        padding: 8px 12px;
+        font-size: 12px;
         cursor: pointer;
         transition: all 0.2s ease;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         max-width: 100%;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
       }
       
       .ai-chatbot-suggested-question:hover {
         background: ${config.primaryColor};
         color: white;
         transform: scale(1.05);
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
       }
       
       .ai-chatbot-input {
-        padding: 20px;
+        padding: 15px;
         border-top: 1px solid #e0e0e0;
         display: flex;
         align-items: center;
@@ -389,17 +375,15 @@
       .ai-chatbot-input-field {
         flex: 1;
         border: 1px solid #e0e0e0;
-        border-radius: 22px;
-        padding: 10px 18px;
-        font-size: 15px;
+        border-radius: 20px;
+        padding: 8px 15px;
+        font-size: 14px;
         outline: none;
-        transition: border-color 0.2s, box-shadow 0.2s;
+        transition: border-color 0.2s;
       }
       
       .ai-chatbot-input-field:focus {
-        border-colorV.2s ease;
         border-color: ${config.primaryColor};
-        box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.1);
       }
       
       .ai-chatbot-send-button {
@@ -407,46 +391,43 @@
         color: ${config.textColor};
         border: none;
         border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        margin-left: 12px;
+        width: 36px;
+        height: 36px;
+        margin-left: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        transition: transform 0.2s, box-shadow 0.2s;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        transition: transform 0.2s;
       }
       
       .ai-chatbot-send-button:hover {
-        transform: scale(1.1);
-        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+        transform: scale(1.05);
       }
       
       .ai-chatbot-send-button:disabled {
         background-color: #cccccc;
         cursor: not-allowed;
         transform: none;
-        box-shadow: none;
       }
       
       .ai-chatbot-send-button svg {
-        width: 20px;
-        height: 20px;
+        width: 18px;
+        height: 18px;
       }
       
       .ai-chatbot-error {
         background: #fef2f2;
         color: #dc2626;
-        padding: 12px 16px;
-        border-radius: 20px;
+        padding: 10px 14px;
+        border-radius: 18px;
         font-size: 14px;
         max-width: 80%;
         align-self: flex-start;
         border-bottom-left-radius: 4px;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
         border: 1px solid #fecaca;
-        animation: bubblePop 0.3s ease-out forwards;
+        animation: fadeIn 0.3s ease-out forwards;
       }
       
       .ai-chatbot-retry {
@@ -455,45 +436,32 @@
         color: ${config.primaryColor};
         text-decoration: underline;
         cursor: pointer;
-        font-size: 0.9rem;
-        margin-left: 0.75rem;
+        font-size: 0.85rem;
+        margin-left: 0.5rem;
         font-weight: 500;
       }
       
-      /* Mobile portrait view */
-      @media (max-width: 480px) and (orientation: portrait) {
+      @media (max-width: 480px) {
         .ai-chatbot-container {
-          width: 100vw;
-          height: 100vh;
-          max-height: none;
-          border-radius: 0;
-          bottom: 0;
-          top: 0;
-          left: 0;
-          right: 0;
-          transform: none;
+          width: calc(100vw - 40px);
+          height: 60vh;
+          max-height: 500px;
         }
         
         .ai-chatbot-widget.bottom-right .ai-chatbot-container,
         .ai-chatbot-widget.bottom-left .ai-chatbot-container {
-          transform: none;
+          left: 50%;
+          right: auto;
+          transform: translateX(-50%) translateY(20px) scale(0.9);
         }
         
         .ai-chatbot-widget.open .ai-chatbot-container {
-          transform: none;
+          transform: translateX(-50%) translateY(0) scale(1);
         }
         
         .ai-chatbot-product-image {
-          width: 80px;
-          height: 80px;
-        }
-        
-        .ai-chatbot-header {
-          padding: 15px;
-        }
-        
-        .ai-chatbot-input {
-          padding: 15px;
+          width: 60px;
+          height: 60px;
         }
       }
     `
@@ -502,14 +470,17 @@
 
   // Helper function to adjust color brightness
   function adjustColor(hex, percent) {
+    // Convert hex to RGB
     let r = Number.parseInt(hex.substring(1, 3), 16)
     let g = Number.parseInt(hex.substring(3, 5), 16)
     let b = Number.parseInt(hex.substring(5, 7), 16)
 
+    // Adjust brightness
     r = Math.max(0, Math.min(255, r + percent))
     g = Math.max(0, Math.min(255, g + percent))
     b = Math.max(0, Math.min(255, b + percent))
 
+    // Convert back to hex
     return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)
   }
 
@@ -518,15 +489,18 @@
     const widget = document.createElement("div")
     widget.className = `ai-chatbot-widget ${config.position}`
 
+    // Toggle button
     const toggle = document.createElement("button")
     toggle.className = "ai-chatbot-toggle"
     toggle.setAttribute("aria-label", "Open chat")
     toggle.innerHTML = getIconSvg(config.icon)
     toggle.addEventListener("click", toggleChat)
 
+    // Chat container
     const container = document.createElement("div")
     container.className = "ai-chatbot-container"
 
+    // Header
     const header = document.createElement("div")
     header.className = "ai-chatbot-header"
 
@@ -555,9 +529,11 @@
     header.appendChild(headerTitle)
     header.appendChild(headerActions)
 
+    // Messages area
     const messagesArea = document.createElement("div")
     messagesArea.className = "ai-chatbot-messages"
 
+    // Input area
     const inputArea = document.createElement("div")
     inputArea.className = "ai-chatbot-input"
 
@@ -584,15 +560,18 @@
     inputArea.appendChild(inputField)
     inputArea.appendChild(sendButton)
 
+    // Assemble container
     container.appendChild(header)
     container.appendChild(messagesArea)
     container.appendChild(inputArea)
 
+    // Assemble widget
     widget.appendChild(toggle)
     widget.appendChild(container)
 
     document.body.appendChild(widget)
 
+    // Fetch initial data
     fetchInitialData()
 
     return {
@@ -608,23 +587,29 @@
   // Fetch initial welcome message and suggested questions
   function fetchInitialData() {
     try {
+      // Create URL with query parameters for Google Apps Script
       const url = new URL(config.apiUrl)
       url.searchParams.append("action", "get_initial_data")
       if (config.apiKey) {
         url.searchParams.append("apiKey", config.apiKey)
       }
 
+      // Use JSONP for cross-origin requests to Google Apps Script
       const callbackName = "chatbotInitCallback_" + Math.random().toString(36).substring(2, 15)
 
       window[callbackName] = (data) => {
         if (data.error) {
           addMessage("Welcome to Planet Beauty! How can I help you today?", "bot")
         } else {
+          // Add welcome message
           addMessage(data.welcomeMessage || "Welcome to Planet Beauty! How can I help you today?", "bot")
+
+          // Add suggested questions if available
           if (data.suggestedQuestions && data.suggestedQuestions.length > 0) {
             addSuggestedQuestions(data.suggestedQuestions)
           }
         }
+        // Clean up
         delete window[callbackName]
         document.head.removeChild(script)
       }
@@ -633,15 +618,18 @@
       script.src = `${url.toString()}&callback=${callbackName}`
       document.head.appendChild(script)
 
+      // Set timeout
       setTimeout(() => {
         if (window[callbackName]) {
           delete window[callbackName]
           document.head.removeChild(script)
+          // Fallback welcome message
           addMessage("Welcome to Planet Beauty! How can I help you today?", "bot")
         }
       }, config.apiTimeout)
     } catch (error) {
       console.error("Error fetching initial data:", error)
+      // Fallback welcome message
       addMessage("Welcome to Planet Beauty! How can I help you today?", "bot")
     }
   }
@@ -696,6 +684,7 @@
     const messageEl = document.createElement("div")
     messageEl.className = `ai-chatbot-message ${message.sender}`
 
+    // Sanitize HTML content
     const sanitizedText = sanitizeHtml(message.text)
     messageEl.innerHTML = sanitizedText
 
@@ -847,8 +836,10 @@
     addMessage(message, "user")
     showTypingIndicator()
 
+    // Check client cache
     const cachedResponse = getCachedResponse(message)
     if (cachedResponse) {
+      // Simulate a short delay for better UX
       setTimeout(() => {
         hideTypingIndicator()
         handleResponse(cachedResponse)
@@ -856,14 +847,16 @@
       return
     }
 
+    // Format conversation history
     const history = messages
       .filter((msg) => msg.sender === "user" || msg.sender === "bot")
-      .slice(-6)
+      .slice(-6) // Last 3 turns (user+bot)
       .map((msg) => ({
         role: msg.sender === "user" ? "user" : "assistant",
         content: msg.text,
       }))
 
+    // Create URL with query parameters for Google Apps Script
     const url = new URL(config.apiUrl)
     url.searchParams.append("action", "search")
     url.searchParams.append("query", encodeURIComponent(message))
@@ -872,6 +865,7 @@
       url.searchParams.append("apiKey", config.apiKey)
     }
 
+    // Use JSONP for cross-origin requests to Google Apps Script
     const callbackName = "chatbotCallback_" + Math.random().toString(36).substring(2, 15)
 
     window[callbackName] = (data) => {
@@ -880,10 +874,12 @@
       if (data.error) {
         addErrorMessage(`Error: ${data.error}`, message)
       } else {
+        // Cache successful response
         setCachedResponse(message, data)
         handleResponse(data)
       }
 
+      // Clean up
       delete window[callbackName]
       document.head.removeChild(script)
     }
@@ -892,6 +888,7 @@
     script.src = `${url.toString()}&callback=${callbackName}`
     document.head.appendChild(script)
 
+    // Set timeout
     setTimeout(() => {
       if (window[callbackName]) {
         delete window[callbackName]
@@ -904,10 +901,12 @@
 
   // Handle response from backend
   function handleResponse(data) {
+    // Display the bot's text response
     if (data.text) {
       addMessage(data.text, "bot")
     }
 
+    // Display products if available
     if (data.products && Array.isArray(data.products) && data.products.length > 0) {
       lastRecommendedProducts = data.products
       displayProducts(data.products)
@@ -929,7 +928,9 @@
   function setCachedResponse(query, data) {
     const key = simpleHash(query)
 
+    // Implement LRU-like eviction if cache gets too large
     if (messageCache.size >= config.clientCacheSize) {
+      // Find oldest entry
       let oldestKey = null
       let oldestTime = Number.POSITIVE_INFINITY
 
@@ -958,7 +959,7 @@
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i)
       hash = (hash << 5) - hash + char
-      hash |= 0
+      hash |= 0 // Convert to 32bit integer
     }
     return "pb_h_" + Math.abs(hash).toString(36)
   }
@@ -993,5 +994,6 @@
     return els
   }
 
+  // Store elements for later use
   const elements = init()
 })()
