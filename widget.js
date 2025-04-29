@@ -7,7 +7,7 @@
   // --- Configuration ---
   const DEFAULT_CONFIG = {
     apiUrl:
-      "https://script.google.com/macros/s/AKfycbwxBPdBePvHxJLHzCiFEZaZupmtEepcAIZoTkJYEvELIiGRn6TFGuVedkKdzDyTa6YN/exec", // Default API URL
+      "https://script.google.com/macros/s/AKfycbx33uAHz5Yuxki29KSqYqy7uWTv850Jp8IsGQevsbKyjNKcWj9N3suuUOkdXxr0E-fV/exec", // Default API URL
     primaryColor: "#e91e63", // Default Pink - Used if data-* and CSS var fail
     textColor: "#ffffff",
     position: "bottom-right",
