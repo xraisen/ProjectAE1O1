@@ -1,0 +1,347 @@
+```jsx
+import React, { useState, useEffect } from 'react';
+
+export default function App() {
+  // Mock data for products and inventory
+  const [products, setProducts] = useState([
+    { id: 1, name: "Premium Headphones", price: 199.99, inventory: 15, soldLastWeek: 23, imageUrl: "https://picsum.photos/200/300?random=1" },
+    { id: 2, name: "Wireless Mouse", price: 49.99, inventory: 8, soldLastWeek: 18, imageUrl: "https://picsum.photos/200/300?random=2" },
+    { id: 3, name: "Mechanical Keyboard", price: 89.99, inventory: 27, soldLastWeek: 12, imageUrl: "https://picsum.photos/200/300?random=3" },
+    { id: 4, name: "Smart Watch", price: 149.99, inventory: 5, soldLastWeek: 31, imageUrl: "https://picsum.photos/200/300?random=4" },
+    { id: 5, name: "Bluetooth Speaker", price: 79.99, inventory: 19, soldLastWeek: 9, imageUrl: "https://picsum.photos/200/300?random=5" },
+    { id: 6, name: "Gaming Chair", price: 299.99, inventory: 3, soldLastWeek: 7, imageUrl: "https://picsum.photos/200/300?random=6" }
+  ]);
+
+  // AI-generated alerts
+  const [alerts, setAlerts] = useState([
+    { id: 1, type: "low_stock", message: "Wireless Mouse inventory critically low (8 left)", severity: "high" },
+    { id: 2, type: "trend", message: "Smart Watch sales increased by 45% last week", severity: "medium" },
+    { id: 3, type: "low_stock", message: "Gaming Chair inventory critically low (3 left)", severity: "high" }
+  ]);
+
+  // Chatbot state
+  const [messages, setMessages] = useState([
+    { role: "assistant", content: "Hello, How can I assist you today?" }
+  ]);
+  const [input, setInput] = useState("");
+
+  // Calculate metrics
+  const totalProducts = products.length;
+  const lowStockCount = products.filter(p => p.inventory <= 10).length;
+  const totalInventory = products.reduce((sum, p) => sum + p.inventory, 0);
+  
+  // Sales trend analysis
+  const trendingProducts = [...products]
+    .sort((a, b) => (b.soldLastWeek / (b.inventory + b.soldLastWeek)) - (a.soldLastWeek / (a.inventory + a.soldLastWeek)))
+    .slice(0, 3);
+
+  // Handle chat submission
+  const handleChatSubmit = (e) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+
+    const userMessage = { role: "user", content: input };
+    setMessages(prev => [...prev, userMessage]);
+    
+    // Simulate AI response
+    setTimeout(() => {
+      const response = generateAIResponse(input, products, alerts);
+      setMessages(prev => [...prev, { role: "assistant", content: response }]);
+      setInput("");
+    }, 800);
+  };
+
+  // Simulated AI response generation
+  function generateAIResponse(query, products, alerts) {
+    query = query.toLowerCase();
+    
+    if (query.includes("stock") || query.includes("inventory")) {
+      const lowStock = products.filter(p => p.inventory <= 10);
+      if (lowStock.length > 0) {
+        return `You have ${lowStock.length} products with low inventory: ${lowStock.map(p => p.name).join(", ")}. Consider restocking soon!`;
+      }
+      return "All your inventory levels are currently healthy.";
+    }
+    
+    if (query.includes("trend") || query.includes("sales")) {
+      const trending = products
+        .filter(p => p.soldLastWeek > 15)
+        .sort((a, b) => b.soldLastWeek - a.soldLastWeek);
+      
+      if (trending.length > 0) {
+        return `Top trending products: ${trending.map(p => `${p.name} (${p.soldLastWeek} sold)`).join(", ")}.`;
+      }
+      return "No significant sales trends detected this week.";
+    }
+    
+    if (query.includes("alert") || query.includes("warning")) {
+      if (alerts.length > 0) {
+        return `You have ${alerts.length} active alerts: ${alerts.map(a => a.message).join(", ")}`;
+      }
+      return "No active alerts at this time.";
+    }
+    
+    if (query.includes("recommend") || query.includes("suggest")) {
+      const lowStock = products.filter(p => p.inventory <= 10);
+      if (lowStock.length > 0) {
+        return `Recommendation: Prioritize restocking ${lowStock[0].name} immediately, as it has only ${lowStock[0].inventory} units left.`;
+      }
+      return "No immediate restocking recommendations. Your inventory is well-managed!";
+    }
+    
+    return "I'm here to help with inventory analysis, sales trends, and alerts. Ask about stock levels, product trends, or restocking recommendations!";
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg">
+        <div className="container mx-auto px-4 py-6">
+          <h1 className="text-3xl font-bold">Inventory Monitoring AI</h1>
+          <p className="text-indigo-100">AI-powered Inventory Monitoring System</p>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Sidebar */}
+          <aside className="lg:col-span-1">
+            <div className="bg-white rounded-xl shadow-lg p-6 sticky top-6">
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">Dashboard</h2>
+              <nav className="space-y-2">
+                <a href="#" className="block px-4 py-2 rounded-lg bg-indigo-100 text-indigo-700 font-medium">Overview</a>
+                <a href="#" className="block px-4 py-2 rounded-lg hover:bg-gray-100 transition">Products</a>
+                <a href="#" className="block px-4 py-2 rounded-lg hover:bg-gray-100 transition">Alerts</a>
+                <a href="#" className="block px-4 py-2 rounded-lg hover:bg-gray-100 transition">Reports</a>
+                <a href="#" className="block px-4 py-2 rounded-lg hover:bg-gray-100 transition">Settings</a>
+              </nav>
+              
+              <div className="mt-8">
+                <h3 className="text-lg font-medium text-gray-700 mb-2">Quick Actions</h3>
+                <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg transition mb-2">
+                  Generate Report
+                </button>
+                <button className="w-full border border-indigo-600 text-indigo-600 hover:bg-indigo-50 py-2 px-4 rounded-lg transition">
+                  View All Alerts
+                </button>
+              </div>
+            </div>
+          </aside>
+
+          {/* Main Dashboard */}
+          <div className="lg:col-span-3 space-y-8">
+            {/* Metrics Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white rounded-xl shadow-md p-6 transition transform hover:-translate-y-1 hover:shadow-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-500">Total Products</p>
+                    <h3 className="text-2xl font-bold text-gray-800">{totalProducts}</h3>
+                  </div>
+                  <div className="bg-indigo-100 p-3 rounded-full">
+                    <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-md p-6 transition transform hover:-translate-y-1 hover:shadow-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-500">Low Stock Items</p>
+                    <h3 className="text-2xl font-bold text-red-500">{lowStockCount}</h3>
+                  </div>
+                  <div className="bg-red-100 p-3 rounded-full">
+                    <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-md p-6 transition transform hover:-translate-y-1 hover:shadow-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-500">Total Inventory</p>
+                    <h3 className="text-2xl font-bold text-green-500">{totalInventory}</h3>
+                  </div>
+                  <div className="bg-green-100 p-3 rounded-full">
+                    <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Alerts Section */}
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">Current Alerts</h2>
+              <div className="space-y-4">
+                {alerts.length > 0 ? (
+                  alerts.map(alert => (
+                    <div 
+                      key={alert.id} 
+                      className={`p-4 rounded-lg border-l-4 ${
+                        alert.severity === 'high' 
+                          ? 'border-red-500 bg-red-50' 
+                          : 'border-yellow-500 bg-yellow-50'
+                      }`}
+                    >
+                      <div className="flex items-start">
+                        <div className="flex-shrink-0">
+                          {alert.type === 'low_stock' ? (
+                            <svg className={`h-5 w-5 ${alert.severity === 'high' ? 'text-red-500' : 'text-yellow-500'}`} fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                            </svg>
+                          ) : (
+                            <svg className="h-5 w-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                            </svg>
+                          )}
+                        </div>
+                        <div className="ml-3">
+                          <p className="text-sm font-medium text-gray-800">{alert.message}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-500 italic">No active alerts at this time</p>
+                )}
+              </div>
+            </div>
+
+            {/* Product Inventory Table */}
+            <div className="bg-white rounded-xl shadow-md overflow-hidden">
+              <div className="p-6 border-b border-gray-200">
+                <h2 className="text-xl font-semibold text-gray-800">Product Inventory</h2>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Inventory</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sales Last Week</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {products.map(product => (
+                      <tr key={product.id} className="hover:bg-gray-50 transition">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0 h-10 w-10">
+                              <img className="h-10 w-10 rounded object-cover" src={product.imageUrl} alt={product.name} />
+                            </div>
+                            <div className="ml-4">
+                              <div className="text-sm font-medium text-gray-900">{product.name}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">${product.price.toFixed(2)}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{product.inventory}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{product.soldLastWeek}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            product.inventory <= 5 
+                              ? 'bg-red-100 text-red-800' 
+                              : product.inventory <= 10 
+                                ? 'bg-yellow-100 text-yellow-800' 
+                                : 'bg-green-100 text-green-800'
+                          }`}>
+                            {product.inventory <= 5 ? 'Critical' : product.inventory <= 10 ? 'Low' : 'Healthy'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Trending Products */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {trendingProducts.map(product => (
+                <div key={product.id} className="bg-white rounded-xl shadow-md overflow-hidden transition transform hover:-translate-y-1 hover:shadow-lg">
+                  <img className="h-40 w-full object-cover" src={product.imageUrl} alt={product.name} />
+                  <div className="p-4">
+                    <h3 className="text-lg font-semibold text-gray-800">{product.name}</h3>
+                    <div className="mt-2 flex items-center">
+                      <div className="text-sm text-gray-500 mr-4">Sold: <span className="font-medium text-gray-900">{product.soldLastWeek}</span></div>
+                      <div className="text-sm text-gray-500">Inventory: <span className="font-medium text-gray-900">{product.inventory}</span></div>
+                    </div>
+                    <div className="mt-4">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        Trending
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* AI Chat Interface */}
+            <div className="bg-white rounded-xl shadow-md overflow-hidden">
+              <div className="p-6 border-b border-gray-200">
+                <h2 className="text-xl font-semibold text-gray-800">AI Assistant</h2>
+                <p className="text-sm text-gray-500 mt-1">Ask about inventory levels, sales trends, or get restocking recommendations</p>
+              </div>
+              <div className="p-6">
+                <div className="mb-4 h-64 overflow-y-auto bg-gray-50 rounded-lg p-4 space-y-4">
+                  {messages.map((msg, index) => (
+                    <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-xs md:max-w-md p-3 rounded-lg ${
+                        msg.role === 'user' 
+                          ? 'bg-indigo-600 text-white rounded-br-none' 
+                          : 'bg-gray-200 text-gray-800 rounded-bl-none'
+                      }`}>
+                        {msg.content}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <form onSubmit={handleChatSubmit} className="flex">
+                  <input
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="Ask something about your inventory..."
+                    className="flex-grow p-3 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                  <button
+                    type="submit"
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-r-lg transition"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-gray-800 text-white py-6 mt-12">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-sm">© 2025 Developed with ❤️ by Jose. All rights reserved.</p>
+          <p className="text-xs text-gray-400 mt-1">Powered by QuentinCody's Shopify MCP Server</p>
+        </div>
+      </footer>
+    </div>
+  );
+}
+```
