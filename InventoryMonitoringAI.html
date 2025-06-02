@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventory Monitoring AI</title>
+    <title>Planet Beauty Inventory AI</title>
     <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.24.0/babel.min.js"></script>
@@ -15,7 +15,7 @@
             background-color: #f5f7fa;
         }
         .header-bg {
-            background-color: #5e35b1;
+            background-color: #c94f6d;
         }
         .sidebar {
             background-color: #ffffff;
@@ -37,18 +37,18 @@
             background-color: #f7fafc;
         }
         .nav-item.active {
-            background-color: #ebf4ff;
-            color: #4c51bf;
+            background-color: #fff1f2;
+            color: #d81b60;
         }
         .btn-primary {
-            background-color: #5e35b1;
+            background-color: #d81b60;
             color: white;
             padding: 8px 16px;
             border-radius: 6px;
             transition: background-color 0.2s;
         }
         .btn-primary:hover {
-            background-color: #4c2d9b;
+            background-color: #b91c4f;
         }
         .btn-secondary {
             background-color: #ffffff;
@@ -90,6 +90,10 @@
             border-left: 4px solid #ecc94b;
             background-color: #fffff0;
         }
+        .alert-high-sales {
+            border-left: 4px solid #3182ce;
+            background-color: #ebf8ff;
+        }
         .trending-tag {
             background-color: #e6fffa;
             color: #234e52;
@@ -97,16 +101,16 @@
             border-radius: 4px;
             font-size: 12px;
         }
-        .chat-input {
+        .chat-input, .search-input {
             border: 1px solid #e2e8f0;
             border-radius: 8px;
             padding: 12px;
             width: 100%;
             outline: none;
         }
-        .chat-input:focus {
-            border-color: #5e35b1;
-            box-shadow: 0 0 0 3px rgba(94, 53, 177, 0.1);
+        .chat-input:focus, .search-input:focus {
+            border-color: #d81b60;
+            box-shadow: 0 0 0 3px rgba(216, 27, 96, 0.1);
         }
         .product-icon {
             width: 32px;
@@ -122,8 +126,8 @@
             justify-content: center;
         }
         .metric-products {
-            background-color: #ebf8ff;
-            color: #2c5282;
+            background-color: #fff1f2;
+            color: #d81b60;
         }
         .metric-stock {
             background-color: #fff5f5;
@@ -164,14 +168,14 @@
         .product-info {
             padding: 16px;
         }
-        .premium-headphones { background-color: #3b82f6; }
-        .wireless-mouse { background-color: #e5e7eb; }
-        .mechanical-keyboard { background-color: #1f2937; }
-        .smart-watch { background-color: #1f2937; }
-        .bluetooth-speaker { background-color: #64748b; }
-        .gaming-chair { background-color: #ef4444; }
+        .anastasia-brow-gel { background-color: #d3a8b0; }
+        .elta-md-sunscreen { background-color: #e5e7eb; }
+        .borghese-serum { background-color: #f5c6cb; }
+        .kerastase-shampoo { background-color: #1f2937; }
+        .mario-badescu-spray { background-color: #64748b; }
+        .t3-hair-dryer { background-color: #ef4444; }
         .navbar {
-            background-color: #5e35b1;
+            background-color: #c94f6d;
             color: white;
             padding: 12px 24px;
         }
@@ -191,7 +195,7 @@
             background-color: white;
             padding: 24px;
             border-radius: 8px;
-            max-width: 500px;
+            max-width: 600px;
             width: 100%;
         }
     </style>
@@ -202,19 +206,19 @@
         const { useState, useEffect } = React;
 
         const initialProducts = [
-            { id: 1, name: "Premium Headphones", price: 159.95, inventory: 15, salesLastWeek: 23, status: "Healthy", sku: 12, className: "premium-headphones", trending: false },
-            { id: 2, name: "Wireless Mouse", price: 49.99, inventory: 8, salesLastWeek: 10, status: "Low", sku: 16, className: "wireless-mouse", trending: true },
-            { id: 3, name: "Mechanical Keyboard", price: 89.95, inventory: 22, salesLastWeek: 12, status: "Healthy", sku: 8, className: "mechanical-keyboard", trending: false },
-            { id: 4, name: "Smart Watch", price: 149.00, inventory: 5, salesLastWeek: 21, status: "Critical", sku: 24, className: "smart-watch", trending: true },
-            { id: 5, name: "Bluetooth Speaker", price: 75.95, inventory: 15, salesLastWeek: 5, status: "Healthy", sku: 10, className: "bluetooth-speaker", trending: false },
-            { id: 6, name: "Gaming Chair", price: 299.99, inventory: 2, salesLastWeek: 7, status: "Critical", sku: 7, className: "gaming-chair", trending: true },
+            { id: 1, name: "Anastasia Beverly Hills Clear Brow Gel", price: 23.00, inventory: 50, salesLastWeek: 30, status: "Healthy", sku: "ABH-123", className: "anastasia-brow-gel", trending: true, salesVelocity: 15, stockoutDays: 3.33, vendor: "Anastasia Beverly Hills", category: "Makeup" },
+            { id: 2, name: "Elta MD UV Physical SPF40", price: 39.00, inventory: 10, salesLastWeek: 25, status: "Low", sku: "ELTA-456", className: "elta-md-sunscreen", trending: true, salesVelocity: 40, stockoutDays: 0.25, vendor: "Elta MD Skincare", category: "Skincare" },
+            { id: 3, name: "Borghese Energia Retinol Serum", price: 79.00, inventory: 20, salesLastWeek: 15, status: "Healthy", sku: "BORG-789", className: "borghese-serum", trending: false, salesVelocity: 8, stockoutDays: 2.5, vendor: "Borghese", category: "Skincare" },
+            { id: 4, name: "Kerastase Nutritive Shampoo", price: 35.00, inventory: 30, salesLastWeek: 10, status: "Healthy", sku: "KER-012", className: "kerastase-shampoo", trending: false, salesVelocity: 5, stockoutDays: 6.0, vendor: "Kerastase", category: "Haircare" },
+            { id: 5, name: "Mario Badescu Facial Spray", price: 12.00, inventory: 15, salesLastWeek: 45, status: "Low", sku: "MB-345", className: "mario-badescu-spray", trending: true, salesVelocity: 50, stockoutDays: 0.3, vendor: "Mario Badescu", category: "Skincare" },
+            { id: 6, name: "T3 Featherweight Hair Dryer", price: 199.99, inventory: 5, salesLastWeek: 8, status: "Critical", sku: "T3-678", className: "t3-hair-dryer", trending: true, salesVelocity: 35, stockoutDays: 0.14, vendor: "T3", category: "Tools" },
         ];
 
         const Navbar = () => (
             <nav className="navbar flex justify-between items-center">
                 <div className="flex items-center">
                     <i className="fas fa-warehouse mr-2"></i>
-                    <span className="text-lg font-bold">Inventory AI</span>
+                    <span className="text-lg font-bold">Planet Beauty Inventory AI</span>
                 </div>
                 <div className="flex items-center space-x-4">
                     <span className="text-sm">User: Admin</span>
@@ -260,7 +264,7 @@
 
         const Metrics = ({ products }) => {
             const totalProducts = products.length;
-            const lowStockItems = products.filter(p => p.inventory <= 8).length;
+            const lowStockItems = products.filter(p => p.inventory <= 10).length;
             const totalInventory = products.reduce((sum, p) => sum + p.inventory, 0);
 
             return (
@@ -302,37 +306,126 @@
             );
         };
 
-        const Alerts = ({ products }) => {
+        const ProductModal = ({ product, onClose, onRestock }) => (
+            <div className="modal">
+                <div className="modal-content">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-lg font-medium">{product.name}</h2>
+                        <button className="text-gray-500" onClick={onClose}>
+                            <i className="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div className="mb-4">
+                        <div className={`product-icon ${product.className} w-full h-48 mb-4`}></div>
+                        <p><strong>SKU:</strong> {product.sku}</p>
+                        <p><strong>Vendor:</strong> {product.vendor}</p>
+                        <p><strong>Category:</strong> {product.category}</p>
+                        <p><strong>Price:</strong> ${product.price.toFixed(2)}</p>
+                        <p><strong>Inventory:</strong> {product.inventory} units</p>
+                        <p><strong>Sales Velocity:</strong> {product.salesVelocity} units/day</p>
+                        <p><strong>Estimated Stockout:</strong> {product.stockoutDays.toFixed(2)} days</p>
+                        <p><strong>Description:</strong> High-quality {product.category.toLowerCase()} product from {product.vendor}. Ideal for {product.category === "Skincare" ? "sensitive or oily skin types" : product.category === "Haircare" ? "all hair types" : "daily use"}.</p>
+                    </div>
+                    <div className="mb-4">
+                        <h3 className="text-sm font-medium">Restocking Suggestion</h3>
+                        <p>Recommended: Reorder {Math.ceil(product.salesVelocity * 5)} units to cover 5 days of sales.</p>
+                        <input
+                            type="number"
+                            className="chat-input w-32 mt-2"
+                            placeholder="Restock quantity"
+                            onChange={(e) => onRestock(product.id, parseInt(e.target.value))}
+                        />
+                    </div>
+                    <button className="btn-primary" onClick={onClose}>Close</button>
+                </div>
+            </div>
+        );
+
+        const Alerts = ({ products, notificationSettings }) => {
+            const [notificationHistory, setNotificationHistory] = useState([]);
             const alerts = products
-                .filter(p => p.status === "Low" || p.status === "Critical" || (p.salesLastWeek > 20))
-                .map(p => ({
-                    type: p.status === "Critical" ? "critical" : p.salesLastWeek > 20 ? "warning" : "critical",
-                    message: p.salesLastWeek > 20 
-                        ? `${p.name} sales increased by ${p.salesLastWeek}% last week`
-                        : `${p.name} inventory ${p.status.toLowerCase()} (${p.inventory} left)`
-                }));
+                .map(p => {
+                    const alertsList = [];
+                    if (p.status === "Low" || p.status === "Critical") {
+                        alertsList.push({
+                            type: "critical",
+                            message: `${p.name} inventory ${p.status.toLowerCase()} (${p.inventory} left)`
+                        });
+                    }
+                    if (p.salesVelocity > 30) {
+                        alertsList.push({
+                            type: "high-sales",
+                            message: `🚨 High Sales Alert: ${p.name} (SKU: ${p.sku}) has sales velocity of ${p.salesVelocity} units/day, ${Math.round(p.salesVelocity / p.salesLastWeek * 100)}% increase. Estimated stockout in ${p.stockoutDays.toFixed(2)} days. [View in Shopify Admin](https://josedevai.myshopify.com/admin/products/${p.id})`
+                        });
+                    }
+                    return alertsList;
+                })
+                .flat();
+
+            const sendNotification = (alert) => {
+                const message = alert.message;
+                const historyEntry = { message, timestamp: new Date().toLocaleString(), status: "Sent" };
+                const updatedHistory = [...notificationHistory, historyEntry];
+                setNotificationHistory(updatedHistory.slice(-5)); // Keep last 5 notifications
+                if (notificationSettings.email.enabled && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(notificationSettings.email.address)) {
+                    console.log(`Email sent to ${notificationSettings.email.address}: ${message}`);
+                }
+                if (notificationSettings.slack.enabled && notificationSettings.slack.webhook.startsWith("https://")) {
+                    console.log(`Slack notification sent to ${notificationSettings.slack.webhook}: ${message}`);
+                }
+                if (notificationSettings.telegram.enabled && notificationSettings.telegram.botToken && notificationSettings.telegram.chatId) {
+                    console.log(`Telegram notification sent to chat ${notificationSettings.telegram.chatId}: ${message}`);
+                }
+                if (notificationSettings.mobilePush.enabled && notificationSettings.mobilePush.service) {
+                    console.log(`Mobile push notification sent: ${message}`);
+                }
+                if (!notificationSettings.email.enabled && !notificationSettings.slack.enabled && !notificationSettings.telegram.enabled && !notificationSettings.mobilePush.enabled) {
+                    historyEntry.status = "Failed";
+                    setNotificationHistory(updatedHistory.slice(-5));
+                    console.log("No notification channels enabled");
+                }
+            };
 
             return (
                 <div className="card p-4 mb-6">
                     <h2 className="text-lg font-medium mb-4">Current Alerts</h2>
                     {alerts.map((alert, index) => (
-                        <div key={index} className={`alert-${alert.type} p-4 mb-2 rounded`}>
+                        <div key={index} className={`alert-${alert.type} p-4 mb-2 rounded flex justify-between items-center`}>
                             <div className="flex">
-                                <div className={`mr-2 text-${alert.type === "critical" ? "red" : "yellow"}-500`}>
+                                <div className={`mr-2 text-${alert.type === "critical" ? "red" : alert.type === "high-sales" ? "blue" : "yellow"}-500`}>
                                     <i className="fas fa-circle"></i>
                                 </div>
-                                <div>{alert.message}</div>
+                                <div dangerouslySetInnerHTML={{ __html: alert.message }}></div>
                             </div>
+                            <button
+                                className="btn-primary text-sm"
+                                onClick={() => sendNotification(alert)}
+                            >
+                                Send Notification
+                            </button>
                         </div>
                     ))}
+                    <h3 className="text-sm font-medium mt-4 mb-2">Notification History (Last 5)</h3>
+                    <div className="bg-gray-50 p-4 rounded-md max-h-40 overflow-y-auto">
+                        {notificationHistory.length === 0 ? (
+                            <p className="text-gray-500">No notifications sent yet.</p>
+                        ) : (
+                            notificationHistory.map((entry, index) => (
+                                <div key={index} className="text-gray-700 mb-2">
+                                    <strong>{entry.timestamp} ({entry.status}):</strong> {entry.message}
+                                </div>
+                            ))
+                        )}
+                    </div>
                 </div>
             );
         };
 
-        const ProductInventory = ({ products, setProducts }) => {
+        const ProductInventory = ({ products, setProducts, setSelectedProduct }) => {
             const [sortField, setSortField] = useState("name");
             const [sortOrder, setSortOrder] = useState("asc");
             const [filter, setFilter] = useState("");
+            const [categoryFilter, setCategoryFilter] = useState("All");
 
             const handleSort = (field) => {
                 const order = sortField === field && sortOrder === "asc" ? "desc" : "asc";
@@ -342,6 +435,7 @@
 
             const filteredProducts = products
                 .filter(p => p.name.toLowerCase().includes(filter.toLowerCase()))
+                .filter(p => categoryFilter === "All" || p.category === categoryFilter)
                 .sort((a, b) => {
                     const factor = sortOrder === "asc" ? 1 : -1;
                     return a[sortField] > b[sortField] ? factor : -factor;
@@ -350,13 +444,26 @@
             return (
                 <div className="card p-4 mb-6">
                     <h2 className="text-lg font-medium mb-4">Product Inventory</h2>
-                    <input
-                        type="text"
-                        className="chat-input mb-4"
-                        placeholder="Filter products by name..."
-                        value={filter}
-                        onChange={(e) => setFilter(e.target.value)}
-                    />
+                    <div className="flex space-x-4 mb-4">
+                        <input
+                            type="text"
+                            className="search-input flex-1"
+                            placeholder="Search products by name..."
+                            value={filter}
+                            onChange={(e) => setFilter(e.target.value)}
+                        />
+                        <select
+                            className="chat-input w-40"
+                            value={categoryFilter}
+                            onChange={(e) => setCategoryFilter(e.target.value)}
+                        >
+                            <option value="All">All Categories</option>
+                            <option value="Makeup">Makeup</option>
+                            <option value="Skincare">Skincare</option>
+                            <option value="Haircare">Haircare</option>
+                            <option value="Tools">Tools</option>
+                        </select>
+                    </div>
                     <div className="overflow-x-auto">
                         <table>
                             <thead>
@@ -365,12 +472,18 @@
                                     <th onClick={() => handleSort("price")}>PRICE</th>
                                     <th onClick={() => handleSort("inventory")}>INVENTORY</th>
                                     <th onClick={() => handleSort("salesLastWeek")}>SALES LAST WEEK</th>
+                                    <th onClick={() => handleSort("salesVelocity")}>SALES VELOCITY</th>
+                                    <th onClick={() => handleSort("stockoutDays")}>STOCKOUT DAYS</th>
                                     <th onClick={() => handleSort("status")}>STATUS</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {filteredProducts.map(product => (
-                                    <tr key={product.id}>
+                                    <tr
+                                        key={product.id}
+                                        className="cursor-pointer hover:bg-gray-50"
+                                        onClick={() => setSelectedProduct(product)}
+                                    >
                                         <td>
                                             <div className="flex items-center">
                                                 <div className={`product-icon ${product.className} mr-3`}></div>
@@ -380,6 +493,8 @@
                                         <td>${product.price.toFixed(2)}</td>
                                         <td>{product.inventory}</td>
                                         <td>{product.salesLastWeek}</td>
+                                        <td>{product.salesVelocity} units/day</td>
+                                        <td>{product.stockoutDays.toFixed(2)} days</td>
                                         <td><span className={`status-${product.status.toLowerCase()}`}>{product.status}</span></td>
                                     </tr>
                                 ))}
@@ -399,6 +514,7 @@
                             <h3 className="font-medium mb-1">{product.name}</h3>
                             <div className="text-gray-500 text-sm mb-2">SKU: {product.sku}</div>
                             <div className="text-gray-500 text-sm mb-2">Inventory: {product.inventory}</div>
+                            <div className="text-gray-500 text-sm mb-2">Sales Velocity: {product.salesVelocity} units/day</div>
                             <div className="trending-tag inline-block">Trending</div>
                         </div>
                     </div>
@@ -408,19 +524,23 @@
 
         const AIAssistant = () => {
             const [messages, setMessages] = useState([
-                { sender: "AI", text: "Welcome to Inventory Monitoring AI! How can I assist you today?" }
+                { sender: "AI", text: "Welcome to Planet Beauty Inventory AI! Ask about inventory levels, sales trends, or restocking recommendations for products like Anastasia Brow Gel or Elta MD Sunscreen." }
             ]);
             const [input, setInput] = useState("");
 
             const handleSend = () => {
                 if (!input.trim()) return;
                 const newMessages = [...messages, { sender: "User", text: input }];
-                // Simulated AI response
-                const response = input.toLowerCase().includes("inventory") 
-                    ? "Current inventory levels: Headphones (15), Mouse (8), Keyboard (22), Watch (5), Speaker (15), Chair (2)."
-                    : input.toLowerCase().includes("sales") 
-                    ? "Sales trends: Smart Watch sales up 45%, Headphones steady at 23 units last week."
-                    : "I can help with inventory levels, sales trends, or restocking recommendations. Try asking about those!";
+                let response = "";
+                if (input.toLowerCase().includes("inventory")) {
+                    response = "Current inventory levels: Anastasia Brow Gel (50), Elta MD Sunscreen (10), Borghese Serum (20), Kerastase Shampoo (30), Mario Badescu Spray (15), T3 Hair Dryer (5).";
+                } else if (input.toLowerCase().includes("sales") || input.toLowerCase().includes("trend")) {
+                    response = "High sales trends detected: Elta MD Sunscreen (40 units/day, 160% increase), Mario Badescu Spray (50 units/day, 111% increase), T3 Hair Dryer (35 units/day, 438% increase). Consider restocking to avoid stockouts.";
+                } else if (input.toLowerCase().includes("restock")) {
+                    response = "Restocking recommendations: Elta MD Sunscreen (reorder 200 units, lead time 5 days), Mario Badescu Spray (reorder 250 units, lead time 3 days), T3 Hair Dryer (reorder 175 units, lead time 7 days).";
+                } else {
+                    response = "I can help with inventory levels, sales trends, or restocking recommendations for Planet Beauty products. Try asking about those!";
+                }
                 setMessages([...newMessages, { sender: "AI", text: response }]);
                 setInput("");
             };
@@ -442,7 +562,7 @@
                         <input
                             type="text"
                             className="chat-input flex-1 mr-2"
-                            placeholder="Ask something about your inventory..."
+                            placeholder="Ask about Planet Beauty inventory..."
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyPress={(e) => e.key === "Enter" && handleSend()}
@@ -455,41 +575,279 @@
             );
         };
 
-        const Reports = () => (
-            <div className="card p-4 mb-6">
-                <h2 className="text-lg font-medium mb-4">Reports</h2>
-                <p className="text-gray-700">Generate detailed inventory and sales reports here.</p>
-                <button className="btn-primary mt-4">Download Report</button>
-            </div>
-        );
+        const Reports = ({ products }) => {
+            const exportToCSV = () => {
+                const headers = ["Name", "SKU", "Vendor", "Category", "Price", "Inventory", "Sales Last Week", "Sales Velocity", "Stockout Days", "Status"];
+                const rows = products.map(p => [
+                    p.name,
+                    p.sku,
+                    p.vendor,
+                    p.category,
+                    p.price.toFixed(2),
+                    p.inventory,
+                    p.salesLastWeek,
+                    p.salesVelocity,
+                    p.stockoutDays.toFixed(2),
+                    p.status
+                ]);
+                const csvContent = [
+                    headers.join(","),
+                    ...rows.map(row => row.join(","))
+                ].join("\n");
+                const blob = new Blob([csvContent], { type: "text/csv" });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "planetbeauty_products.csv";
+                a.click();
+                window.URL.revokeObjectURL(url);
+            };
 
-        const Settings = () => (
-            <div className="card p-4 mb-6">
-                <h2 className="text-lg font-medium mb-4">Settings</h2>
-                <div className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Email Notifications</label>
-                        <input type="checkbox" className="mt-1" /> Enable low stock alerts
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Restock Threshold</label>
-                        <input type="number" className="chat-input w-20" defaultValue="10" />
-                    </div>
-                    <button className="btn-primary">Save Settings</button>
+            return (
+                <div className="card p-4 mb-6">
+                    <h2 className="text-lg font-medium mb-4">Reports</h2>
+                    <p className="text-gray-700">Generate detailed inventory and sales reports here.</p>
+                    <button className="btn-primary mt-4 mr-2" onClick={exportToCSV}>Export Inventory to CSV</button>
+                    <button className="btn-primary mt-4">Download Sales Report</button>
                 </div>
-            </div>
-        );
+            );
+        };
+
+        const Settings = ({ notificationSettings, setNotificationSettings }) => {
+            const handleInputChange = (e, channel, field) => {
+                setNotificationSettings(prev => ({
+                    ...prev,
+                    [channel]: { ...prev[channel], [field]: e.target.type === "checkbox" ? e.target.checked : e.target.value }
+                }));
+            };
+
+            const handleThresholdChange = (e, field) => {
+                setNotificationSettings(prev => ({
+                    ...prev,
+                    [field]: e.target.type === "number" ? parseFloat(e.target.value) : e.target.value
+                }));
+            };
+
+            const testNotification = (channel) => {
+                const message = `Test notification for ${channel}`;
+                console.log(`${channel.charAt(0).toUpperCase() + channel.slice(1)} test sent: ${message}`);
+            };
+
+            return (
+                <div className="card p-4 mb-6">
+                    <h2 className="text-lg font-medium mb-4">Settings</h2>
+                    <div className="space-y-6">
+                        <div>
+                            <h3 className="text-sm font-medium text-gray-700">Notification Channels</h3>
+                            <div className="mt-2 space-y-4">
+                                <div>
+                                    <label className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={notificationSettings.email.enabled}
+                                            onChange={(e) => handleInputChange(e, "email", "enabled")}
+                                        />
+                                        <span className="ml-2">Email Notifications</span>
+                                    </label>
+                                    <input
+                                        type="email"
+                                        className="chat-input mt-1"
+                                        placeholder="Email address"
+                                        value={notificationSettings.email.address}
+                                        onChange={(e) => handleInputChange(e, "email", "address")}
+                                        disabled={!notificationSettings.email.enabled}
+                                    />
+                                    <button
+                                        className="btn-secondary mt-2"
+                                        onClick={() => testNotification("email")}
+                                        disabled={!notificationSettings.email.enabled || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(notificationSettings.email.address)}
+                                    >
+                                        Test Email
+                                    </button>
+                                </div>
+                                <div>
+                                    <label className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={notificationSettings.slack.enabled}
+                                            onChange={(e) => handleInputChange(e, "slack", "enabled")}
+                                        />
+                                        <span className="ml-2">Slack Notifications</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        className="chat-input mt-1"
+                                        placeholder="Slack Webhook URL"
+                                        value={notificationSettings.slack.webhook}
+                                        onChange={(e) => handleInputChange(e, "slack", "webhook")}
+                                        disabled={!notificationSettings.slack.enabled}
+                                    />
+                                    <button
+                                        className="btn-secondary mt-2"
+                                        onClick={() => testNotification("slack")}
+                                        disabled={!notificationSettings.slack.enabled || !notificationSettings.slack.webhook.startsWith("https://")}
+                                    >
+                                        Test Slack
+                                    </button>
+                                </div>
+                                <div>
+                                    <label className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={notificationSettings.telegram.enabled}
+                                            onChange={(e) => handleInputChange(e, "telegram", "enabled")}
+                                        />
+                                        <span className="ml-2">Telegram Notifications</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        className="chat-input mt-1"
+                                        placeholder="Telegram Bot Token"
+                                        value={notificationSettings.telegram.botToken}
+                                        onChange={(e) => handleInputChange(e, "telegram", "botToken")}
+                                        disabled={!notificationSettings.telegram.enabled}
+                                    />
+                                    <input
+                                        type="text"
+                                        className="chat-input mt-1"
+                                        placeholder="Telegram Chat ID"
+                                        value={notificationSettings.telegram.chatId}
+                                        onChange={(e) => handleInputChange(e, "telegram", "chatId")}
+                                        disabled={!notificationSettings.telegram.enabled}
+                                    />
+                                    <button
+                                        className="btn-secondary mt-2"
+                                        onClick={() => testNotification("telegram")}
+                                        disabled={!notificationSettings.telegram.enabled || !notificationSettings.telegram.botToken || !notificationSettings.telegram.chatId}
+                                    >
+                                        Test Telegram
+                                    </button>
+                                </div>
+                                <div>
+                                    <label className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={notificationSettings.mobilePush.enabled}
+                                            onChange={(e) => handleInputChange(e, "mobilePush", "enabled")}
+                                        />
+                                        <span className="ml-2">Mobile Push Notifications</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        className="chat-input mt-1"
+                                        placeholder="Push Service Credentials"
+                                        value={notificationSettings.mobilePush.service}
+                                        onChange={(e) => handleInputChange(e, "mobilePush", "service")}
+                                        disabled={!notificationSettings.mobilePush.enabled}
+                                    />
+                                    <button
+                                        className="btn-secondary mt-2"
+                                        onClick={() => testNotification("mobilePush")}
+                                        disabled={!notificationSettings.mobilePush.enabled || !notificationSettings.mobilePush.service}
+                                    >
+                                        Test Mobile Push
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 className="text-sm font-medium text-gray-700">Alert Thresholds</h3>
+                            <div className="mt-2 space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">High Sales Velocity Threshold (units/day)</label>
+                                    <input
+                                        type="number"
+                                        className="chat-input w-20 mt-1"
+                                        value={notificationSettings.salesThreshold}
+                                        onChange={(e) => handleThresholdChange(e, "salesThreshold")}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Stockout Risk Threshold (days)</label>
+                                    <input
+                                        type="number"
+                                        className="chat-input w-20 mt-1"
+                                        value={notificationSettings.stockoutThreshold}
+                                        onChange={(e) => handleThresholdChange(e, "stockoutThreshold")}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Notification Frequency</label>
+                                    <select
+                                        className="chat-input mt-1"
+                                        value={notificationSettings.notificationFrequency}
+                                        onChange={(e) => handleThresholdChange(e, "notificationFrequency")}
+                                    >
+                                        <option value="immediate">Immediate</option>
+                                        <option value="hourly">Hourly Digest</option>
+                                        <option value="daily">Daily Summary</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 className="text-sm font-medium text-gray-700">Inventory Sync</h3>
+                            <label className="flex items-center mt-2">
+                                <input
+                                    type="checkbox"
+                                    checked={notificationSettings.syncEnabled}
+                                    onChange={(e) => handleThresholdChange(e, "syncEnabled")}
+                                />
+                                <span className="ml-2">Enable Real-Time Shopify Inventory Sync</span>
+                            </label>
+                        </div>
+                        <button className="btn-primary">Save Settings</button>
+                    </div>
+                </div>
+            );
+        };
 
         const App = () => {
             const [activeSection, setActiveSection] = useState("Overview");
             const [products, setProducts] = useState(initialProducts);
+            const [notificationSettings, setNotificationSettings] = useState({
+                email: { enabled: true, address: "admin@planetbeauty.com" },
+                slack: { enabled: false, webhook: "" },
+                telegram: { enabled: false, botToken: "", chatId: "" },
+                mobilePush: { enabled: false, service: "" },
+                salesThreshold: 30,
+                stockoutThreshold: 1,
+                notificationFrequency: "immediate",
+                syncEnabled: false
+            });
+            const [selectedProduct, setSelectedProduct] = useState(null);
+
+            useEffect(() => {
+                if (notificationSettings.syncEnabled) {
+                    const interval = setInterval(() => {
+                        setProducts(prev => prev.map(p => ({
+                            ...p,
+                            inventory: Math.max(0, p.inventory - Math.floor(Math.random() * 5)),
+                            status: p.inventory <= 5 ? "Critical" : p.inventory <= 10 ? "Low" : "Healthy",
+                            stockoutDays: p.inventory / (p.salesVelocity || 1)
+                        })));
+                    }, 60000); // Simulate sync every minute
+                    return () => clearInterval(interval);
+                }
+            }, [notificationSettings.syncEnabled]);
+
+            const handleRestock = (productId, quantity) => {
+                if (quantity > 0) {
+                    setProducts(prev => prev.map(p => 
+                        p.id === productId 
+                            ? { ...p, inventory: p.inventory + quantity, status: p.inventory + quantity <= 10 ? "Low" : "Healthy", stockoutDays: (p.inventory + quantity) / (p.salesVelocity || 1) }
+                            : p
+                    ));
+                    setSelectedProduct(null);
+                }
+            };
 
             return (
                 <div className="min-h-screen">
                     <Navbar />
                     <header className="header-bg text-white p-8">
-                        <h1 className="text-3xl font-bold mb-1">Inventory Monitoring AI</h1>
-                        <p className="text-sm opacity-75">AI-powered Inventory Monitoring System</p>
+                        <h1 className="text-3xl font-bold mb-1">Planet Beauty Inventory AI</h1>
+                        <p className="text-sm opacity-75">AI-powered Inventory Monitoring for Planet Beauty</p>
                     </header>
                     <div className="container mx-auto px-4 py-6">
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -497,33 +855,40 @@
                                 <Sidebar setActiveSection={setActiveSection} />
                             </div>
                             <div className="md:col-span-3">
+                                {selectedProduct && (
+                                    <ProductModal
+                                        product={selectedProduct}
+                                        onClose={() => setSelectedProduct(null)}
+                                        onRestock={handleRestock}
+                                    />
+                                )}
                                 {activeSection === "Overview" && (
                                     <>
                                         <Metrics products={products} />
-                                        <Alerts products={products} />
-                                        <ProductInventory products={products} setProducts={setProducts} />
+                                        <Alerts products={products} notificationSettings={notificationSettings} />
+                                        <ProductInventory products={products} setProducts={setProducts} setSelectedProduct={setSelectedProduct} />
                                         <TrendingProducts products={products} />
                                         <AIAssistant />
                                     </>
                                 )}
                                 {activeSection === "Products" && (
-                                    <ProductInventory products={products} setProducts={setProducts} />
+                                    <ProductInventory products={products} setProducts={setProducts} setSelectedProduct={setSelectedProduct} />
                                 )}
                                 {activeSection === "Alerts" && (
-                                    <Alerts products={products} />
+                                    <Alerts products={products} notificationSettings={notificationSettings} />
                                 )}
                                 {activeSection === "Reports" && (
-                                    <Reports />
+                                    <Reports products={products} />
                                 )}
                                 {activeSection === "Settings" && (
-                                    <Settings />
+                                    <Settings notificationSettings={notificationSettings} setNotificationSettings={setNotificationSettings} />
                                 )}
                             </div>
                         </div>
                     </div>
                     <footer className="footer">
                         <div className="mb-1">Developed with ❤️ by Jose</div>
-                        <div className="text-sm opacity-75">© 2025 Inventory Monitoring AI. All rights reserved.</div>
+                        <div className="text-sm opacity-75">© 2025 Planet Beauty Inventory AI. All rights reserved.</div>
                     </footer>
                 </div>
             );
