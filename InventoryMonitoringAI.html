@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventory Monitoring AI</title>
+    <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.24.0/babel.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
     <style>
@@ -27,6 +30,7 @@
         .nav-item {
             padding: 12px 16px;
             color: #4a5568;
+            cursor: pointer;
             transition: background-color 0.2s;
         }
         .nav-item:hover {
@@ -166,266 +170,366 @@
         .smart-watch { background-color: #1f2937; }
         .bluetooth-speaker { background-color: #64748b; }
         .gaming-chair { background-color: #ef4444; }
+        .navbar {
+            background-color: #5e35b1;
+            color: white;
+            padding: 12px 24px;
+        }
+        .modal {
+            background-color: rgba(0,0,0,0.5);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 24px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 100%;
+        }
     </style>
 </head>
-<body class="min-h-screen">
-    <!-- Top navbar -->
-    <!-- Header -->
-    <header class="header-bg text-white p-8">
-        <h1 class="text-3xl font-bold mb-1">Inventory Monitoring AI</h1>
-        <p class="text-sm opacity-75">AI-powered Inventory Monitoring System</p>
-    </header>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
 
-    <div class="container mx-auto px-4 py-6">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <!-- Sidebar -->
-            <div class="md:col-span-1">
-                <div class="sidebar p-4">
-                    <h2 class="text-lg font-medium mb-4 text-gray-700">Dashboard</h2>
-                    
-                    <nav class="mb-6">
-                        <div class="nav-item active">Overview</div>
-                        <div class="nav-item">Products</div>
-                        <div class="nav-item">Alerts</div>
-                        <div class="nav-item">Reports</div>
-                        <div class="nav-item">Settings</div>
+        const initialProducts = [
+            { id: 1, name: "Premium Headphones", price: 159.95, inventory: 15, salesLastWeek: 23, status: "Healthy", sku: 12, className: "premium-headphones", trending: false },
+            { id: 2, name: "Wireless Mouse", price: 49.99, inventory: 8, salesLastWeek: 10, status: "Low", sku: 16, className: "wireless-mouse", trending: true },
+            { id: 3, name: "Mechanical Keyboard", price: 89.95, inventory: 22, salesLastWeek: 12, status: "Healthy", sku: 8, className: "mechanical-keyboard", trending: false },
+            { id: 4, name: "Smart Watch", price: 149.00, inventory: 5, salesLastWeek: 21, status: "Critical", sku: 24, className: "smart-watch", trending: true },
+            { id: 5, name: "Bluetooth Speaker", price: 75.95, inventory: 15, salesLastWeek: 5, status: "Healthy", sku: 10, className: "bluetooth-speaker", trending: false },
+            { id: 6, name: "Gaming Chair", price: 299.99, inventory: 2, salesLastWeek: 7, status: "Critical", sku: 7, className: "gaming-chair", trending: true },
+        ];
+
+        const Navbar = () => (
+            <nav className="navbar flex justify-between items-center">
+                <div className="flex items-center">
+                    <i className="fas fa-warehouse mr-2"></i>
+                    <span className="text-lg font-bold">Inventory AI</span>
+                </div>
+                <div className="flex items-center space-x-4">
+                    <span className="text-sm">User: Admin</span>
+                    <button className="btn-primary">
+                        <i className="fas fa-sign-out-alt mr-1"></i> Logout
+                    </button>
+                </div>
+            </nav>
+        );
+
+        const Sidebar = ({ setActiveSection }) => {
+            const [activeItem, setActiveItem] = useState("Overview");
+
+            const handleNavClick = (section) => {
+                setActiveItem(section);
+                setActiveSection(section);
+            };
+
+            return (
+                <div className="sidebar p-4">
+                    <h2 className="text-lg font-medium mb-4 text-gray-700">Dashboard</h2>
+                    <nav className="mb-6">
+                        {["Overview", "Products", "Alerts", "Reports", "Settings"].map((item) => (
+                            <div
+                                key={item}
+                                className={`nav-item ${activeItem === item ? "active" : ""}`}
+                                onClick={() => handleNavClick(item)}
+                            >
+                                {item}
+                            </div>
+                        ))}
                     </nav>
-                    
-                    <h2 class="text-lg font-medium mb-4 text-gray-700">Quick Actions</h2>
-                    <button class="btn-primary w-full mb-3 flex items-center justify-center">
+                    <h2 className="text-lg font-medium mb-4 text-gray-700">Quick Actions</h2>
+                    <button className="btn-primary w-full mb-3 flex items-center justify-center">
                         <span>Generate Report</span>
                     </button>
-                    <button class="btn-secondary w-full flex items-center justify-center">
+                    <button className="btn-secondary w-full flex items-center justify-center">
                         <span>View All Alerts</span>
                     </button>
                 </div>
-            </div>
-            
-            <!-- Main content -->
-            <div class="md:col-span-3">
-                <!-- Metrics -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div class="card p-4">
-                        <div class="flex justify-between items-center">
+            );
+        };
+
+        const Metrics = ({ products }) => {
+            const totalProducts = products.length;
+            const lowStockItems = products.filter(p => p.inventory <= 8).length;
+            const totalInventory = products.reduce((sum, p) => sum + p.inventory, 0);
+
+            return (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div className="card p-4">
+                        <div className="flex justify-between items-center">
                             <div>
-                                <div class="text-sm text-gray-600 mb-1">Total Products</div>
-                                <div class="text-2xl font-bold">6</div>
+                                <div className="text-sm text-gray-600 mb-1">Total Products</div>
+                                <div className="text-2xl font-bold">{totalProducts}</div>
                             </div>
-                            <div class="metric-icon metric-products">
-                                <i class="fas fa-cube"></i>
+                            <div className="metric-icon metric-products">
+                                <i className="fas fa-cube"></i>
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="card p-4">
-                        <div class="flex justify-between items-center">
+                    <div className="card p-4">
+                        <div className="flex justify-between items-center">
                             <div>
-                                <div class="text-sm text-gray-600 mb-1">Low Stock Items</div>
-                                <div class="text-2xl font-bold text-red-500">3</div>
+                                <div className="text-sm text-gray-600 mb-1">Low Stock Items</div>
+                                <div className="text-2xl font-bold text-red-500">{lowStockItems}</div>
                             </div>
-                            <div class="metric-icon metric-stock">
-                                <i class="fas fa-exclamation-triangle"></i>
+                            <div className="metric-icon metric-stock">
+                                <i className="fas fa-exclamation-triangle"></i>
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="card p-4">
-                        <div class="flex justify-between items-center">
+                    <div className="card p-4">
+                        <div className="flex justify-between items-center">
                             <div>
-                                <div class="text-sm text-gray-600 mb-1">Total Inventory</div>
-                                <div class="text-2xl font-bold">77</div>
+                                <div className="text-sm text-gray-600 mb-1">Total Inventory</div>
+                                <div className="text-2xl font-bold">{totalInventory}</div>
                             </div>
-                            <div class="metric-icon metric-inventory">
-                                <i class="fas fa-chart-line"></i>
+                            <div className="metric-icon metric-inventory">
+                                <i className="fas fa-chart-line"></i>
                             </div>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Alerts -->
-                <div class="card p-4 mb-6">
-                    <h2 class="text-lg font-medium mb-4">Current Alerts</h2>
-                    
-                    <div class="alert-critical p-4 mb-2 rounded">
-                        <div class="flex">
-                            <div class="mr-2 text-red-500">
-                                <i class="fas fa-circle"></i>
+            );
+        };
+
+        const Alerts = ({ products }) => {
+            const alerts = products
+                .filter(p => p.status === "Low" || p.status === "Critical" || (p.salesLastWeek > 20))
+                .map(p => ({
+                    type: p.status === "Critical" ? "critical" : p.salesLastWeek > 20 ? "warning" : "critical",
+                    message: p.salesLastWeek > 20 
+                        ? `${p.name} sales increased by ${p.salesLastWeek}% last week`
+                        : `${p.name} inventory ${p.status.toLowerCase()} (${p.inventory} left)`
+                }));
+
+            return (
+                <div className="card p-4 mb-6">
+                    <h2 className="text-lg font-medium mb-4">Current Alerts</h2>
+                    {alerts.map((alert, index) => (
+                        <div key={index} className={`alert-${alert.type} p-4 mb-2 rounded`}>
+                            <div className="flex">
+                                <div className={`mr-2 text-${alert.type === "critical" ? "red" : "yellow"}-500`}>
+                                    <i className="fas fa-circle"></i>
+                                </div>
+                                <div>{alert.message}</div>
                             </div>
-                            <div>Wireless Mouse inventory critically low (8 left)</div>
                         </div>
-                    </div>
-                    
-                    <div class="alert-warning p-4 mb-2 rounded">
-                        <div class="flex">
-                            <div class="mr-2 text-yellow-500">
-                                <i class="fas fa-circle"></i>
-                            </div>
-                            <div>Smart Watch sales increased by 45% last week</div>
-                        </div>
-                    </div>
-                    
-                    <div class="alert-critical p-4 rounded">
-                        <div class="flex">
-                            <div class="mr-2 text-red-500">
-                                <i class="fas fa-circle"></i>
-                            </div>
-                            <div>Gaming Chair inventory critically low (2 left)</div>
-                        </div>
-                    </div>
+                    ))}
                 </div>
-                
-                <!-- Product Inventory Table -->
-                <div class="card p-4 mb-6">
-                    <h2 class="text-lg font-medium mb-4">Product Inventory</h2>
-                    
-                    <div class="overflow-x-auto">
+            );
+        };
+
+        const ProductInventory = ({ products, setProducts }) => {
+            const [sortField, setSortField] = useState("name");
+            const [sortOrder, setSortOrder] = useState("asc");
+            const [filter, setFilter] = useState("");
+
+            const handleSort = (field) => {
+                const order = sortField === field && sortOrder === "asc" ? "desc" : "asc";
+                setSortField(field);
+                setSortOrder(order);
+            };
+
+            const filteredProducts = products
+                .filter(p => p.name.toLowerCase().includes(filter.toLowerCase()))
+                .sort((a, b) => {
+                    const factor = sortOrder === "asc" ? 1 : -1;
+                    return a[sortField] > b[sortField] ? factor : -factor;
+                });
+
+            return (
+                <div className="card p-4 mb-6">
+                    <h2 className="text-lg font-medium mb-4">Product Inventory</h2>
+                    <input
+                        type="text"
+                        className="chat-input mb-4"
+                        placeholder="Filter products by name..."
+                        value={filter}
+                        onChange={(e) => setFilter(e.target.value)}
+                    />
+                    <div className="overflow-x-auto">
                         <table>
                             <thead>
                                 <tr>
-                                    <th>PRODUCT</th>
-                                    <th>PRICE</th>
-                                    <th>INVENTORY</th>
-                                    <th>SALES LAST WEEK</th>
-                                    <th>STATUS</th>
+                                    <th onClick={() => handleSort("name")}>PRODUCT</th>
+                                    <th onClick={() => handleSort("price")}>PRICE</th>
+                                    <th onClick={() => handleSort("inventory")}>INVENTORY</th>
+                                    <th onClick={() => handleSort("salesLastWeek")}>SALES LAST WEEK</th>
+                                    <th onClick={() => handleSort("status")}>STATUS</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>
-                                        <div class="flex items-center">
-                                            <div class="product-icon premium-headphones mr-3"></div>
-                                            <div>Premium Headphones</div>
-                                        </div>
-                                    </td>
-                                    <td>$159.95</td>
-                                    <td>15</td>
-                                    <td>23</td>
-                                    <td><span class="status-healthy">Healthy</span></td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="flex items-center">
-                                            <div class="product-icon wireless-mouse mr-3"></div>
-                                            <div>Wireless Mouse</div>
-                                        </div>
-                                    </td>
-                                    <td>$49.99</td>
-                                    <td>8</td>
-                                    <td>10</td>
-                                    <td><span class="status-low">Low</span></td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="flex items-center">
-                                            <div class="product-icon mechanical-keyboard mr-3"></div>
-                                            <div>Mechanical Keyboard</div>
-                                        </div>
-                                    </td>
-                                    <td>$89.95</td>
-                                    <td>22</td>
-                                    <td>12</td>
-                                    <td><span class="status-healthy">Healthy</span></td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="flex items-center">
-                                            <div class="product-icon smart-watch mr-3"></div>
-                                            <div>Smart Watch</div>
-                                        </div>
-                                    </td>
-                                    <td>$149.00</td>
-                                    <td>5</td>
-                                    <td>21</td>
-                                    <td><span class="status-critical">Critical</span></td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="flex items-center">
-                                            <div class="product-icon bluetooth-speaker mr-3"></div>
-                                            <div>Bluetooth Speaker</div>
-                                        </div>
-                                    </td>
-                                    <td>$75.95</td>
-                                    <td>15</td>
-                                    <td>5</td>
-                                    <td><span class="status-healthy">Healthy</span></td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="flex items-center">
-                                            <div class="product-icon gaming-chair mr-3"></div>
-                                            <div>Gaming Chair</div>
-                                        </div>
-                                    </td>
-                                    <td>$299.99</td>
-                                    <td>2</td>
-                                    <td>7</td>
-                                    <td><span class="status-critical">Critical</span></td>
-                                </tr>
+                                {filteredProducts.map(product => (
+                                    <tr key={product.id}>
+                                        <td>
+                                            <div className="flex items-center">
+                                                <div className={`product-icon ${product.className} mr-3`}></div>
+                                                <div>{product.name}</div>
+                                            </div>
+                                        </td>
+                                        <td>${product.price.toFixed(2)}</td>
+                                        <td>{product.inventory}</td>
+                                        <td>{product.salesLastWeek}</td>
+                                        <td><span className={`status-${product.status.toLowerCase()}`}>{product.status}</span></td>
+                                    </tr>
+                                ))}
                             </tbody>
                         </table>
                     </div>
                 </div>
-                
-                <!-- Trending Products -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    <div class="card overflow-hidden">
-                        <div class="product-card smart-watch"></div>
-                        <div class="product-info">
-                            <h3 class="font-medium mb-1">Smart Watch</h3>
-                            <div class="text-gray-500 text-sm mb-2">SKU: 24</div>
-                            <div class="text-gray-500 text-sm mb-2">Inventory: 5</div>
-                            <div class="trending-tag inline-block">Trending</div>
+            );
+        };
+
+        const TrendingProducts = ({ products }) => (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                {products.filter(p => p.trending).map(product => (
+                    <div key={product.id} className="card overflow-hidden">
+                        <div className={`product-card ${product.className}`}></div>
+                        <div className="product-info">
+                            <h3 className="font-medium mb-1">{product.name}</h3>
+                            <div className="text-gray-500 text-sm mb-2">SKU: {product.sku}</div>
+                            <div className="text-gray-500 text-sm mb-2">Inventory: {product.inventory}</div>
+                            <div className="trending-tag inline-block">Trending</div>
                         </div>
                     </div>
-                    
-                    <div class="card overflow-hidden">
-                        <div class="product-card gaming-chair"></div>
-                        <div class="product-info">
-                            <h3 class="font-medium mb-1">Gaming Chair</h3>
-                            <div class="text-gray-500 text-sm mb-2">SKU: 7</div>
-                            <div class="text-gray-500 text-sm mb-2">Inventory: 2</div>
-                            <div class="trending-tag inline-block">Trending</div>
-                        </div>
+                ))}
+            </div>
+        );
+
+        const AIAssistant = () => {
+            const [messages, setMessages] = useState([
+                { sender: "AI", text: "Welcome to Inventory Monitoring AI! How can I assist you today?" }
+            ]);
+            const [input, setInput] = useState("");
+
+            const handleSend = () => {
+                if (!input.trim()) return;
+                const newMessages = [...messages, { sender: "User", text: input }];
+                // Simulated AI response
+                const response = input.toLowerCase().includes("inventory") 
+                    ? "Current inventory levels: Headphones (15), Mouse (8), Keyboard (22), Watch (5), Speaker (15), Chair (2)."
+                    : input.toLowerCase().includes("sales") 
+                    ? "Sales trends: Smart Watch sales up 45%, Headphones steady at 23 units last week."
+                    : "I can help with inventory levels, sales trends, or restocking recommendations. Try asking about those!";
+                setMessages([...newMessages, { sender: "AI", text: response }]);
+                setInput("");
+            };
+
+            return (
+                <div className="card p-4 mb-6">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-lg font-medium">AI Assistant</h2>
+                        <div className="text-sm text-gray-500">Ask about inventory levels, sales trends, or get restocking recommendations</div>
                     </div>
-                    
-                    <div class="card overflow-hidden">
-                        <div class="product-card wireless-mouse"></div>
-                        <div class="product-info">
-                            <h3 class="font-medium mb-1">Wireless Mouse</h3>
-                            <div class="text-gray-500 text-sm mb-2">SKU: 16</div>
-                            <div class="text-gray-500 text-sm mb-2">Inventory: 8</div>
-                            <div class="trending-tag inline-block">Trending</div>
-                        </div>
+                    <div className="bg-gray-50 p-4 rounded-md mb-4 max-h-60 overflow-y-auto">
+                        {messages.map((msg, index) => (
+                            <div key={index} className={`text-${msg.sender === "AI" ? "gray-700" : "blue-600"} mb-2`}>
+                                <strong>{msg.sender}: </strong>{msg.text}
+                            </div>
+                        ))}
                     </div>
-                </div>
-                
-                <!-- AI Assistant -->
-                <div class="card p-4 mb-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-lg font-medium">AI Assistant</h2>
-                        <div class="text-sm text-gray-500">Ask about inventory levels, sales trends, or get restocking recommendations</div>
-                    </div>
-                    
-                    <div class="bg-gray-50 p-4 rounded-md mb-4">
-                        <div class="text-gray-700">Welcome to Inventory Monitoring AI! How can I assist you today?</div>
-                    </div>
-                    
-                    <div class="flex">
-                        <input type="text" class="chat-input flex-1 mr-2" placeholder="Ask something about your inventory...">
-                        <button class="btn-primary px-4">
-                            <i class="fas fa-paper-plane"></i>
+                    <div className="flex">
+                        <input
+                            type="text"
+                            className="chat-input flex-1 mr-2"
+                            placeholder="Ask something about your inventory..."
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            onKeyPress={(e) => e.key === "Enter" && handleSend()}
+                        />
+                        <button className="btn-primary px-4" onClick={handleSend}>
+                            <i className="fas fa-paper-plane"></i>
                         </button>
                     </div>
                 </div>
+            );
+        };
+
+        const Reports = () => (
+            <div className="card p-4 mb-6">
+                <h2 className="text-lg font-medium mb-4">Reports</h2>
+                <p className="text-gray-700">Generate detailed inventory and sales reports here.</p>
+                <button className="btn-primary mt-4">Download Report</button>
             </div>
-        </div>
-    </div>
-    
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="mb-1">Developed with ❤️ by Jose</div>
-        <div class="text-sm opacity-75">© 2025 Inventory Monitoring AI. All rights reserved.</div>
-    </footer>
+        );
+
+        const Settings = () => (
+            <div className="card p-4 mb-6">
+                <h2 className="text-lg font-medium mb-4">Settings</h2>
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Email Notifications</label>
+                        <input type="checkbox" className="mt-1" /> Enable low stock alerts
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Restock Threshold</label>
+                        <input type="number" className="chat-input w-20" defaultValue="10" />
+                    </div>
+                    <button className="btn-primary">Save Settings</button>
+                </div>
+            </div>
+        );
+
+        const App = () => {
+            const [activeSection, setActiveSection] = useState("Overview");
+            const [products, setProducts] = useState(initialProducts);
+
+            return (
+                <div className="min-h-screen">
+                    <Navbar />
+                    <header className="header-bg text-white p-8">
+                        <h1 className="text-3xl font-bold mb-1">Inventory Monitoring AI</h1>
+                        <p className="text-sm opacity-75">AI-powered Inventory Monitoring System</p>
+                    </header>
+                    <div className="container mx-auto px-4 py-6">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                            <div className="md:col-span-1">
+                                <Sidebar setActiveSection={setActiveSection} />
+                            </div>
+                            <div className="md:col-span-3">
+                                {activeSection === "Overview" && (
+                                    <>
+                                        <Metrics products={products} />
+                                        <Alerts products={products} />
+                                        <ProductInventory products={products} setProducts={setProducts} />
+                                        <TrendingProducts products={products} />
+                                        <AIAssistant />
+                                    </>
+                                )}
+                                {activeSection === "Products" && (
+                                    <ProductInventory products={products} setProducts={setProducts} />
+                                )}
+                                {activeSection === "Alerts" && (
+                                    <Alerts products={products} />
+                                )}
+                                {activeSection === "Reports" && (
+                                    <Reports />
+                                )}
+                                {activeSection === "Settings" && (
+                                    <Settings />
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                    <footer className="footer">
+                        <div className="mb-1">Developed with ❤️ by Jose</div>
+                        <div className="text-sm opacity-75">© 2025 Inventory Monitoring AI. All rights reserved.</div>
+                    </footer>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<App />, document.getElementById("root"));
+    </script>
 </body>
 </html>
