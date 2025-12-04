@@ -1,0 +1,573 @@
+<!-- Chosen Palette: Warm Professional (Slate, Amber, White, Warm Gray) -->
+<!-- Application Structure Plan: 
+    1. Executive Dashboard Header: High-level success metrics and primary goals to ground the user immediately.
+    2. Strategic Budget Visualizer: A specialized section with a Donut chart to show resource allocation, emphasizing the "Core Intent" focus.
+    3. The Campaign Command Center: The core interactive component. A tabbed interface allows users to deep-dive into each of the 4 campaigns. This reduces cognitive load by hiding details until requested. It includes dynamic Ad Previews to visualize the end-user experience.
+    4. The "Firewall" (Negative Keywords): A categorized interactive grid. Users select categories (e.g., "Price & Low Quality") to see which terms are blocked. This metaphor ("Firewall") helps explain the *function* of negative keywords.
+    5. Technical configurations: A clean, static reference grid for location and tracking settings.
+    Why this structure? It moves from "Big Picture" -> "Money" -> "Execution" -> "Protection" -> "Details", a logical flow for a marketing strategy review.
+-->
+<!-- Visualization & Content Choices:
+    1. Budget Allocation: Chart.js Doughnut Chart. Goal: Inform/Compare. Justification: Quickly shows where the money is going (dominance of Campaign 1).
+    2. Ad Previews: HTML/CSS styled components mimicking Google Search results. Goal: Inform. Justification: Text descriptions of ads are dry; visual mocks are intuitive.
+    3. Campaign Selector: JS-driven tabs. Goal: Organize. Justification: Prevents scrolling fatigue by condensing 4 campaigns into one dynamic pane.
+    4. Negative Keyword Grid: JS filter/display. Goal: Organize. Justification: Long lists are boring; interactive categories make exploring the exclusions engaging.
+    5. No SVGs/Mermaid used. Unicode icons used for visual cues.
+-->
+<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>716 Corporate Housing | Ads Strategy Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #fdfbf7; color: #334155; }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        .ad-preview {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            font-family: Arial, sans-serif;
+            transition: all 0.2s;
+        }
+        .ad-preview:hover { box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .ad-headline { color: #1a0dab; font-size: 18px; line-height: 1.2; text-decoration: none; }
+        .ad-headline:hover { text-decoration: underline; }
+        .ad-url { color: #006621; font-size: 14px; margin-bottom: 4px; }
+        .ad-desc { color: #4d5156; font-size: 14px; line-height: 1.4; }
+        .tab-btn.active {
+            background-color: #d97706;
+            color: white;
+            border-color: #d97706;
+        }
+        .keyword-chip {
+            background-color: #f1f5f9;
+            color: #475569;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            display: inline-block;
+            margin: 4px;
+            border: 1px solid #e2e8f0;
+        }
+        .neg-chip {
+            background-color: #fee2e2;
+            color: #991b1b;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            display: inline-block;
+            margin: 4px;
+            border: 1px solid #fecaca;
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col">
+
+    <!-- Header Section -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-amber-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">716</div>
+                <div>
+                    <h1 class="text-xl font-bold text-gray-900 leading-tight">Ads Strategy Report</h1>
+                    <p class="text-xs text-gray-500">Target: Buffalo, NY | Dec 05, 2025</p>
+                </div>
+            </div>
+            <div class="hidden md:flex space-x-6 text-sm font-medium text-gray-600">
+                <a href="#overview" class="hover:text-amber-600 transition">Overview</a>
+                <a href="#budget" class="hover:text-amber-600 transition">Budget</a>
+                <a href="#campaigns" class="hover:text-amber-600 transition">Campaigns</a>
+                <a href="#negative-keywords" class="hover:text-amber-600 transition">Firewall</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow">
+        
+        <!-- Overview Dashboard -->
+        <section id="overview" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Executive Summary</h2>
+                    <p class="text-gray-600 mt-2 max-w-3xl">
+                        Welcome to the strategy dashboard. This application visualizes the "Leads" generation strategy for 716 Corporate Housing. 
+                        The primary goal is to capture high-intent professionals via precise search queries while rigorously filtering out low-quality traffic through a multi-layered negative keyword defense.
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-amber-50 p-6 rounded-xl border border-amber-100">
+                        <div class="text-amber-600 text-sm font-semibold uppercase tracking-wide">Est. Success Rate</div>
+                        <div class="text-4xl font-bold text-gray-900 mt-2">90%</div>
+                        <p class="text-sm text-gray-600 mt-2">Based on high-intent targeting logic.</p>
+                    </div>
+                    <div class="bg-slate-50 p-6 rounded-xl border border-slate-100">
+                        <div class="text-slate-600 text-sm font-semibold uppercase tracking-wide">Monthly Budget</div>
+                        <div class="text-4xl font-bold text-gray-900 mt-2">~$700</div>
+                        <p class="text-sm text-gray-600 mt-2">Daily spend cap approx. $23.00</p>
+                    </div>
+                    <div class="bg-blue-50 p-6 rounded-xl border border-blue-100">
+                        <div class="text-blue-600 text-sm font-semibold uppercase tracking-wide">Primary Goal</div>
+                        <div class="text-4xl font-bold text-gray-900 mt-2">Leads</div>
+                        <p class="text-sm text-gray-600 mt-2">Direct clicks to Innago listings.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Budget Allocation -->
+        <section id="budget" class="bg-white py-12 border-y border-gray-100">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 mb-4">Strategic Budget Allocation</h2>
+                        <p class="text-gray-600 mb-6">
+                            Budget is not distributed evenly; it is weighted towards "Core Intent." We prioritize Campaign 1 because users searching for "Corporate Housing" convert at the highest rate. 
+                            Campaigns 2 and 3 serve as efficient, lower-cost support layers.
+                        </p>
+                        <ul class="space-y-4">
+                            <li class="flex items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="w-3 h-3 rounded-full bg-amber-500 mr-3"></span>
+                                <div class="flex-1 font-medium">Search - Core Intent</div>
+                                <div class="font-bold text-gray-800">$9.00/day</div>
+                            </li>
+                            <li class="flex items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="w-3 h-3 rounded-full bg-blue-500 mr-3"></span>
+                                <div class="flex-1 font-medium">Search - Niche (Nurses)</div>
+                                <div class="font-bold text-gray-800">$6.00/day</div>
+                            </li>
+                            <li class="flex items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="w-3 h-3 rounded-full bg-emerald-500 mr-3"></span>
+                                <div class="flex-1 font-medium">Search - Furnished/Temp</div>
+                                <div class="font-bold text-gray-800">$6.00/day</div>
+                            </li>
+                            <li class="flex items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="w-3 h-3 rounded-full bg-purple-500 mr-3"></span>
+                                <div class="flex-1 font-medium">Display - Remarketing</div>
+                                <div class="font-bold text-gray-800">$2.00/day</div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="chart-container">
+                            <canvas id="budgetChart"></canvas>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-4 text-center">Interactive: Hover segments for details.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Campaign Command Center -->
+        <section id="campaigns" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-gray-900">Campaign Command Center</h2>
+                <p class="text-gray-600 mt-2">
+                    Explore the four distinct campaigns. Click the tabs below to reveal the specific strategy, keywords, and ad creatives for each segment.
+                    Notice how the messaging shifts from "Corporate" (C1) to "Nurse-Specific" (C2) to "Flexible Terms" (C3).
+                </p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+                <!-- Tabs -->
+                <div class="flex flex-wrap border-b border-gray-200 bg-gray-50">
+                    <button onclick="switchCampaign(0)" class="tab-btn active px-6 py-4 text-sm font-semibold transition-colors border-b-2 flex-grow sm:flex-grow-0 text-center focus:outline-none">
+                        C1: Core Intent
+                    </button>
+                    <button onclick="switchCampaign(1)" class="tab-btn px-6 py-4 text-sm font-semibold text-gray-500 hover:text-gray-700 transition-colors border-b-2 border-transparent flex-grow sm:flex-grow-0 text-center focus:outline-none">
+                        C2: Nurses
+                    </button>
+                    <button onclick="switchCampaign(2)" class="tab-btn px-6 py-4 text-sm font-semibold text-gray-500 hover:text-gray-700 transition-colors border-b-2 border-transparent flex-grow sm:flex-grow-0 text-center focus:outline-none">
+                        C3: Furnished/Temp
+                    </button>
+                    <button onclick="switchCampaign(3)" class="tab-btn px-6 py-4 text-sm font-semibold text-gray-500 hover:text-gray-700 transition-colors border-b-2 border-transparent flex-grow sm:flex-grow-0 text-center focus:outline-none">
+                        C4: Remarketing
+                    </button>
+                </div>
+
+                <!-- Content Pane -->
+                <div class="p-6 lg:p-10 grid grid-cols-1 lg:grid-cols-2 gap-10">
+                    
+                    <!-- Left: Strategy & Data -->
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 id="campTitle" class="text-2xl font-bold text-gray-800">Search - Core Intent</h3>
+                            <span id="campBudget" class="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full">$9.00 / Day</span>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <h4 class="text-sm font-bold text-gray-400 uppercase mb-2">My Objective</h4>
+                            <p id="campObjective" class="text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-lg border-l-4 border-amber-500">
+                                Maximizing conversion volume by targeting users searching for "corporate housing". Willing to pay a premium for high-intent queries.
+                            </p>
+                        </div>
+
+                        <div class="mb-6">
+                            <h4 class="text-sm font-bold text-gray-400 uppercase mb-2">Target Keywords</h4>
+                            <div id="campKeywords" class="flex flex-wrap">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="text-sm font-bold text-gray-400 uppercase mb-2">Specific Negatives</h4>
+                            <div id="campNegatives" class="flex flex-wrap">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Visual Ad Preview -->
+                    <div class="bg-gray-50 rounded-xl p-6 flex flex-col justify-center">
+                        <h4 class="text-sm font-bold text-gray-400 uppercase mb-4 text-center">Google Search Ad Preview</h4>
+                        
+                        <div id="adPreviewContainer" class="space-y-4">
+                            <!-- Ad 1 -->
+                            <div class="ad-preview">
+                                <a href="#" class="ad-headline block mb-1">Buffalo Corporate Rentals | Fully Furnished & Flexible</a>
+                                <div class="ad-url">https://www.716corporatehousing.com/our-units</div>
+                                <div class="ad-desc">Exclusive Corporate Apartments in Buffalo. Ready for Your Extended Stay. All Utilities Included. Modern & Equipped. Book Now.</div>
+                            </div>
+                            <!-- Ad 2 (Optional/Dynamic) -->
+                        </div>
+                        <p class="text-center text-xs text-gray-400 mt-4">Note: Final URL for all ads is /our-units</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Firewall (Negative Keywords) -->
+        <section id="negative-keywords" class="bg-slate-900 text-white py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                    <!-- Intro -->
+                    <div class="lg:col-span-1">
+                        <h2 class="text-3xl font-bold text-white mb-4">The Firewall 🛡️</h2>
+                        <p class="text-slate-300 mb-6">
+                            This is the most critical part of the budget protection strategy. We apply a "Master Negative Keyword List" to block irrelevant traffic.
+                            <br><br>
+                            Click the categories to see exactly what we are filtering out to save money.
+                        </p>
+                        
+                        <div class="space-y-2" id="firewallButtons">
+                            <!-- Buttons populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Visualization -->
+                    <div class="lg:col-span-2 bg-slate-800 rounded-xl p-8 border border-slate-700 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-10">
+                            <span class="text-9xl">🚫</span>
+                        </div>
+                        <h3 id="fwTitle" class="text-xl font-bold text-amber-400 mb-2">Select a Category</h3>
+                        <p id="fwDesc" class="text-slate-400 text-sm mb-6">Click a button on the left to inspect the filter rules.</p>
+                        
+                        <div id="fwList" class="flex flex-wrap gap-2">
+                            <!-- Populated by JS -->
+                            <span class="text-slate-500 italic">Waiting for selection...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Technical Specs -->
+        <section id="tech" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Technical Configuration</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
+                    <div class="font-bold text-gray-700 mb-1">Primary Location</div>
+                    <div class="text-sm text-gray-600">Buffalo, NY (City Limits)</div>
+                    <div class="text-xs text-green-600 mt-1">+10-20% Bid Adj.</div>
+                </div>
+                <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
+                    <div class="font-bold text-gray-700 mb-1">Secondary Radius</div>
+                    <div class="text-sm text-gray-600">15-20 Miles around City</div>
+                    <div class="text-xs text-red-500 mt-1">Excluding >30 miles</div>
+                </div>
+                <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
+                    <div class="font-bold text-gray-700 mb-1">Conversion Trigger</div>
+                    <div class="text-sm text-gray-600">Click on "Innago" Link</div>
+                    <div class="text-xs text-blue-600 mt-1">Goal: "Listing_Click"</div>
+                </div>
+                <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
+                    <div class="font-bold text-gray-700 mb-1">Attribution</div>
+                    <div class="text-sm text-gray-600">Data-driven / Time Decay</div>
+                    <div class="text-xs text-gray-400 mt-1">Lookback: 30 Days</div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-50 border-t border-gray-200 py-8 text-center text-sm text-gray-500">
+        <p>&copy; 2025 716 Corporate Housing Strategy Dashboard. Generated for analysis.</p>
+    </footer>
+
+    <!-- Logic Script -->
+    <script>
+        // Data Store
+        const campaigns = [
+            {
+                title: "Search - Core Intent",
+                budget: "$9.00 / Day",
+                objective: "I want this campaign to capture the users searching specifically for the highest-value terms like 'corporate housing'. I'm willing to pay a premium here for maximizing conversion volume.",
+                keywords: ["corporate housing buffalo", "corporate apartments buffalo ny", "corporate manor apartments", "corporate rentals buffalo ny"],
+                negatives: ["-str", "-mtr", "-extended stay", "-short term", "-nurse"],
+                ads: [
+                    {
+                        h1: "Buffalo Corporate Rentals | Fully Furnished & Flexible",
+                        h2: "Temporary Corporate Housing",
+                        desc: "Exclusive Corporate Apartments in Buffalo. Ready for Your Extended Stay. All Utilities Included. Book Now.",
+                        url: "https://www.716corporatehousing.com/our-units"
+                    },
+                    {
+                        h1: "Corporate Apartments Buffalo NY",
+                        h2: "716: Your Premier Temporary Home",
+                        desc: "Near Business Hubs. Modern, Clean Units. Flexible Lease Terms. View Listings & Get a Quote Today!",
+                        url: "https://www.716corporatehousing.com/our-units"
+                    }
+                ]
+            },
+            {
+                title: "Search - Niche (Nurses)",
+                budget: "$6.00 / Day",
+                objective: "Focusing solely on Travel Nurses. My goal here is budget efficiency—targeting long-tail niche searches to secure a lower CPA to balance the higher costs of Campaign 1.",
+                keywords: ["furnished housing for travel nurses", "travel nurse furnished housing", "furnished travel nurse housing", "furnished housing for nurses"],
+                negatives: ["-doctor", "-resident", "-staffing", "-agency"],
+                ads: [
+                    {
+                        h1: "Travel Nurse Housing Buffalo",
+                        h2: "Fully Furnished, All-Inclusive Stays",
+                        desc: "High-Quality Housing for Nurses Near Buffalo Medical Campuses. Easy Monthly Leases. Skip the Hassle, See Listings Now.",
+                        url: "https://www.716corporatehousing.com/our-units"
+                    }
+                ]
+            },
+            {
+                title: "Search - Furnished & Temporary",
+                budget: "$6.00 / Day",
+                objective: "Capturing users filtering by 'Furnished' or 'Temporary'. I'm introducing our solution to users who might default to Zillow, using heavy negative keywords to ensure business intent.",
+                keywords: ["fully furnished apartments buffalo ny", "buffalo furnished apartments", "furnished studios", "short term rentals buffalo ny", "short term furnished rentals"],
+                negatives: ["-unfurnished", "-short term", "-extended stay", "-corporate", "-vacation", "-airbnb"],
+                ads: [
+                    {
+                        h1: "Fully Furnished Buffalo Studios",
+                        h2: "Flexible Monthly Apartments",
+                        desc: "Move-In Ready, All-Inclusive Units for Professionals and Seniors. Perfect for Extended Stays. View Your New Home Today!",
+                        url: "https://www.716corporatehousing.com/our-units"
+                    },
+                    {
+                        h1: "Short Term Rentals Buffalo",
+                        h2: "Furnished & All-Inclusive Monthly Stays",
+                        desc: "Need a Temporary Home? High-Quality, Flexible & Fully Equipped Rentals for Projects or Relocation.",
+                        url: "https://www.716corporatehousing.com/our-units"
+                    }
+                ]
+            },
+            {
+                title: "Display - Remarketing",
+                budget: "$2.00 / Day",
+                objective: "Re-engage users who visited but didn't book. A cheap way to stay top-of-mind with a frequency cap of 3-5 impressions/day.",
+                keywords: ["(Audience: Website Visitors)"],
+                negatives: ["(Standard Exclusions)"],
+                ads: [
+                    {
+                        h1: "Still Looking for Housing in Buffalo?",
+                        h2: "Your Perfect Buffalo Stay Awaits",
+                        desc: "Complete your booking for a premium furnished apartment in Buffalo. Flexible leases, modern amenities.",
+                        url: "https://www.716corporatehousing.com/our-units"
+                    }
+                ]
+            }
+        ];
+
+        const firewallData = {
+            "Price & Low Quality": {
+                desc: "Filters out users looking for free, cheap, or subsidized housing to protect budget.",
+                list: ["-free", "-cheap", "-cheapest", "-affordable", "-low income", "-subsidized", "-section 8", "-discount", "-craigslist", "-homeless", "-shelter"]
+            },
+            "Real Estate Sales": {
+                desc: "Ensures we don't pay for clicks from people looking to buy houses or condos.",
+                list: ["-buy", "-sell", "-sale", "-condo", "-purchase", "-mortgage", "-foreclosure", "-realtor", "-agent", "-broker"]
+            },
+            "Vacation & Hospitality": {
+                desc: "Critical for avoiding tourists. We offer monthly stays, not weekend trips.",
+                list: ["-airbnb", "-vrbo", "-hotel", "-motel", "-resort", "-vacation", "-holiday", "-inn", "-hostel", "-camping", "-tripadvisor", "-expedia"]
+            },
+            "Student & Academic": {
+                desc: "Prevents wasted spend on undergraduate students looking for dorms.",
+                list: ["-dorm", "-dormitory", "-student", "-undergraduate", "-freshman", "-campus housing", "-roommate", "-share"]
+            },
+            "Employment": {
+                desc: "Filters out job seekers and people looking for property management jobs.",
+                list: ["-job", "-jobs", "-career", "-hiring", "-internship", "-salary", "-manager", "-property management"]
+            },
+            "Furniture": {
+                desc: "Since we target 'Furnished', we must block people looking to buy furniture.",
+                list: ["-furniture rental", "-buying furniture", "-ikea", "-sofa", "-mattress", "-decor", "-store", "-shop"]
+            }
+        };
+
+        // --- Chart Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const ctx = document.getElementById('budgetChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['C1: Core Intent ($9)', 'C2: Niche Nurses ($6)', 'C3: Furnished/Temp ($6)', 'C4: Remarketing ($2)'],
+                    datasets: [{
+                        data: [9, 6, 6, 2],
+                        backgroundColor: [
+                            '#d97706', // Amber-600
+                            '#3b82f6', // Blue-500
+                            '#10b981', // Emerald-500
+                            '#8b5cf6'  // Purple-500
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { usePointStyle: true, font: { family: 'Inter', size: 12 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) { label += ': '; }
+                                    label += '$' + context.raw + '.00/day';
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Initialize Campaign View
+            switchCampaign(0);
+            
+            // Initialize Firewall Buttons
+            renderFirewallButtons();
+        });
+
+        // --- Campaign Logic ---
+        function switchCampaign(index) {
+            const data = campaigns[index];
+            const btns = document.querySelectorAll('.tab-btn');
+            
+            // UI State
+            btns.forEach((btn, i) => {
+                if(i === index) {
+                    btn.classList.add('active', 'border-b-2', 'border-amber-600', 'text-amber-700');
+                    btn.classList.remove('border-transparent', 'text-gray-500');
+                } else {
+                    btn.classList.remove('active', 'border-b-2', 'border-amber-600', 'text-amber-700');
+                    btn.classList.add('border-transparent', 'text-gray-500');
+                }
+            });
+
+            // Update Text Data
+            document.getElementById('campTitle').innerText = data.title;
+            document.getElementById('campBudget').innerText = data.budget;
+            document.getElementById('campObjective').innerText = data.objective;
+
+            // Render Keywords
+            const kwContainer = document.getElementById('campKeywords');
+            kwContainer.innerHTML = '';
+            data.keywords.forEach(kw => {
+                const span = document.createElement('span');
+                span.className = 'keyword-chip';
+                span.innerText = kw;
+                kwContainer.appendChild(span);
+            });
+
+            // Render Negatives
+            const negContainer = document.getElementById('campNegatives');
+            negContainer.innerHTML = '';
+            data.negatives.forEach(neg => {
+                const span = document.createElement('span');
+                span.className = 'neg-chip';
+                span.innerText = neg;
+                negContainer.appendChild(span);
+            });
+
+            // Render Ads
+            const adContainer = document.getElementById('adPreviewContainer');
+            adContainer.innerHTML = '';
+            data.ads.forEach(ad => {
+                const div = document.createElement('div');
+                div.className = 'ad-preview';
+                div.innerHTML = `
+                    <a href="${ad.url}" target="_blank" class="ad-headline block mb-1">${ad.h1} | ${ad.h2}</a>
+                    <div class="ad-url">www.716corporatehousing.com › our-units</div>
+                    <div class="ad-desc">${ad.desc}</div>
+                `;
+                adContainer.appendChild(div);
+            });
+        }
+
+        // --- Firewall Logic ---
+        function renderFirewallButtons() {
+            const container = document.getElementById('firewallButtons');
+            const keys = Object.keys(firewallData);
+            
+            keys.forEach((key, index) => {
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left px-4 py-3 rounded-lg font-medium transition-all ${index === 0 ? 'bg-amber-500 text-white shadow-md' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`;
+                btn.innerText = key;
+                btn.onclick = () => updateFirewall(key, btn);
+                container.appendChild(btn);
+                
+                // Init first
+                if (index === 0) updateFirewall(key, btn);
+            });
+        }
+
+        function updateFirewall(category, clickedBtn) {
+            // Update Buttons State
+            const btns = document.getElementById('firewallButtons').children;
+            for(let btn of btns) {
+                btn.className = 'w-full text-left px-4 py-3 rounded-lg font-medium transition-all bg-slate-800 text-slate-400 hover:bg-slate-700';
+            }
+            clickedBtn.className = 'w-full text-left px-4 py-3 rounded-lg font-medium transition-all bg-amber-500 text-white shadow-md transform scale-105';
+
+            // Update Content
+            const data = firewallData[category];
+            document.getElementById('fwTitle').innerText = category;
+            document.getElementById('fwDesc').innerText = data.desc;
+            
+            const listContainer = document.getElementById('fwList');
+            listContainer.innerHTML = '';
+            data.list.forEach(item => {
+                const span = document.createElement('span');
+                span.className = 'bg-red-900/30 text-red-300 border border-red-900/50 px-3 py-1 rounded text-sm font-mono';
+                span.innerText = item;
+                listContainer.appendChild(span);
+            });
+        }
+
+    </script>
+</body>
+</html>
