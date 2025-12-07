@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Ads Audit Report: Vending Canada</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-dark': '#003f63', // Deep Blue
+                        'primary-light': '#f7f9ff', // Off-white/Light Gray
+                        'secondary-dark': '#2e3d4b', // Dark Blue-Gray (Main background)
+                        'secondary-light': '#e8f2ff', // Light Blue-Gray
+                        'background-light': '#d5e4f6', // Original light background (not explicitly used for main theme but available)
+                        'error-color': '#de3730', // Red
+                        'neutral-dark': '#3a3b3e', // Dark Gray (Section background within main content)
+                        'neutral-light': '#f9f9fc', // Very Light Gray (Text on dark bg)
+                        'accent-blue': '#007bff', // A more vibrant blue for highlights
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        gradientShift: {
+                            '0%': { backgroundPosition: '0% 50%' },
+                            '100%': { backgroundPosition: '100% 50%' },
+                        }
+                    },
+                    animation: {
+                        fadeInUp: 'fadeInUp 0.8s ease-out forwards',
+                        gradientShift: 'gradientShift 8s ease infinite alternate',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for dark theme tables */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: theme('colors.secondary-dark');
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: theme('colors.primary-dark');
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: theme('colors.accent-blue');
+        }
+
+        /* Glassmorphism effect for cards */
+        .glass-card {
+            background-color: rgba(247, 249, 255, 0.08); /* primary-light with transparency */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(247, 249, 255, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-secondary-dark text-neutral-light font-sans antialiased">
+    <div class="min-h-screen flex flex-col items-center">
+        <!-- Hero Section -->
+        <header class="relative w-full py-20 px-6 sm:px-10 text-center bg-gradient-to-r from-primary-dark to-secondary-dark overflow-hidden shadow-2xl">
+            <div class="absolute inset-0 bg-no-repeat bg-cover bg-center opacity-10" style="background-image: url('https://images.unsplash.com/photo-1510525000574-d4ac6198f1f1?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');"></div>
+            <div class="relative z-10 max-w-4xl mx-auto animate-fadeInUp">
+                <h1 class="text-5xl md:text-6xl font-display font-bold mb-4 text-primary-light leading-tight">
+                    Google Ads Audit Report
+                </h1>
+                <p class="text-2xl md:text-3xl font-display font-medium text-secondary-light mb-8">Competitor Analysis for Vending Canada</p>
+                <div class="flex flex-col md:flex-row justify-center gap-4 text-lg md:text-xl text-neutral-light">
+                    <p><strong>Client:</strong> Vending Canada (vendingcanada.ca)</p>
+                    <span class="hidden md:inline-block text-primary-light">|</span>
+                    <p><strong>Date:</strong> December 7, 2025</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Wrapper -->
+        <main class="w-full max-w-7xl mx-auto px-6 py-12 md:py-16 md:px-10 flex-grow">
+
+            <!-- Executive Summary -->
+            <section id="executive-summary" class="bg-neutral-dark glass-card p-8 rounded-2xl shadow-xl mb-12 animate-fadeInUp" style="animation-delay: 0.2s;">
+                <h2 class="text-4xl font-display font-semibold mb-6 text-accent-blue leading-tight">1. Executive Summary</h2>
+                <p class="text-lg leading-relaxed text-neutral-light">This report analyzes the Canadian vending machine market to position VendingCanada.ca against key competitors. VendingCanada.ca's core differentiators are its "network/broker" business model and comprehensive product offering. Opportunities exist to improve messaging clarity, emphasize technology-driven unique selling points (USPs), and strengthen trust signals to enhance Google Ads performance and market reach.</p>
+            </section>
+
+            <!-- VendingCanada.ca's Current Positioning -->
+            <section id="positioning" class="mb-12">
+                <h2 class="text-4xl font-display font-semibold mb-8 text-primary-light leading-tight animate-fadeInUp" style="animation-delay: 0.3s;">2. VendingCanada.ca's Current Positioning</h2>
+                <p class="text-lg leading-relaxed mb-8 text-neutral-light animate-fadeInUp" style="animation-delay: 0.4s;">VendingCanada.ca functions as a <strong class="text-accent-blue">national connector and distributor</strong> in the Canadian vending machine industry. Its primary offerings include:</p>
+
+                <div class="grid md:grid-cols-2 gap-8 animate-fadeInUp" style="animation-delay: 0.5s;">
+                    <!-- Sales Offering -->
+                    <div class="bg-primary-light text-neutral-dark p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 relative overflow-hidden group">
+                        <h3 class="text-2xl font-display font-semibold mb-4 text-primary-dark">Sales of New & Used Vending Machines</h3>
+                        <p class="mb-4 text-gray-700"><strong>Types:</strong> Snack Machines (Evoke, Mercato, AMS), Drink Machines (Evoke, Vendo, AMS), Combo Machines (Evoke, AMS), Refrigerated & Frozen (Nova Smart Cooler (AI-Powered), Evoke Frozen & Refrigerated, Scan & Go Market), Coffee Machines (Evoke, Total 1 Counter Top), Custom Machines (PPE, Book, Laundry).</p>
+                        <p class="mb-4 text-gray-700"><strong>Sourcing:</strong> Through "distribution partners across the country" and "Vending Canada Certified Suppliers."</p>
+                        <p class="text-gray-700"><strong>Pricing:</strong> New machines are listed with "Starting from" prices.</p>
+                        <div class="absolute inset-0 bg-primary-dark opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
+                    </div>
+
+                    <!-- Services Offering -->
+                    <div class="bg-primary-light text-neutral-dark p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 relative overflow-hidden group">
+                        <h3 class="text-2xl font-display font-semibold mb-4 text-primary-dark">Vending Services (Operator Placement)</h3>
+                        <p class="mb-4 text-gray-700"><strong>Service:</strong> VendingCanada.ca connects businesses with "Vending Operators in every major city across Canada" for custom vending solutions.</p>
+                        <p class="text-gray-700"><strong>Model:</strong> Acts as a facilitator for businesses seeking full-service vending without upfront machine purchase.</p>
+                        <div class="absolute inset-0 bg-primary-dark opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
+                    </div>
+                </div>
+                <p class="text-lg leading-relaxed mt-8 text-neutral-light animate-fadeInUp" style="animation-delay: 0.6s;">The website emphasizes <strong class="text-accent-blue">Canada-wide reach</strong> for both machine sales and operator connections, serving as a single point of contact for diverse vending needs across all provinces.</p>
+            </section>
+
+            <!-- Overview of Key Market Trends -->
+            <section id="market-trends" class="mb-12">
+                <h2 class="text-4xl font-display font-semibold mb-8 text-primary-light leading-tight animate-fadeInUp" style="animation-delay: 0.7s;">3. Overview of Key Market Trends</h2>
+                <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fadeInUp" style="animation-delay: 0.8s;">
+                    <!-- Trend Cards -->
+                    <div class="bg-neutral-dark glass-card p-6 rounded-xl hover:scale-[1.02] transition-transform duration-300">
+                        <h3 class="font-display font-medium text-xl text-accent-blue mb-2">Cashless Payments</h3>
+                        <p class="text-neutral-light">Widespread adoption of debit, credit, ApplePay, and Android Pay.</p>
+                    </div>
+                    <div class="bg-neutral-dark glass-card p-6 rounded-xl hover:scale-[1.02] transition-transform duration-300">
+                        <h3 class="font-display font-medium text-xl text-accent-blue mb-2">Healthy & Diverse Product Offerings</h3>
+                        <p class="text-neutral-light">Increasing demand for healthier options, fresh food, and non-traditional items.</p>
+                    </div>
+                    <div class="bg-neutral-dark glass-card p-6 rounded-xl hover:scale-[1.02] transition-transform duration-300">
+                        <h3 class="font-display font-medium text-xl text-accent-blue mb-2">Digital Transformation & User Experience</h3>
+                        <p class="text-neutral-light">Need for contactless transactions, intuitive interfaces, and improved user satisfaction.</p>
+                    </div>
+                    <div class="bg-neutral-dark glass-card p-6 rounded-xl hover:scale-[1.02] transition-transform duration-300">
+                        <h3 class="font-display font-medium text-xl text-accent-blue mb-2">Data & Remote Management</h3>
+                        <p class="text-neutral-light">Utilization of intelligent tracking and sales analytics for operational efficiency.</p>
+                    </div>
+                    <div class="bg-neutral-dark glass-card p-6 rounded-xl hover:scale-[1.02] transition-transform duration-300">
+                        <h3 class="font-display font-medium text-xl text-accent-blue mb-2">Sustainability</h3>
+                        <p class="text-neutral-light">Growing importance of energy-efficient designs and eco-friendly practices.</p>
+                    </div>
+                    <div class="bg-neutral-dark glass-card p-6 rounded-xl hover:scale-[1.02] transition-transform duration-300">
+                        <h3 class="font-display font-medium text-xl text-accent-blue mb-2">Micro Markets</h3>
+                        <p class="text-neutral-light">Expansion of open-concept retail with self-checkout and wider product variety.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Key Competitors & Their Strategies -->
+            <section id="competitors" class="mb-12">
+                <h2 class="text-4xl font-display font-semibold mb-8 text-primary-light leading-tight animate-fadeInUp" style="animation-delay: 0.9s;">4. Key Competitors & Their Strategies</h2>
+                <p class="text-lg leading-relaxed mb-8 text-neutral-light animate-fadeInUp" style="animation-delay: 1.0s;">Competitors are categorized into Direct Vending Machine Sellers/Distributors and Full-Service Vending Providers.</p>
+
+                <!-- Direct Vending Machine Sellers/Distributors -->
+                <div class="mb-10">
+                    <h3 class="text-3xl font-display font-semibold mb-6 text-accent-blue animate-fadeInUp" style="animation-delay: 1.1s;">4.1. Direct Vending Machine Sellers/Distributors</h3>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <!-- Competitor Cards -->
+                        <div class="bg-primary-light text-neutral-dark p-6 rounded-xl shadow-lg hover:shadow-2xl transition-transform duration-300 hover:scale-[1.02] animate-fadeInUp" style="animation-delay: 1.2s;">
+                            <h4 class="text-xl font-display font-semibold text-primary-dark mb-2">Langley Wholesale Ltd. (<a href="https://langleywholesale.ca" target="_blank" class="text-accent-blue hover:underline">langleywholesale.ca</a>)</h4>
+                            <p class="text-sm mb-1"><strong class="font-medium">Offerings:</strong> New & used snack, drink, combo, fresh food, coffee, frozen food, healthy, and PPE vending machines; Smart Coolers & Micro Markets; Nayax Readers; restaurant equipment.</p>
+                            <p class="text-sm mb-1"><strong class="font-medium">USPs/Strategies:</strong> Professional solutions, supply equipment <em>and</em> products, quote CTA, 800-number, "Next day or second day delivery...to most locations in Canada," "Cashless in Canada!," maintenance videos.</p>
+                            <p class="text-sm"><strong class="font-medium">Geographic Focus:</strong> National delivery capability, physical address in Surrey, BC.</p>
+                        </div>
+                        <div class="bg-primary-light text-neutral-dark p-6 rounded-xl shadow-lg hover:shadow-2xl transition-transform duration-300 hover:scale-[1.02] animate-fadeInUp" style="animation-delay: 1.3s;">
+                            <h4 class="text-xl font-display font-semibold text-primary-dark mb-2">QM Distribution (<a href="https://distributionqm.ca" target="_blank" class="text-accent-blue hover:underline">distributionqm.ca</a>)</h4>
+                            <p class="text-sm mb-1"><strong class="font-medium">Offerings:</strong> New snack, drink, combo, refrigerated & frozen, coffee, custom, and used vending machines; strong emphasis on "AI-Smart Coolers." Offers financing and card readers.</p>
+                            <p class="text-sm mb-1"><strong class="font-medium">USPs/Strategies:</strong> "Canada's Trusted Vending Machine Supplier — 70+ Years of Industry Experience," "innovative, operator-focused vending solutions," "cutting-edge vending machines and AI-smart coolers equipped with intelligent tracking, real-time alerts, and sales analytics." Offers "Nationwide sales & service," "Warranties with Lifetime customer support," and "Flexible leasing options." Serves operators, offices, gyms, hospitals, schools, micro-markets.</p>
+                            <p class="text-sm"><strong class="font-medium">Geographic Focus:</strong> "Canada's Vending Machine Distributor," warehouses in Toronto & Vancouver, implies national reach.</p>
+                        </div>
+                        <div class="bg-primary-light text-neutral-dark p-6 rounded-xl shadow-lg hover:shadow-2xl transition-transform duration-300 hover:scale-[1.02] animate-fadeInUp" style="animation-delay: 1.4s;">
+                            <h4 class="text-xl font-display font-semibold text-primary-dark mb-2">Vendors Choice (<a href="https://vendorschoice.ca" target="_blank" class="text-accent-blue hover:underline">vendorschoice.ca</a>)</h4>
+                            <p class="text-sm mb-1"><strong class="font-medium">Offerings:</strong> Snack, beverage, coffee, water, food, PPE, and combo machines; emphasis on "healthy vending machines" and "office coffee options."</p>
+                            <p class="text-sm mb-1"><strong class="font-medium">USPs/Strategies:</strong> "Over 2 decades of experience," "All payment options" including "Tap & Pay Nyax system," portions of sales to Lions Club International (charitable), offers financing.</p>
+                            <p class="text-sm"><strong class="font-medium">Geographic Focus:</strong> Primarily Ontario (King City address), uses "near me" messaging.</p>
+                        </div>
+                        <div class="bg-primary-light text-neutral-dark p-6 rounded-xl shadow-lg hover:shadow-2xl transition-transform duration-300 hover:scale-[1.02] animate-fadeInUp" style="animation-delay: 1.5s;">
+                            <h4 class="text-xl font-display font-semibold text-primary-dark mb-2">Red Seal Vending (<a href="https://redsealvending.ca" target="_blank" class="text-accent-blue hover:underline">redsealvending.ca</a>)</h4>
+                            <p class="text-sm mb-1"><strong class="font-medium">Offerings:</strong> New and refurbished vending machines across Canada; full-service vending, office coffee, and water cooler services.</p>
+                            <p class="text-sm mb-1"><strong class="font-medium">USPs/Strategies:</strong> "Over 30 years of experience," "Canadian-owned and family-operated," modern machines with smart technology (cash, debit, credit, Apple Pay, Android Pay, PayRange), "exceptional service" with 24-hour repair/replacement, free equipment/installation for qualifying businesses.</p>
+                            <p class="text-sm"><strong class="font-medium">Geographic Focus:</strong> Strong presence in GTA for full-service, machine sales across Canada.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Full-Service Vending Providers -->
+                <div>
+                    <h3 class="text-3xl font-display font-semibold mb-6 text-accent-blue animate-fadeInUp" style="animation-delay: 1.6s;">4.2. Full-Service Vending Providers</h3>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div class="bg-primary-light text-neutral-dark p-6 rounded-xl shadow-lg hover:shadow-2xl transition-transform duration-300 hover:scale-[1.02] animate-fadeInUp" style="animation-delay: 1.7s;">
+                            <h4 class="text-xl font-display font-semibold text-primary-dark mb-2">Canteen Canada (<a href="https://canteencanada.com" target="_blank" class="text-accent-blue hover:underline">canteencanada.com</a>)</h4>
+                            <p class="text-sm mb-1"><strong class="font-medium">Offerings:</strong> Full-service vending, micro-markets (Avenue C), office coffee, pantry services; wide product range with a healthy focus.</p>
+                            <p class="text-sm mb-1"><strong class="font-medium">USPs/Strategies:</strong> "Canada's largest vending service provider," "customized solutions," "technological advancement" (mobile payments, remote monitoring, SEED system), "extensive product variety with a healthy focus," "superior customer service," "sustainability initiatives."</p>
+                            <p class="text-sm"><strong class="font-medium">Geographic Focus:</strong> National coverage.</p>
+                        </div>
+                        <div class="bg-primary-light text-neutral-dark p-6 rounded-xl shadow-lg hover:shadow-2xl transition-transform duration-300 hover:scale-[1.02] animate-fadeInUp" style="animation-delay: 1.8s;">
+                            <h4 class="text-xl font-display font-semibold text-primary-dark mb-2">Adaria Vending Services (<a href="https://adaria.ca" target="_blank" class="text-accent-blue hover:underline">adaria.ca</a>)</h4>
+                            <p class="text-sm mb-1"><strong class="font-medium">Offerings:</strong> Full-service vending, micromarkets, office coffee services, pantry services, snack boxes.</p>
+                            <p class="text-sm mb-1"><strong class="font-medium">USPs/Strategies:</strong> "Canada's most technologically advanced provider of unattended retail," "industry firsts," "in-house technology development capabilities," "IoT-connected devices," "National coverage with local service," "Data-driven operations," "enhanced customer experience."</p>
+                            <p class="text-sm"><strong class="font-medium">Geographic Focus:</strong> National coverage.</p>
+                        </div>
+                        <div class="bg-primary-light text-neutral-dark p-6 rounded-xl shadow-lg hover:shadow-2xl transition-transform duration-300 hover:scale-[1.02] animate-fadeInUp" style="animation-delay: 1.9s;">
+                            <h4 class="text-xl font-display font-semibold text-primary-dark mb-2">The Brew Centre (<a href="https://thebrewcentre.com" target="_blank" class="text-accent-blue hover:underline">thebrewcentre.com</a>)</h4>
+                            <p class="text-sm mb-1"><strong class="font-medium">Offerings:</strong> Full-service vending programs (hot/cold drinks, candy, fresh food), premium office coffee solutions.</p>
+                            <p class="text-sm mb-1"><strong class="font-medium">USPs/Strategies:</strong> "Over 40 years of experience," customized inventory, credit card/mobile payments, monitoring technology.</p>
+                            <p class="text-sm"><strong class="font-medium">Geographic Focus:</strong> Greater Toronto Area (GTA).</p>
+                        </div>
+                        <div class="bg-primary-light text-neutral-dark p-6 rounded-xl shadow-lg hover:shadow-2xl transition-transform duration-300 hover:scale-[1.02] animate-fadeInUp" style="animation-delay: 2.0s;">
+                            <h4 class="text-xl font-display font-semibold text-primary-dark mb-2">SMRT1 Technologies (<a href="https://smrt1.ca" target="_blank" class="text-accent-blue hover:underline">smrt1.ca</a>)</h4>
+                            <p class="text-sm mb-1"><strong class="font-medium">Offerings:</strong> Focuses on "Smart Vending" solutions with SMRT1 PODs (cloud-connected dispensing solutions), interactive touchscreens, and data analytics.</p>
+                            <p class="text-sm mb-1"><strong class="font-medium">USPs/Strategies:</strong> "Complete Ecosystem (Hardware, Software, Analytics, Content)," interactive touchscreen, "Customization and Adaptability," cost-effectiveness, "Public Health Solutions (HEALTH PODs)."</p>
+                            <p class="text-sm"><strong class="font-medium">Geographic Focus:</strong> International, active in Canada.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Competitive Comparison & VendingCanada.ca's Differentiators -->
+            <section id="comparison" class="mb-12">
+                <h2 class="text-4xl font-display font-semibold mb-8 text-primary-light leading-tight animate-fadeInUp" style="animation-delay: 2.1s;">5. Competitive Comparison & VendingCanada.ca's Differentiators</h2>
+                <div class="overflow-x-auto rounded-xl shadow-xl glass-card animate-fadeInUp" style="animation-delay: 2.2s;">
+                    <table class="w-full text-left text-neutral-light border-collapse min-w-[1200px]">
+                        <thead class="bg-gradient-to-r from-primary-dark to-accent-blue text-primary-light font-display">
+                            <tr>
+                                <th class="p-4 border-b border-primary-dark text-lg">Feature/Aspect</th>
+                                <th class="p-4 border-b border-primary-dark text-lg">VendingCanada.ca</th>
+                                <th class="p-4 border-b border-primary-dark text-lg">Langley Wholesale</th>
+                                <th class="p-4 border-b border-primary-dark text-lg">QM Distribution</th>
+                                <th class="p-4 border-b border-primary-dark text-lg">Vendors Choice</th>
+                                <th class="p-4 border-b border-primary-dark text-lg">Canteen Canada (Full-Service)</th>
+                                <th class="p-4 border-b border-primary-dark text-lg">Adaria Vending (Full-Service)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Table Rows -->
+                            <tr class="hover:bg-neutral-dark/50 transition-colors duration-200">
+                                <td class="p-4 border-b border-secondary-dark font-medium text-accent-blue">Primary Model</td>
+                                <td class="p-4 border-b border-secondary-dark"><strong>Network/Broker for Machine Sales & Operator Services</strong></td>
+                                <td class="p-4 border-b border-secondary-dark">Direct Machine Sales & Distribution</td>
+                                <td class="p-4 border-b border-secondary-dark">Direct Machine Sales & Distribution</td>
+                                <td class="p-4 border-b border-secondary-dark">Direct Machine Sales & Distribution</td>
+                                <td class="p-4 border-b border-secondary-dark">Full-Service Vending, Micro Markets, Office Coffee</td>
+                                <td class="p-4 border-b border-secondary-dark">Full-Service Vending, Micro Markets, Office Coffee</td>
+                            </tr>
+                            <tr class="hover:bg-neutral-dark/50 transition-colors duration-200">
+                                <td class="p-4 border-b border-secondary-dark font-medium text-accent-blue">Product Range</td>
+                                <td class="p-4 border-b border-secondary-dark">Extensive (Snack, Drink, Combo, Food/Frozen, Coffee, Custom, Used)</td>
+                                <td class="p-4 border-b border-secondary-dark">Extensive (New/Used, various types, Smart Coolers, Micro Markets)</td>
+                                <td class="p-4 border-b border-secondary-dark">Extensive (New/Used, various types, AI-Smart Coolers)</td>
+                                <td class="p-4 border-b border-secondary-dark">Extensive (New, various types, Healthy focus)</td>
+                                <td class="p-4 border-b border-secondary-dark">Extensive (National brands, local, healthy, fresh food)</td>
+                                <td class="p-4 border-b border-secondary-dark">Extensive (Full suite of unattended retail)</td>
+                            </tr>
+                            <tr class="hover:bg-neutral-dark/50 transition-colors duration-200">
+                                <td class="p-4 border-b border-secondary-dark font-medium text-accent-blue">Technology Focus</td>
+                                <td class="p-4 border-b border-secondary-dark">Features AI-Powered Nova Smart Cooler, general modern machines</td>
+                                <td class="p-4 border-b border-secondary-dark">Mentions Smart Coolers, Nayax Readers, maintenance videos</td>
+                                <td class="p-4 border-b border-secondary-dark"><strong>Strong emphasis on AI-Smart Coolers, intelligent tracking, real-time alerts</strong></td>
+                                <td class="p-4 border-b border-secondary-dark">Tap & Pay Nyax system</td>
+                                <td class="p-4 border-b border-secondary-dark"><strong>Advanced vending tech, mobile payments, remote monitoring (SEED system)</strong></td>
+                                <td class="p-4 border-b border-secondary-dark"><strong>"Most technologically advanced," IoT-connected, in-house tech dev, data-driven</strong></td>
+                            </tr>
+                            <tr class="hover:bg-neutral-dark/50 transition-colors duration-200">
+                                <td class="p-4 border-b border-secondary-dark font-medium text-accent-blue">Geographic Reach</td>
+                                <td class="p-4 border-b border-secondary-dark"><strong>Canada-Wide (Sales & Operator Network)</strong></td>
+                                <td class="p-4 border-b border-secondary-dark">National delivery, BC-based</td>
+                                <td class="p-4 border-b border-secondary-dark"><strong>National (Warehouses Toronto/Vancouver)</strong></td>
+                                <td class="p-4 border-b border-secondary-dark">Primarily Ontario</td>
+                                <td class="p-4 border-b border-secondary-dark"><strong>National</strong></td>
+                                <td class="p-4 border-b border-secondary-dark"><strong>National</strong></td>
+                            </tr>
+                            <tr class="hover:bg-neutral-dark/50 transition-colors duration-200">
+                                <td class="p-4 border-b border-secondary-dark font-medium text-accent-blue">Trust/Credibility</td>
+                                <td class="p-4 border-b border-secondary-dark">"Vending Canada Certified Suppliers," "distribution partners"</td>
+                                <td class="p-4 border-b border-secondary-dark">"Professional vending solutions"</td>
+                                <td class="p-4 border-b border-secondary-dark">"70+ Years of Industry Experience," "Canada's Trusted Supplier"</td>
+                                <td class="p-4 border-b border-secondary-dark">"2 Decades of Experience," charitable contributions (Lions Club)</td>
+                                <td class="p-4 border-b border-secondary-dark">"Canada's largest," "Customized service," "Superior Customer Service"</td>
+                                <td class="p-4 border-b border-secondary-dark">"History of industry firsts," "National coverage with local service"</td>
+                            </tr>
+                            <tr class="hover:bg-neutral-dark/50 transition-colors duration-200">
+                                <td class="p-4 border-b border-secondary-dark font-medium text-accent-blue">Pricing Model</td>
+                                <td class="p-4 border-b border-secondary-dark">"Starting from" prices for new machines, quote requests</td>
+                                <td class="p-4 border-b border-secondary-dark">Quote requests, implied competitive</td>
+                                <td class="p-4 border-b border-secondary-dark">Flexible leasing, implied competitive</td>
+                                <td class="p-4 border-b border-secondary-dark">Competitive pricing</td>
+                                <td class="p-4 border-b border-secondary-dark">Full-service (often no cost to business, revenue share)</td>
+                                <td class="p-4 border-b border-secondary-dark">Full-service (often no cost to business, revenue share)</td>
+                            </tr>
+                            <tr class="hover:bg-neutral-dark/50 transition-colors duration-200">
+                                <td class="p-4 border-b border-secondary-dark font-medium text-accent-blue">Key Differentiator</td>
+                                <td class="p-4 border-b border-secondary-dark"><strong>Acts as a central hub/broker, connecting buyers/businesses to suppliers/operators.</strong></td>
+                                <td class="p-4 border-b border-secondary-dark">Wide range, product supply, prompt delivery.</td>
+                                <td class="p-4 border-b border-secondary-dark">Long experience, strong AI/tech focus, end-to-end support, financing.</td>
+                                <td class="p-4 border-b border-secondary-dark">Local focus, charitable giving, strong payment tech.</td>
+                                <td class="p-4 border-b border-secondary-dark">Scale, advanced tech, comprehensive breakroom solutions, healthy focus.</td>
+                                <td class="p-4 border-b border-secondary-dark">Tech leadership, data analytics, comprehensive unattended retail, in-house tech.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-lg leading-relaxed mt-8 text-neutral-light animate-fadeInUp" style="animation-delay: 2.3s;"><strong class="text-accent-blue">VendingCanada.ca's Unique Position:</strong> VendingCanada.ca differentiates itself as a <strong class="text-accent-blue">national aggregator</strong>, acting as a broker for both machine sales (via "Certified Suppliers") and full-service operator placements. This model offers clients a broader selection and tailored solutions through a single point of contact, positioning it as a convenient gateway.</p>
+            </section>
+
+            <!-- Opportunities for VendingCanada.ca -->
+            <section id="opportunities" class="mb-12">
+                <h2 class="text-4xl font-display font-semibold mb-8 text-primary-light leading-tight animate-fadeInUp" style="animation-delay: 2.4s;">6. Opportunities for VendingCanada.ca</h2>
+                <ol class="grid md:grid-cols-2 gap-8 list-none p-0">
+                    <!-- Opportunity 1 -->
+                    <li class="bg-primary-light text-neutral-dark p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-transform duration-300 hover:scale-[1.02] animate-fadeInUp" style="animation-delay: 2.5s;">
+                        <h3 class="text-2xl font-display font-semibold mb-4 text-primary-dark">1. Clarify the Brokerage Model</h3>
+                        <p class="mb-3 text-gray-700"><strong>Recommendation:</strong> Explicitly communicate the benefits of the network/broker model, highlighting access to more choices, vetted suppliers, and tailored solutions.</p>
+                        <p class="text-gray-700"><strong class="text-accent-blue">Google Ads Application:</strong> Use ad copy like "Access Canada's Largest Vending Network," "Compare Top Vending Machine Suppliers," or "Find Certified Vending Operators Near You." Landing pages should clearly explain the value proposition.</p>
+                    </li>
+                    <!-- Opportunity 2 -->
+                    <li class="bg-primary-light text-neutral-dark p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-transform duration-300 hover:scale-[1.02] animate-fadeInUp" style="animation-delay: 2.6s;">
+                        <h3 class="text-2xl font-display font-semibold mb-4 text-primary-dark">2. Amplify Technology USPs</h3>
+                        <p class="mb-3 text-gray-700"><strong>Recommendation:</strong> Increase focus on smart/AI vending benefits (inventory management, cashless payments, real-time data, enhanced user experience) beyond the mention of the "Nova Smart Cooler."</p>
+                        <p class="text-gray-700"><strong class="text-accent-blue">Google Ads Application:</strong> Create ad groups for "AI Vending Machines Canada," "Smart Vending Solutions," featuring benefits like "AI-Powered Inventory" or "Contactless Payments."</p>
+                    </li>
+                    <!-- Opportunity 3 -->
+                    <li class="bg-primary-light text-neutral-dark p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-transform duration-300 hover:scale-[1.02] animate-fadeInUp" style="animation-delay: 2.7s;">
+                        <h3 class="text-2xl font-display font-semibold mb-4 text-primary-dark">3. Enhance Trust and Social Proof for the Network</h3>
+                        <p class="mb-3 text-gray-700"><strong>Recommendation:</strong> Provide evidence of the "Vending Canada Certified Suppliers" process and showcase testimonials from businesses that have successfully used the VendingCanada.ca network. Display logos of partners or successful placements if permissible.</p>
+                        <p class="text-gray-700"><strong class="text-accent-blue">Google Ads Application:</strong> Utilize review extensions, highlight "Trusted Network," and use ad copy emphasizing "Vetted Canadian Vending Partners."</p>
+                    </li>
+                    <!-- Opportunity 4 -->
+                    <li class="bg-primary-light text-neutral-dark p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-transform duration-300 hover:scale-[1.02] animate-fadeInUp" style="animation-delay: 2.8s;">
+                        <h3 class="text-2xl font-display font-semibold mb-4 text-primary-dark">4. Target Both "Buy" and "Service" Intents Distinctly</h3>
+                        <p class="mb-3 text-gray-700"><strong>Recommendation:</strong> Develop separate content and landing pages for businesses looking to <em>purchase</em> a machine versus those seeking a <em>full-service placement</em>.</p>
+                        <p class="text-gray-700"><strong class="text-accent-blue">Google Ads Application:</strong> Create distinct campaigns and ad groups targeting keywords like "buy vending machine Canada" versus "vending machine service Canada" or "free vending machine placement."</p>
+                    </li>
+                    <!-- Opportunity 5 -->
+                    <li class="bg-primary-light text-neutral-dark p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-transform duration-300 hover:scale-[1.02] animate-fadeInUp" style="animation-delay: 2.9s;">
+                        <h3 class="text-2xl font-display font-semibold mb-4 text-primary-dark">5. Address Sustainability</h3>
+                        <p class="mb-3 text-gray-700"><strong>Recommendation:</strong> Highlight eco-friendly practices within the network, such as energy-efficient machines or local sourcing, as a competitive advantage.</p>
+                        <p class="text-gray-700"><strong class="text-accent-blue">Google Ads Application:</strong> Include terms like "Eco-Friendly Vending Solutions" or "Energy-Efficient Vending Machines" in relevant ad copy and landing pages.</p>
+                    </li>
+                    <!-- Opportunity 6 -->
+                    <li class="bg-primary-light text-neutral-dark p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-transform duration-300 hover:scale-[1.02] animate-fadeInUp" style="animation-delay: 3.0s;">
+                        <h3 class="text-2xl font-display font-semibold mb-4 text-primary-dark">6. Develop Offerings Around Micro Markets</h3>
+                        <p class="mb-3 text-gray-700"><strong>Recommendation:</strong> Enhance the micro market segment to compete with specialized providers, leveraging the network model.</p>
+                        <p class="text-gray-700"><strong class="text-accent-blue">Google Ads Application:</strong> Create specific campaigns for "Micro Market Solutions Canada," "Self-Checkout Markets," emphasizing convenience and variety.</p>
+                    </li>
+                </ol>
+            </section>
+
+            <!-- Conclusion -->
+            <section id="conclusion" class="bg-neutral-dark glass-card p-8 rounded-2xl shadow-xl animate-fadeInUp" style="animation-delay: 3.1s;">
+                <h2 class="text-4xl font-display font-semibold mb-6 text-accent-blue leading-tight">7. Conclusion</h2>
+                <p class="text-lg leading-relaxed text-neutral-light">VendingCanada.ca's unique position as a national network for machine sales and operator services can be leveraged to maximize Google Ads potential. Key strategies include clearly communicating its value proposition, emphasizing technological advancements, and building robust trust signals for its network. By addressing these areas, VendingCanada.ca can effectively differentiate itself and attract a wider range of B2B clients across Canada.</p>
+            </section>
+
+        </main>
+    </div>
+</body>
+</html>
