@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VendingCanada.ca | Optimization Strategy Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* Cool neutral base */
+            color: #1e293b;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            height: 300px;
+            margin: 0 auto;
+        }
+
+        .tab-active {
+            border-bottom: 2px solid #0f172a;
+            color: #0f172a;
+            font-weight: 600;
+        }
+
+        .tab-inactive {
+            color: #64748b;
+        }
+        
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #10b981;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #10b981;
+        }
+        
+        /* Custom scrollbar for data tables */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f1f5f9; 
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 3px;
+        }
+    </style>
+    <!-- Chosen Palette: Slate (Neutrals) + Emerald (Service/Growth) + Indigo (Sales/Strategy) + Amber (Alerts) -->
+    <!-- Application Structure Plan: 
+         1. Header: Meta info and report context.
+         2. Executive Summary & Chart: Immediate visual of the 3-pronged strategy.
+         3. The Intent Split (Interactive Tabs): Comparing Sales vs. Service strategies side-by-side.
+         4. SKAG Explorer (Filterable Grid): Detailed view of Ad Groups, allowing users to drill down into keywords/purposes.
+         5. Creative Preview (Dynamic Simulator): Shows how the new assets look in a mock search engine results page.
+         6. Action Items (Interactive Checklist): To-do list for the client.
+         Rationale: This structure moves from high-level strategy to granular data, ending with actionable next steps.
+    -->
+    <!-- Visualization & Content Choices:
+         - Chart.js Donut: Visualizes the strategic allocation (Sales vs Service vs Competitor). Goal: Show balance.
+         - Interactive Tabs/Cards: For the "Split Strategy" to avoid wall-of-text comparisons.
+         - Mock Search Preview: To demonstrate "Ad Relevance" visually rather than describing it.
+         - NO SVG/Mermaid: All icons are Unicode or CSS shapes. Charts are Canvas.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col">
+
+    <!-- Navigation / Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">V</div>
+                    <div>
+                        <h1 class="text-xl font-bold text-slate-900 leading-tight">VendingCanada.ca</h1>
+                        <p class="text-xs text-slate-500">Google Ads Optimization Report • Dec 12, 2025</p>
+                    </div>
+                </div>
+                <nav class="hidden md:flex space-x-8">
+                    <button onclick="scrollToSection('summary')" class="text-sm font-medium text-slate-600 hover:text-indigo-600">Summary</button>
+                    <button onclick="scrollToSection('strategy')" class="text-sm font-medium text-slate-600 hover:text-indigo-600">Strategy Split</button>
+                    <button onclick="scrollToSection('adgroups')" class="text-sm font-medium text-slate-600 hover:text-indigo-600">Ad Groups</button>
+                    <button onclick="scrollToSection('preview')" class="text-sm font-medium text-slate-600 hover:text-indigo-600">Ad Preview</button>
+                    <button onclick="scrollToSection('actions')" class="text-sm font-medium text-slate-600 hover:text-indigo-600">Next Steps</button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow">
+        
+        <!-- SECTION 1: EXECUTIVE SUMMARY -->
+        <section id="summary" class="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900">Executive Summary</h2>
+                <p class="mt-2 text-lg text-slate-600 max-w-3xl">
+                    A comprehensive overhaul of the account structure to strictly isolate <strong class="text-indigo-600">Purchase Intent</strong> from <strong class="text-emerald-600">Service Intent</strong>. This dashboard outlines the move to High-Granularity Single Keyword Ad Groups (SKAGs).
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Key Metric Cards -->
+                <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-xl card-shadow border border-slate-100">
+                        <div class="flex items-center gap-4 mb-4">
+                            <span class="text-3xl">🎯</span>
+                            <h3 class="text-lg font-semibold text-slate-800">Core Objective</h3>
+                        </div>
+                        <p class="text-slate-600 leading-relaxed">
+                            Stop budget waste by preventing "Buy a Machine" ads from showing to users looking for "Free Service", and vice versa.
+                        </p>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl card-shadow border border-slate-100">
+                        <div class="flex items-center gap-4 mb-4">
+                            <span class="text-3xl">🔧</span>
+                            <h3 class="text-lg font-semibold text-slate-800">Optimization Actions</h3>
+                        </div>
+                        <ul class="text-slate-600 space-y-2 text-sm">
+                            <li class="flex items-start gap-2"><span class="text-green-500">✓</span> Implemented UTM Tracking Template</li>
+                            <li class="flex items-start gap-2"><span class="text-green-500">✓</span> Built Negative Keyword Firewalls</li>
+                            <li class="flex items-start gap-2"><span class="text-green-500">✓</span> Optimized PMax Signals</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Strategic Chart -->
+                <div class="bg-white p-6 rounded-xl card-shadow border border-slate-100 flex flex-col items-center justify-center">
+                    <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Strategic Allocation</h3>
+                    <div class="chart-container">
+                        <canvas id="strategyChart"></canvas>
+                    </div>
+                    <div class="mt-4 text-center">
+                        <p class="text-xs text-slate-400">Campaign Structure Weighting</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: THE STRATEGY SPLIT -->
+        <section id="strategy" class="py-12 bg-slate-100 border-y border-slate-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-10">
+                    <h2 class="text-2xl font-bold text-slate-900">The Intent Split Architecture</h2>
+                    <p class="mt-2 text-slate-600">We have divided the account into two primary pillars to prevent audience cross-contamination.</p>
+                </div>
+
+                <!-- Interactive Switcher -->
+                <div class="flex justify-center mb-8">
+                    <div class="bg-white p-1 rounded-lg border border-slate-200 inline-flex">
+                        <button onclick="updateStrategy('sales')" id="btn-sales" class="px-6 py-2 rounded-md text-sm font-medium transition-all bg-indigo-600 text-white shadow-sm">
+                            🛍️ Purchase Intent
+                        </button>
+                        <button onclick="updateStrategy('service')" id="btn-service" class="px-6 py-2 rounded-md text-sm font-medium text-slate-500 hover:text-slate-900 transition-all">
+                            🤝 Rental/Service Intent
+                        </button>
+                        <button onclick="updateStrategy('pmax')" id="btn-pmax" class="px-6 py-2 rounded-md text-sm font-medium text-slate-500 hover:text-slate-900 transition-all">
+                            🤖 Performance Max
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Dynamic Strategy Content -->
+                <div class="bg-white rounded-2xl card-shadow border border-slate-200 overflow-hidden transition-all duration-300" id="strategy-card">
+                    <div class="grid grid-cols-1 lg:grid-cols-2">
+                        <!-- Left: Goals & Audience -->
+                        <div class="p-8 border-b lg:border-b-0 lg:border-r border-slate-100">
+                            <div class="flex items-center gap-3 mb-6">
+                                <span id="strat-icon" class="text-4xl">🛍️</span>
+                                <div>
+                                    <h3 id="strat-title" class="text-2xl font-bold text-slate-800">Campaign A: Purchase Intent</h3>
+                                    <p id="strat-subtitle" class="text-indigo-600 font-medium">Selling New & Used Inventory</p>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-6">
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Target Audience</h4>
+                                    <p id="strat-audience" class="text-slate-700">Entrepreneurs, Investors, Business Owners looking to start a vending business.</p>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Primary Keywords</h4>
+                                    <div id="strat-keywords" class="flex flex-wrap gap-2">
+                                        <span class="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-mono border border-indigo-100">buy vending machine</span>
+                                        <span class="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-mono border border-indigo-100">used vending machines</span>
+                                        <span class="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-mono border border-indigo-100">vending machines for sale</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Mechanics & Protection -->
+                        <div class="p-8 bg-slate-50">
+                            <h4 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Strategic Mechanics</h4>
+                            
+                            <div class="mb-6">
+                                <h5 class="text-sm font-semibold text-slate-800 mb-2">🛑 Negative Keyword Firewall</h5>
+                                <p class="text-sm text-slate-600 mb-3">We block these terms to ensure budget purity:</p>
+                                <div id="strat-negatives" class="bg-white p-4 rounded-lg border border-slate-200 text-xs font-mono text-red-600 leading-relaxed">
+                                    "rental", "service", "placement", "free", "no cost", "repair", "route"
+                                </div>
+                            </div>
+
+                            <div>
+                                <h5 class="text-sm font-semibold text-slate-800 mb-2">💡 Observation Segments</h5>
+                                <p id="strat-segments" class="text-sm text-slate-600">
+                                    In-Market: Industrial Equipment, Business Finance, Business Creation.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: AD GROUP EXPLORER -->
+        <section id="adgroups" class="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-900">SKAG Explorer</h2>
+                    <p class="text-slate-600 text-sm">Review the specific Single Keyword Ad Groups and their strategic purpose.</p>
+                </div>
+                <div class="relative">
+                    <select id="adgroup-filter" onchange="renderAdGroups()" class="block w-full md:w-64 pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md shadow-sm border">
+                        <option value="all">All Intent Types</option>
+                        <option value="purchase">Purchase Intent</option>
+                        <option value="service">Rental/Service Intent</option>
+                        <option value="competitor">Competitor</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl card-shadow border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-slate-200">
+                        <thead class="bg-slate-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Ad Group Name</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Core Keyword (Exact)</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Intent</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Strategic Purpose</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adgroup-table-body" class="bg-white divide-y divide-slate-200 text-sm">
+                            <!-- JS Populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: ASSET PREVIEW -->
+        <section id="preview" class="py-12 bg-white border-y border-slate-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="mb-10 text-center">
+                    <h2 class="text-2xl font-bold text-slate-900">Ad Relevance Simulator</h2>
+                    <p class="text-slate-600">See how our assets dynamically adapt to the user's search query.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Controls -->
+                    <div class="bg-slate-50 p-6 rounded-xl border border-slate-200 h-fit">
+                        <h3 class="text-lg font-semibold text-slate-800 mb-4">User Search Context</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Search Query Intent</label>
+                                <select id="preview-selector" onchange="updateAdPreview()" class="w-full border-slate-300 rounded-md shadow-sm p-2 border focus:ring-indigo-500 focus:border-indigo-500">
+                                    <option value="purchase">User wants to BUY ("buy vending machine")</option>
+                                    <option value="coffee">User wants COFFEE SERVICE ("office coffee")</option>
+                                    <option value="rental">User wants FREE PLACEMENT ("office vending")</option>
+                                </select>
+                            </div>
+                            
+                            <div class="pt-4 border-t border-slate-200">
+                                <h4 class="text-sm font-medium text-slate-900 mb-2">Assets Utilized:</h4>
+                                <ul id="asset-list" class="text-xs text-slate-600 space-y-2 list-disc pl-4">
+                                    <!-- Populated by JS -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mock Google Search Result -->
+                    <div class="lg:col-span-2">
+                        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm max-w-2xl mx-auto">
+                            <!-- Ad Label -->
+                            <div class="flex items-center gap-1 mb-1">
+                                <span class="text-slate-900 font-bold text-xs">Sponsored</span>
+                                <span class="text-slate-400 text-xs">•</span>
+                                <span class="text-slate-500 text-xs">vendingcanada.ca</span>
+                            </div>
+                            
+                            <!-- Headlines -->
+                            <a href="#" class="text-[#1a0dab] hover:underline text-xl font-medium block mb-1 leading-snug" id="ad-headline">
+                                Buy Vending Machines Canada - Start Your Vending Business
+                            </a>
+
+                            <!-- Description -->
+                            <div class="text-[#4d5156] text-sm leading-relaxed mb-4">
+                                <span class="font-bold text-slate-600" id="ad-desc-bold">New & Used Machines In Stock. Canada-Wide Shipping.</span> 
+                                <span id="ad-desc-rest">Access our trusted network of Certified Suppliers. Quality equipment, competitive pricing.</span>
+                            </div>
+
+                            <!-- Structured Snippets -->
+                            <div class="text-[#4d5156] text-xs mb-3 flex gap-2">
+                                <span class="text-slate-500">Service catalog:</span>
+                                <span id="ad-snippet">On-site Vending Services, Machine Sales, Solutions across Canada</span>
+                            </div>
+
+                            <!-- Sitelinks -->
+                            <div class="grid grid-cols-2 gap-x-4 gap-y-2 mt-4" id="ad-sitelinks">
+                                <!-- JS Populated -->
+                            </div>
+                        </div>
+                        <p class="text-center text-xs text-slate-400 mt-4 italic">Interactive visualization of RSA assembly logic.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 5: ACTION ITEMS -->
+        <section id="actions" class="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-2xl font-bold text-slate-900 mb-6">Critical Action Items</h2>
+            
+            <div class="bg-white rounded-xl card-shadow border border-slate-200 p-6">
+                <div class="space-y-6">
+                    <!-- Priority 1 -->
+                    <div class="flex items-start gap-4 p-4 bg-red-50 rounded-lg border border-red-100">
+                        <div class="mt-1">
+                            <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-red-100 text-red-600 font-bold text-xs">1</span>
+                        </div>
+                        <div class="flex-grow">
+                            <h3 class="text-md font-bold text-red-800">Web Development / URL Verification</h3>
+                            <p class="text-sm text-red-700 mb-3">Ensure specific landing pages are live and mobile-optimized.</p>
+                            <div class="space-y-2">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" class="rounded text-red-600 focus:ring-red-500 border-gray-300">
+                                    <span class="text-sm text-slate-700">Verify: vendingcanada.ca/coffee-machines/</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" class="rounded text-red-600 focus:ring-red-500 border-gray-300">
+                                    <span class="text-sm text-slate-700">Verify: vendingcanada.ca/snack-machines/</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" class="rounded text-red-600 focus:ring-red-500 border-gray-300">
+                                    <span class="text-sm text-slate-700">Verify: vendingcanada.ca/combo-machines/</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Priority 2 -->
+                    <div class="flex items-start gap-4 p-4 bg-amber-50 rounded-lg border border-amber-100">
+                        <div class="mt-1">
+                            <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-amber-100 text-amber-600 font-bold text-xs">2</span>
+                        </div>
+                        <div class="flex-grow">
+                            <h3 class="text-md font-bold text-amber-800">Google Ads Editor Upload</h3>
+                            <p class="text-sm text-amber-700 mb-2">Upload prepared CSV files using "Make Multiple Changes".</p>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" class="rounded text-amber-600 focus:ring-amber-500 border-gray-300">
+                                <span class="text-sm text-slate-700">Ad Groups, Keywords, & Ads CSV uploaded</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Priority 3 -->
+                    <div class="flex items-start gap-4 p-4 bg-emerald-50 rounded-lg border border-emerald-100">
+                        <div class="mt-1">
+                            <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-emerald-100 text-emerald-600 font-bold text-xs">3</span>
+                        </div>
+                        <div class="flex-grow">
+                            <h3 class="text-md font-bold text-emerald-800">Monitoring Period (7 Days)</h3>
+                            <p class="text-sm text-emerald-700">Watch "Broad Intent" groups and finalize "Vending 4 Less" conquesting.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="bg-slate-900 py-8 mt-12">
+            <div class="max-w-7xl mx-auto px-4 text-center">
+                <p class="text-slate-400 text-sm">© 2025 Google Ads Specialist Team for VendingCanada.ca</p>
+                <p class="text-slate-600 text-xs mt-2">Confidential Strategy Document</p>
+            </div>
+        </footer>
+
+    </main>
+
+    <script>
+        // --- DATA STORAGE ---
+        const strategies = {
+            sales: {
+                title: "Campaign A: Purchase Intent",
+                subtitle: "Selling New & Used Inventory",
+                icon: "🛍️",
+                audience: "Entrepreneurs, Investors, Business Owners looking to start a vending business.",
+                keywords: ["buy vending machine", "used vending machines", "vending machines for sale"],
+                negatives: '"rental", "service", "placement", "free", "no cost", "repair", "route"',
+                segments: "In-Market: Industrial Equipment, Business Finance, Business Creation.",
+                themeClass: "text-indigo-600",
+                bgClass: "bg-indigo-600"
+            },
+            service: {
+                title: "Campaign B: Rental & Service Intent",
+                subtitle: "Lead Generation for Placements",
+                icon: "🤝",
+                audience: "Office Managers, Facility Directors, HR Managers seeking breakroom solutions.",
+                keywords: ["office vending service", "coffee vending", "free vending placement"],
+                negatives: '"buy", "for sale", "purchase", "price", "cost", "used", "DIY"',
+                segments: "In-Market: Office Services; Detailed Demographics: Company Size (100-500).",
+                themeClass: "text-emerald-600",
+                bgClass: "bg-emerald-600"
+            },
+            pmax: {
+                title: "Performance Max Split",
+                subtitle: "AI-Driven Asset Groups",
+                icon: "🤖",
+                audience: "Automated targeting split by Asset Group Signals (Search Themes).",
+                keywords: ["Search Theme: vending distributor", "Search Theme: breakroom solutions"],
+                negatives: "N/A (Managed via Account-level Negatives)",
+                segments: "Asset Group 1: Purchase Signals | Asset Group 2: Service Signals",
+                themeClass: "text-slate-600",
+                bgClass: "bg-slate-600"
+            }
+        };
+
+        const adGroups = [
+            { name: "Buy Vending Machine", keyword: "buy vending machine", intent: "purchase", purpose: "High Commercial Intent. Targets bottom-of-funnel buyers ready to purchase.", type: "Exact" },
+            { name: "Used Vending Machines", keyword: "used vending machines", intent: "purchase", purpose: "Budget/Entry-Level. Captures price-sensitive buyers.", type: "Exact" },
+            { name: "Vending Machine", keyword: "vending machine", intent: "purchase", purpose: "Volume Capture. Guarded by negatives to filter for sales.", type: "Exact" },
+            { name: "Coffee Vending Service", keyword: "coffee vending service", intent: "service", purpose: "Niche B2B Intent. Targets office managers wanting hot beverages.", type: "Exact" },
+            { name: "Office Vending Machines", keyword: "office vending machines", intent: "service", purpose: "Corporate Placement. Targets HR/Facility Managers.", type: "Exact" },
+            { name: "Vending 4 Less", keyword: "vending 4 less", intent: "competitor", purpose: "Competitor Conquesting. Low CPA opportunity.", type: "Exact" }
+        ];
+
+        const adPreviews = {
+            purchase: {
+                headline: "Buy Vending Machines Canada - Start Your Vending Business",
+                descBold: "New & Used Machines In Stock. Canada-Wide Shipping.",
+                descRest: "Access our trusted network of Certified Suppliers. Quality equipment, competitive pricing. Get Your ROI Estimate Today.",
+                sitelinks: [
+                    { text: "Used Vending Machines", desc: "Efficient starter workhorses" },
+                    { text: "Buy Vending Machines Now", desc: "New and used vending machines" },
+                    { text: "Request ROI Estimate", desc: "See your potential profit today" },
+                    { text: "New Machines Stocked", desc: "Latest models available" }
+                ],
+                assetsUsed: ["RSA Headline: Start Your Vending Business", "Sitelink: Used Machines", "Intent: Purchase"]
+            },
+            coffee: {
+                headline: "Free Office Coffee Service - Boost Office Morale",
+                descBold: "Get premium coffee vending service for your office.",
+                descRest: "Zero hassle, zero cost. Enjoy fresh coffee, tea, and hot beverages. Full-service maintenance included.",
+                sitelinks: [
+                    { text: "Get Free Vending Machines", desc: "Free Machines at your Business" },
+                    { text: "Free Placement Service", desc: "No cost to your business" },
+                    { text: "View Coffee Menu", desc: "Premium beans & roasts" },
+                    { text: "Contact Us", desc: "Get a quote today" }
+                ],
+                assetsUsed: ["RSA Headline: Free Office Coffee Service", "Sitelink: Free Placement", "Intent: Service"]
+            },
+            rental: {
+                headline: "Free Vending Machine Placement - No Cost to Your Business",
+                descBold: "We Install, Stock & Service.",
+                descRest: "Snacks & Drinks Employees Love. Connect with pre-qualified Vending Operators in every major city across Canada.",
+                sitelinks: [
+                    { text: "Get Free Vending Machines", desc: "Free Machines at your Business" },
+                    { text: "Free Placement Service", desc: "No cost to your business" },
+                    { text: "Office Vending Solutions", desc: "Customized for your team" },
+                    { text: "Request Service", desc: "Fast installation" }
+                ],
+                assetsUsed: ["RSA Headline: No Cost to Your Business", "Sitelink: Free Placement", "Intent: Service"]
+            }
+        };
+
+        // --- CHART GENERATION ---
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('strategyChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Purchase Intent (Sales)', 'Rental/Service Intent (Leads)', 'Competitor (Conquesting)'],
+                    datasets: [{
+                        data: [45, 45, 10], // Strategic weight estimation based on report focus
+                        backgroundColor: [
+                            '#4f46e5', // Indigo (Sales)
+                            '#10b981', // Emerald (Service)
+                            '#f59e0b'  // Amber (Competitor)
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                font: { size: 11, family: 'Inter' },
+                                color: '#475569'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ' Strategic Focus: ' + context.raw + '%';
+                                }
+                            }
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+
+            // Initial Renders
+            updateStrategy('sales');
+            renderAdGroups();
+            updateAdPreview();
+        });
+
+        // --- INTERACTION LOGIC ---
+
+        function updateStrategy(type) {
+            const data = strategies[type];
+            
+            // Update UI Data
+            document.getElementById('strat-title').innerText = data.title;
+            document.getElementById('strat-subtitle').innerText = data.subtitle;
+            document.getElementById('strat-icon').innerText = data.icon;
+            document.getElementById('strat-audience').innerText = data.audience;
+            document.getElementById('strat-negatives').innerText = data.negatives;
+            document.getElementById('strat-segments').innerText = data.segments;
+            
+            // Update Keywords Badges
+            const kwContainer = document.getElementById('strat-keywords');
+            kwContainer.innerHTML = '';
+            data.keywords.forEach(kw => {
+                const span = document.createElement('span');
+                span.className = `px-3 py-1 ${type === 'service' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : (type === 'pmax' ? 'bg-slate-100 text-slate-700 border-slate-200' : 'bg-indigo-50 text-indigo-700 border-indigo-100')} rounded-full text-xs font-mono border`;
+                span.innerText = kw;
+                kwContainer.appendChild(span);
+            });
+
+            // Update Subtitle Color
+            const subTitle = document.getElementById('strat-subtitle');
+            subTitle.className = `${data.themeClass} font-medium`;
+
+            // Update Button States
+            ['sales', 'service', 'pmax'].forEach(btn => {
+                const button = document.getElementById(`btn-${btn}`);
+                if (btn === type) {
+                    button.className = `px-6 py-2 rounded-md text-sm font-medium transition-all ${data.bgClass} text-white shadow-sm`;
+                } else {
+                    button.className = "px-6 py-2 rounded-md text-sm font-medium text-slate-500 hover:text-slate-900 transition-all";
+                }
+            });
+        }
+
+        function renderAdGroups() {
+            const filter = document.getElementById('adgroup-filter').value;
+            const tbody = document.getElementById('adgroup-table-body');
+            tbody.innerHTML = '';
+
+            const filteredData = filter === 'all' ? adGroups : adGroups.filter(g => g.intent === filter);
+
+            filteredData.forEach(group => {
+                const tr = document.createElement('tr');
+                let badgeClass = '';
+                let intentLabel = '';
+                
+                if(group.intent === 'purchase') {
+                    badgeClass = 'bg-indigo-100 text-indigo-800';
+                    intentLabel = 'Purchase';
+                } else if (group.intent === 'service') {
+                    badgeClass = 'bg-emerald-100 text-emerald-800';
+                    intentLabel = 'Service';
+                } else {
+                    badgeClass = 'bg-amber-100 text-amber-800';
+                    intentLabel = 'Competitor';
+                }
+
+                tr.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap font-medium text-slate-900">${group.name}</td>
+                    <td class="px-6 py-4 whitespace-nowrap font-mono text-xs text-slate-600">[${group.keyword}]</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${badgeClass}">
+                            ${intentLabel}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-slate-500 text-xs">${group.purpose}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateAdPreview() {
+            const selection = document.getElementById('preview-selector').value;
+            const data = adPreviews[selection];
+
+            // Update Text
+            document.getElementById('ad-headline').innerText = data.headline;
+            document.getElementById('ad-desc-bold').innerText = data.descBold;
+            document.getElementById('ad-desc-rest').innerText = data.descRest;
+
+            // Update Assets List (Left Panel)
+            const assetList = document.getElementById('asset-list');
+            assetList.innerHTML = '';
+            data.assetsUsed.forEach(asset => {
+                const li = document.createElement('li');
+                li.innerText = asset;
+                assetList.appendChild(li);
+            });
+
+            // Update Sitelinks
+            const sitelinkContainer = document.getElementById('ad-sitelinks');
+            sitelinkContainer.innerHTML = '';
+            data.sitelinks.forEach(link => {
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <a href="#" class="text-[#1a0dab] hover:underline text-sm font-medium block truncate">${link.text}</a>
+                    <p class="text-slate-500 text-xs truncate">${link.desc}</p>
+                `;
+                sitelinkContainer.appendChild(div);
+            });
+        }
+
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
