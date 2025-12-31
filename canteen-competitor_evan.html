@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canteen Canada: Competitor & Search Term Analysis</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font import for a professional look */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light gray-blue background */
+        }
+        /* Custom class for report sections */
+        .report-section {
+            padding: 2rem; /* Increased padding */
+            margin-bottom: 2rem;
+            background-color: white;
+            border-radius: 1rem; /* More rounded corners */
+            /* Stronger, more defined shadow */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+        }
+        /* Style for section headers - added a prominent left border accent */
+        .section-header {
+            font-weight: 700;
+            color: #1d4ed8; /* Tailwind blue-800 */
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #3b82f6; /* Tailwind blue-500 for a vertical accent */
+            padding-left: 1rem;
+            font-size: 1.5rem; /* Larger font size */
+        }
+        /* Responsive table cell styling */
+        .responsive-table th, .responsive-table td {
+            padding: 1rem 1.25rem;
+            text-align: left;
+        }
+        /* Table headers with a clean blue accent */
+        .responsive-table th {
+            background-color: #dbeafe; /* Tailwind blue-100 */
+            color: #1e40af; /* Tailwind blue-700 */
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+        }
+        .responsive-table tbody tr:nth-child(odd) {
+            background-color: #f9fafb; /* Lighter stripe */
+        }
+        .key-insight {
+            background-color: #eff6ff;
+            border-left: 3px solid #3b82f6;
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-5xl mx-auto">
+        <!-- Report Header - Wow Effect with Gradient -->
+        <header id="main-header" class="mb-8 p-6 md:p-10 rounded-xl shadow-2xl text-white bg-gradient-to-r from-blue-700 to-indigo-800">
+            <h1 class="text-3xl md:text-5xl font-black mb-0 tracking-tight">Canteen Canada: Competitor & Search Term Analysis</h1>
+            <p class="text-blue-200 mt-2 text-xl font-light">Strategic insights for 2025 marketing and growth.</p>
+        </header>
+
+        <!-- 1. Overview -->
+        <section class="report-section">
+            <h2 class="section-header">1. Overview</h2>
+
+            <h3 class="font-bold text-xl text-gray-800 mt-4 mb-3 border-b pb-2 border-gray-100">Canteen Canada Core Offerings:</h3>
+            <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4">
+                <li>Snacks, beverages, fresh & frozen foods</li>
+                <li>Coffee & pantry services</li>
+                <li><span class="font-semibold text-indigo-600">Micro-markets / self-checkout solutions</span></li>
+                <li>Healthy vending options</li>
+                <li>Cashless & smart vending technology</li>
+            </ul>
+
+            <h3 class="font-bold text-xl text-gray-800 mt-6 mb-3 border-b pb-2 border-gray-100">Objective of this document:</h3>
+            <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4">
+                <li>Identify primary competitors in Canada’s vending industry</li>
+                <li>Analyze search terms / ad groups for SEO & PPC</li>
+                <li>Provide strategic insights for marketing campaigns</li>
+            </ul>
+        </section>
+
+        <!-- 2. Primary Competitors -->
+        <section class="report-section">
+            <h2 class="section-header">2. Primary Competitors</h2>
+            <div class="overflow-x-auto">
+                <table class="responsive-table w-full border-collapse rounded-xl overflow-hidden text-sm shadow-md">
+                    <thead>
+                        <tr>
+                            <th>Competitor</th>
+                            <th>Type</th>
+                            <th>Key Strengths</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="font-semibold text-blue-800">Canteen Canada</td>
+                            <td>National Operator</td>
+                            <td>Full-service vending, micro-markets, tech-enabled, coast-to-coast</td>
+                            <td>Baseline</td>
+                        </tr>
+                        <tr>
+                            <td>Aramark Refreshment Services</td>
+                            <td>National Operator</td>
+                            <td>Corporate clients, vending + catering</td>
+                            <td>Strong in enterprise contracts</td>
+                        </tr>
+                        <tr>
+                            <td>BetterVending</td>
+                            <td>Healthy Vending</td>
+                            <td>Healthy & organic focus, Ontario-based</td>
+                            <td>Niche market</td>
+                        </tr>
+                        <tr>
+                            <td>Healthy Max</td>
+                            <td>Healthy / Specialty</td>
+                            <td>Nutritional snacks, combo machines</td>
+                            <td>Toronto-centric</td>
+                        </tr>
+                        <tr>
+                            <td>Fresh Healthy Vending Canada</td>
+                            <td>Healthy Vending</td>
+                            <td>Smart machines, healthy options</td>
+                            <td>Local focus</td>
+                        </tr>
+                        <tr>
+                            <td>Selecta Canada</td>
+                            <td>National Operator</td>
+                            <td>Snack & beverage vending</td>
+                            <td>Legacy brand, regional presence</td>
+                        </tr>
+                        <tr>
+                            <td>Fraser Valley Vending</td>
+                            <td>Regional</td>
+                            <td>Snack/drink/frozen, Vancouver area</td>
+                            <td>Local manufacturer</td>
+                        </tr>
+                        <tr>
+                            <td>Vend Pro</td>
+                            <td>Regional</td>
+                            <td>Workplace vending, Ottawa</td>
+                            <td>B2B focus</td>
+                        </tr>
+                        <tr>
+                            <td>Kane’s Distributing</td>
+                            <td>Distributor</td>
+                            <td>Refurbished & new machines</td>
+                            <td>Nationwide</td>
+                        </tr>
+                        <tr>
+                            <td>QM Distribution</td>
+                            <td>Distributor</td>
+                            <td>Smart machines with AI monitoring</td>
+                            <td>National coverage</td>
+                        </tr>
+                        <tr>
+                            <td>Royal Vendors</td>
+                            <td>Manufacturer</td>
+                            <td>Beverage vending machines</td>
+                            <td>Available via Canadian distributors</td>
+                        </tr>
+                        <tr>
+                            <td>AMS (Automated Merchandising Systems)</td>
+                            <td>Manufacturer</td>
+                            <td>Snack/drink combo machines</td>
+                            <td>Widely distributed</td>
+                        </tr>
+                        <tr>
+                            <td>Seaga Manufacturing</td>
+                            <td>Manufacturer</td>
+                            <td>Reliable machines</td>
+                            <td>Nationwide distributor</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 3. Search Term Analysis -->
+        <section class="report-section">
+            <h2 class="section-header">3. Search Term Analysis</h2>
+
+            <div class="space-y-8 text-gray-700">
+                <div class="border-b pb-4 border-gray-100">
+                    <h3 class="font-bold text-xl text-gray-800 mb-3 text-indigo-700">3.1 Brand + Service Intent (High-Value)</h3>
+                    <ul class="list-disc list-inside ml-4 space-y-1">
+                        <li>“Canteen Canada vending services”</li>
+                        <li>“Canteen micro-markets”</li>
+                        <li>“Canteen vending machines Canada”</li>
+                        <li>“Canteen break room solutions”</li>
+                        <li>“Canteen corporate vending services”</li>
+                    </ul>
+                </div>
+                <div class="border-b pb-4 border-gray-100">
+                    <h3 class="font-bold text-xl text-gray-800 mb-3 text-indigo-700">3.2 Commercial / Purchase Intent (Conversion Focus)</h3>
+                    <ul class="list-disc list-inside ml-4 space-y-1">
+                        <li>“vending machine services Canada”</li>
+                        <li>“vending machine supplier Canada”</li>
+                        <li>“healthy vending machines Canada”</li>
+                        <li>“commercial vending solutions”</li>
+                        <li>“office vending provider”</li>
+                    </ul>
+                </div>
+                <div class="border-b pb-4 border-gray-100">
+                    <h3 class="font-bold text-xl text-gray-800 mb-3 text-indigo-700">3.3 Location + Local SEO (Local Priority)</h3>
+                    <ul class="list-disc list-inside ml-4 space-y-1">
+                        <li>“vending machine services in Toronto”</li>
+                        <li>“Vancouver office vending solutions”</li>
+                        <li>“Montreal snack vending machines”</li>
+                        <li>“Edmonton micro-markets”</li>
+                        <li>“Ottawa vending machines near me”</li>
+                    </ul>
+                </div>
+                <div class="border-b pb-4 border-gray-100">
+                    <h3 class="font-bold text-xl text-gray-800 mb-3 text-indigo-700">3.4 Feature / Technology Searches (Innovation Focus)</h3>
+                    <ul class="list-disc list-inside ml-4 space-y-1">
+                        <li>“cashless vending machines”</li>
+                        <li>“remote inventory vending technology”</li>
+                        <li>“smart vending machines Canada”</li>
+                        <li>“custom vending menus Canada”</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-bold text-xl text-gray-800 mb-3 text-indigo-700">3.5 Related Services</h3>
+                    <ul class="list-disc list-inside ml-4 space-y-1">
+                        <li>“office coffee service Canada”</li>
+                        <li>“corporate pantry service Canada”</li>
+                        <li>“healthy snack program vending”</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Competitor Search Term / Ad Group Opportunities -->
+        <section class="report-section">
+            <h2 class="section-header">4. Competitor Search Term / Ad Group Opportunities</h2>
+
+            <h3 class="font-bold text-xl text-gray-800 mt-4 mb-3 border-b pb-2 border-gray-100">Suggested PPC Ad Groups</h3>
+            <div class="overflow-x-auto">
+                <table class="responsive-table w-full border-collapse rounded-xl overflow-hidden text-sm shadow-md">
+                    <thead>
+                        <tr>
+                            <th>Campaign</th>
+                            <th>Ad Group</th>
+                            <th>Sample Keywords</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="font-semibold">Brand Awareness</td>
+                            <td class="font-semibold">Canteen Brand</td>
+                            <td>“Canteen Canada”, “Canteen vending machines”, “Canteen micro-market solutions”</td>
+                        </tr>
+                        <tr>
+                            <td class="font-semibold">Service Acquisition</td>
+                            <td class="font-semibold">Vending Services</td>
+                            <td>“vending machine services Canada”, “office vending service provider”, “commercial vending solutions”</td>
+                        </tr>
+                        <tr>
+                            <td class="font-semibold">Healthy & Wellness</td>
+                            <td class="font-semibold">Healthy Vending</td>
+                            <td>“healthy office snacks vending”, “healthy vending machines Canada”, “better break room snack vending”</td>
+                        </tr>
+                        <tr>
+                            <td class="font-semibold">Location Targeting</td>
+                            <td class="font-semibold">Regional</td>
+                            <td>“Toronto vending machine services”, “Montreal micro-markets provider”, “Vancouver office coffee + vending”</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 5. SEO / Marketing Insights -->
+        <section class="report-section">
+            <h2 class="section-header">5. SEO / Marketing Insights</h2>
+            <div class="space-y-4">
+                <div class="key-insight text-gray-700">
+                    <p class="font-semibold text-lg text-blue-800 mb-1">Local & Benefit Combination</p>
+                    <p>Users often combine location + benefit in searches (e.g., “healthy vending Toronto”).</p>
+                </div>
+                <div class="key-insight text-gray-700">
+                    <p class="font-semibold text-lg text-blue-800 mb-1">Competitive Landscape</p>
+                    <p>Competitors are strong in healthy vending, micro-markets, and smart machines.</p>
+                </div>
+                <div class="key-insight text-gray-700">
+                    <p class="font-bold text-lg text-red-600 mb-1">Primary Opportunity</p>
+                    <p class="font-bold">Emphasize coast-to-coast coverage, robust corporate programs, and tech-enabled inventory systems.</p>
+                </div>
+                <p class="text-gray-700 mt-4">PPC targeting should strategically include brand, service, healthy, and local intent ad groups.</p>
+            </div>
+        </section>
+
+    </div>
+
+</body>
+</html>
