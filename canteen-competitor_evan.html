@@ -595,7 +595,7 @@
         // --- DATA STORAGE & CONFIGURATION ---
 
         const apiKey = "AIzaSyBmuoW-cJBYaGpFYkDMtkQ4UzMHFLPLmS8"; 
-        const modelName = "gemini-2.5-flash-preview-09-2025";
+        const modelName = "gemini-1.5-flash";
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
         const competitorData = [
@@ -796,7 +796,9 @@
         // --- GEMINI INTEGRATION 1: AD COPY GENERATOR ---
 
         async function generateAdCopy() {
+            console.log("generateAdCopy called");
             if (!apiKey) {
+                console.log("No API key");
                 const adCopyContainer = document.getElementById('adCopyResult');
                 adCopyContainer.innerHTML = `
                     <div class="text-red-600 text-sm p-4 bg-red-50 rounded-lg">
@@ -821,14 +823,18 @@
             };
 
             try {
+                console.log("Making API call to Gemini");
                 const response = await fetchWithExponentialBackoff(() => fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 }));
+                console.log("API response received:", response.status);
                 
                 const result = await response.json();
+                console.log("Parsed result:", result);
                 const text = result.candidates?.[0]?.content?.parts?.[0]?.text || "Error: Could not generate content.";
+                console.log("Extracted text:", text);
                 
                 displayAdCopy(text);
 
@@ -884,7 +890,9 @@
         // --- GEMINI INTEGRATION 2: EXECUTIVE SUMMARY GENERATOR ---
 
         async function generateExecutiveSummary() {
+            console.log("generateExecutiveSummary called");
             if (!apiKey) {
+                console.log("No API key");
                 document.getElementById('brutallyHonestSummaryResult').innerHTML = `
                     <div class="text-red-500 text-xs p-2">
                         API Key not configured. Please set your Gemini API key in the script.
@@ -920,14 +928,18 @@
             };
 
             try {
+                console.log("Making API call to Gemini for summary");
                 const response = await fetchWithExponentialBackoff(() => fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 }));
+                console.log("Summary API response received:", response.status);
                 
                 const result = await response.json();
+                console.log("Summary parsed result:", result);
                 const text = result.candidates?.[0]?.content?.parts?.[0]?.text || "Error: Could not generate content.";
+                console.log("Summary extracted text:", text);
                 
                 displayBrutallyHonestSummary(text);
 
