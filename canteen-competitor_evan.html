@@ -17,8 +17,8 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #fafaf9; /* Stone-50 */
-            color: #292524; /* Stone-800 */
+            background: linear-gradient(135deg, #fafaf9 0%, #f5f5f4 100%);
+            color: #292524;
         }
         
         /* Custom Scrollbar */
@@ -29,15 +29,15 @@
             background: #f5f5f4; 
         }
         ::-webkit-scrollbar-thumb {
-            background: #d6d3d1; 
+            background: linear-gradient(45deg, #d97706, #92400e);
             border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #a8a29e; 
+            background: linear-gradient(45deg, #92400e, #d97706);
         }
 
         .card-shadow {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
 
         .transition-all-300 {
@@ -61,13 +61,13 @@
         }
 
         .nav-btn.active {
-            background-color: #292524;
+            background: linear-gradient(45deg, #292524, #1c1917);
             color: #ffffff;
         }
         
         .ad-copy-preview {
             border: 2px solid #3b82f6;
-            background-color: #eff6ff;
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
         }
         .ad-url {
             color: #16a34a;
@@ -78,10 +78,44 @@
             font-weight: 700;
         }
 
-        .vmc-accent { background-color: #d97706; }
+        .vmc-accent { 
+            background: linear-gradient(45deg, #d97706, #f59e0b);
+        }
         .battle-line {
             border-left: 4px solid #d97706;
             padding-left: 1rem;
+        }
+
+        .wow-gradient {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .btn-enhanced {
+            background: linear-gradient(45deg, #d97706, #f59e0b);
+            color: white;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-enhanced:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
+        }
+
+        .section-title {
+            text-align: center;
+            background: linear-gradient(45deg, #292524, #1c1917);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
     </style>
 
@@ -122,17 +156,17 @@
         </section>
 
         <!-- COMPETITOR LANDSCAPE SECTION -->
-        <section id="landscape" class="scroll-mt-24">
+        <section id="landscape" class="scroll-mt-24 animate-fade-in">
             <div class="mb-6">
-                <h3 class="text-2xl font-bold text-stone-800">1. Competitor Landscape: Canteen & Peers</h3>
-                <p class="text-stone-600 mt-2">
+                <h3 class="text-3xl font-bold text-stone-800 section-title">1. Competitor Landscape: Canteen & Peers</h3>
+                <p class="text-stone-600 mt-2 text-center">
                     Overview of national operators, regional specialists, and niche players in the Canadian vending market, with market share projections and strategic focuses.
                 </p>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <!-- Left: Controls & Chart -->
-                <div class="lg:col-span-1 space-y-6">
+                <div class="lg:col-span-1 space-y-6 lg:sticky lg:top-6 lg:self-start">
                     <div class="bg-white p-6 rounded-xl card-shadow border border-stone-100">
                         <h4 class="font-semibold text-stone-700 mb-6 uppercase text-sm">Market Breakdown</h4>
                         <div class="chart-container">
@@ -159,7 +193,7 @@
         </section>
 
         <!-- WEAKNESS BATTLE CARD SECTION -->
-        <section id="weakness" class="scroll-mt-24">
+        <section id="weakness" class="scroll-mt-24 animate-fade-in">
             <h3 class="text-3xl font-bold mb-8 text-stone-800">2. Canteen Canada Weakness Battle Card</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-white p-6 rounded-xl card-shadow border border-red-100">
@@ -197,6 +231,7 @@
                     <button onclick="loadSearchCategory('local')" class="search-tab px-8 py-5 text-sm font-bold text-stone-500 hover:text-stone-900 border-b-2 border-transparent focus:outline-none" data-cat="local">Location + Local SEO</button>
                     <button onclick="loadSearchCategory('tech')" class="search-tab px-8 py-5 text-sm font-bold text-stone-500 hover:text-stone-900 border-b-2 border-transparent focus:outline-none" data-cat="tech">Feature / Technology</button>
                     <button onclick="loadSearchCategory('related')" class="search-tab px-8 py-5 text-sm font-bold text-stone-500 hover:text-stone-900 border-b-2 border-transparent focus:outline-none" data-cat="related">Related Services</button>
+                    <button onclick="loadSearchCategory('generic')" class="search-tab px-8 py-5 text-sm font-bold text-stone-500 hover:text-stone-900 border-b-2 border-transparent focus:outline-none" data-cat="generic">Generic Service Terms</button>
                 </div>
 
                 <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
@@ -225,10 +260,10 @@
                 <!-- Sidebar Controls -->
                 <div class="md:col-span-1 space-y-3">
                     <button onclick="renderPPC('brand_attack')" class="ppc-btn w-full text-left px-5 py-4 rounded-xl text-sm font-bold bg-stone-900 text-white shadow-xl transition-all hover:scale-105" data-key="brand_attack">Competitor Brand Attack</button>
-                    <button onclick="renderPPC('local_dominance')" class="ppc-btn w-full text-left px-5 py-4 rounded-xl text-sm font-bold bg-white text-stone-600 border border-stone-200 hover:bg-stone-50 transition-all" data-key="local_dominance">Local Service Dominance</button>
-                    <button onclick="renderPPC('healthy_disruption')" class="ppc-btn w-full text-left px-5 py-4 rounded-xl text-sm font-bold bg-white text-stone-600 border border-stone-200 hover:bg-stone-50 transition-all" data-key="healthy_disruption">Healthy Niche Disruption</button>
-                    <button onclick="renderPPC('quality_focus')" class="ppc-btn w-full text-left px-5 py-4 rounded-xl text-sm font-bold bg-white text-stone-600 border border-stone-200 hover:bg-stone-50 transition-all" data-key="quality_focus">Service Quality Focus</button>
-                    <button onclick="renderPPC('mro_industrial')" class="ppc-btn w-full text-left px-5 py-4 rounded-xl text-sm font-bold bg-white text-stone-600 border border-stone-200 hover:bg-stone-50 transition-all" data-key="mro_industrial">Industrial MRO Edge</button>
+                    <button onclick="renderPPC('local_dominance')" class="ppc-btn w-full text-left px-5 py-4 rounded-xl text-sm font-bold bg-white text-stone-800 border border-stone-200 hover:bg-stone-50 transition-all" data-key="local_dominance">Local Service Dominance</button>
+                    <button onclick="renderPPC('healthy_disruption')" class="ppc-btn w-full text-left px-5 py-4 rounded-xl text-sm font-bold bg-white text-stone-800 border border-stone-200 hover:bg-stone-50 transition-all" data-key="healthy_disruption">Healthy Niche Disruption</button>
+                    <button onclick="renderPPC('quality_focus')" class="ppc-btn w-full text-left px-5 py-4 rounded-xl text-sm font-bold bg-white text-stone-800 border border-stone-200 hover:bg-stone-50 transition-all" data-key="quality_focus">Service Quality Focus</button>
+                    <button onclick="renderPPC('mro_industrial')" class="ppc-btn w-full text-left px-5 py-4 rounded-xl text-sm font-bold bg-white text-stone-800 border border-stone-200 hover:bg-stone-50 transition-all" data-key="mro_industrial">Industrial MRO Edge</button>
                 </div>
 
                 <!-- Dynamic Content Area -->
@@ -236,6 +271,42 @@
                     <div id="ppcContent" class="bg-white rounded-2xl card-shadow p-8 border border-stone-100 h-full transition-all duration-300">
                         <!-- Content populated by JS -->
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- NON-BRANDED PPC STRATEGY SECTION -->
+        <section id="nonbranded" class="scroll-mt-24">
+            <div class="mb-8">
+                <h3 class="text-3xl font-bold text-stone-800">4.5 Non-Branded High-Intent PPC Strategy</h3>
+                <p class="text-stone-600 mt-2">
+                    Targeting solution-focused search terms that bypass competitor names, capturing clients defining their vending needs.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <!-- Sidebar Controls -->
+                <div class="md:col-span-1 space-y-3">
+                    <button onclick="renderNonBranded('commercial_intent')" class="nonbranded-btn w-full text-left px-4 py-3 rounded-lg text-sm font-medium bg-stone-800 text-white shadow-md transition-all hover:scale-105" data-key="commercial_intent">Commercial & Corporate Solutions</button>
+                    <button onclick="renderNonBranded('local_geo_target')" class="nonbranded-btn w-full text-left px-4 py-3 rounded-lg text-sm font-medium bg-white text-stone-800 border border-stone-200 hover:bg-stone-50 transition-all" data-key="local_geo_target">Local Service Geo-Targeting</button>
+                    <button onclick="renderNonBranded('product_niche')" class="nonbranded-btn w-full text-left px-4 py-3 rounded-lg text-sm font-medium bg-white text-stone-800 border border-stone-200 hover:bg-stone-50 transition-all" data-key="product_niche">Healthy & Specialty Niche</button>
+                </div>
+
+                <!-- Dynamic Content Area -->
+                <div class="md:col-span-3">
+                    <div id="nonBrandedContent" class="bg-white rounded-xl card-shadow p-8 border border-stone-100 h-full flex flex-col justify-center transition-all duration-300">
+                        <p class="text-stone-400">Select a campaign strategy on the left to review its keywords and generate the ad copy.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 max-w-4xl mx-auto p-8 bg-white rounded-2xl border border-stone-200 shadow-lg">
+                <h4 class="text-2xl font-bold text-stone-800 mb-4">Strategic Conclusion: Own the Solution Search</h4>
+                <p class="text-stone-600 leading-relaxed">
+                    By focusing on these non-branded terms, VMC bypasses the pricing wars of the national operators and enters the conversation when clients are still defining their needs. The generated ad copy will emphasize VMC's superior variety, rapid local service, and fair pricing—the exact weaknesses Canteen's national contracts prevent them from addressing.
+                </p>
+                <div class="mt-4 p-4 bg-amber-50 rounded-lg border-l-4 border-amber-600 text-sm text-amber-800 italic">
+                    Next Step: Deploy these ad groups, monitor Quality Scores, and use the 'City' terms to target your immediate service radius aggressively.
                 </div>
             </div>
         </section>
@@ -290,7 +361,7 @@
                         <div id="executiveSummaryResult" class="text-stone-400 italic text-sm">
                             Click below to generate AI-powered executive briefing.
                         </div>
-                        <button onclick="generateExecutiveSummary()" class="mt-4 w-full py-3 bg-amber-600 text-white font-bold rounded-xl shadow-lg hover:bg-amber-700 transition-all">
+                        <button onclick="generateExecutiveSummary()" class="mt-4 w-full py-3 btn-enhanced font-bold rounded-xl">
                             Generate Executive Summary
                         </button>
                     </div>
@@ -321,6 +392,192 @@
 
     </main>
 
+    <!-- ADDITIONAL INSIGHTS SECTION -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 wow-gradient animate-fade-in">
+        <h2 class="text-4xl font-bold text-stone-800 mb-8 text-center">Additional Strategic Insights from Source Analysis</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <div class="space-y-6">
+                <h3 class="text-2xl font-bold text-stone-800">Technological Integration: The 2025 Connected Hub Model</h3>
+                <p class="text-stone-600">Vending machines are evolving into intelligent, connected retail hubs powered by IoT, cloud connectivity, and smart sensors for real-time management. Features include AI-powered recommendations, biometrics, and energy-saving modes.</p>
+                <ul class="space-y-2 text-stone-700">
+                    <li>• IoT and Remote Management (SmartService)</li>
+                    <li>• Cashless and Contactless Payment Ecosystems</li>
+                    <li>• AI, Biometrics, and Interactive Interfaces</li>
+                </ul>
+            </div>
+            
+            <div class="space-y-6">
+                <h3 class="text-2xl font-bold text-stone-800">Consumer Psychology and Sustainability Paradox</h3>
+                <p class="text-stone-600">2025 consumers prioritize wellness and sustainability but are price-sensitive. ESG standards are key, with demand for low-sugar snacks, plant-based products, and transparent eco-friendly practices.</p>
+                <ul class="space-y-2 text-stone-700">
+                    <li>• Sustainability vs. Inflation Sensitivity</li>
+                    <li>• Wellness Shift and Better-For-You Demand</li>
+                    <li>• Value of the Breakroom Experience</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="mt-12 bg-white p-8 rounded-2xl card-shadow">
+            <h3 class="text-2xl font-bold text-stone-800 mb-4">Strategic Conclusions and 2025 Action Plan</h3>
+            <ul class="space-y-4 text-stone-600">
+                <li><strong>Aggressive Industrial Expansion:</strong> Capitalize on 14.55% CAGR in industrial vending for MRO and PPE solutions.</li>
+                <li><strong>Defending Fresh Food Niche:</strong> Counter Daily Blends with HACCP-approved safety and supply chain advantages.</li>
+                <li><strong>Topical Dominance in SEO:</strong> Focus on "Unattended Retail" and "Breakroom Wellness" for authority.</li>
+                <li><strong>Bilingual and Regional Personalization:</strong> Localized pages for Quebec and other regions.</li>
+                <li><strong>PPC Optimization:</strong> AI-driven bidding for conversion value, targeting seasonal peaks.</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- FUTURE OUTLOOK SECTION -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 bg-gradient-to-br from-amber-50 to-stone-100 animate-fade-in">
+        <h2 class="text-4xl font-bold text-stone-800 mb-8 text-center">Vending Machine Market Trajectory: The Unfiltered Truth (2026 & Beyond)</h2>
+        
+        <div class="mb-12">
+            <p class="text-lg text-stone-600 text-center max-w-3xl mx-auto">
+                The market is not merely evolving; it is consolidating and accelerating. The trajectory shows a clear split: <strong>sophisticated unattended retail</strong> will dominate the high-value commercial sector, and <strong>traditional vending is heading for obsolescence.</strong>
+            </p>
+        </div>
+
+        <div class="mb-12">
+            <h3 class="text-3xl font-bold text-stone-800 mb-6">1. The Death of Traditional Vending: Market Reality</h3>
+            <p class="text-stone-600 mb-8">The industry is rapidly segmenting based on technological sophistication and service model.</p>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full bg-white rounded-xl card-shadow border border-stone-200">
+                    <thead class="bg-stone-100">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-sm font-bold text-stone-800">Reality Check</th>
+                            <th class="px-6 py-4 text-left text-sm font-bold text-stone-800">Impact on VMC</th>
+                            <th class="px-6 py-4 text-left text-sm font-bold text-stone-800">Non-Negotiable Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-stone-200">
+                        <tr>
+                            <td class="px-6 py-4 text-stone-700"><strong>Traditional Vending is a Dead End</strong><br>Coil and glass-front machines (without advanced telemetry) are becoming unprofitable relics. They have low consumer appeal, high operational costs due to inefficient manual restocking, and zero data value. <strong>This model will be phased out of all high-value corporate accounts by 2030.</strong></td>
+                            <td class="px-6 py-4 text-stone-700">VMC must aggressively <strong>liquidate or upgrade all non-smart/non-telemetry machines</strong>. Stop purchasing any non-integrated hardware immediately.</td>
+                            <td class="px-6 py-4 text-stone-700">VMC must aggressively liquidate or upgrade all non-smart/non-telemetry machines. Stop purchasing any non-integrated hardware immediately.</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 text-stone-700"><strong>Micro Markets Are Now the Table Stakes</strong><br>Micro Markets (open shelving, self-checkout kiosks) are not a niche—they are the new minimum requirement for any B2B client over 50 employees. Clients see them as an amenity, not a vending service. They drive higher average transaction values and better customer satisfaction.</td>
+                            <td class="px-6 py-4 text-stone-700"><strong>All VMC sales efforts must pivot 100% to Micro Market deployment.</strong> If a site cannot accommodate a Micro Market, it must be rigorously evaluated for profitability before deployment.</td>
+                            <td class="px-6 py-4 text-stone-700">All VMC sales efforts must pivot 100% to Micro Market deployment. If a site cannot accommodate a Micro Market, it must be rigorously evaluated for profitability before deployment.</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 text-stone-700"><strong>The Industrial Pivot Is Mandatory</strong><br>Industrial/MRO vending is a high-margin, low-churn B2B play that is insulated from consumer snack trends. It's a logistics contract disguised as a vending service. Canteen is slow here, but they will eventually move.</td>
+                            <td class="px-6 py-4 text-stone-700"><strong>VMC must establish a dedicated, technical sales channel for Industrial Vending now.</strong> This is your critical growth buffer while Micro Markets stabilize.</td>
+                            <td class="px-6 py-4 text-stone-700">VMC must establish a dedicated, technical sales channel for Industrial Vending now. This is your critical growth buffer while Micro Markets stabilize.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="mb-12">
+            <h3 class="text-3xl font-bold text-stone-800 mb-6">2. Competitive Threat Assessment: Canteen and Others</h3>
+            <p class="text-stone-600 mb-8">National operators have vulnerabilities, but they are not incompetent. Their size is their strategic advantage, and VMC must never forget this.</p>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full bg-white rounded-xl card-shadow border border-stone-200">
+                    <thead class="bg-stone-100">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-sm font-bold text-stone-800">Canteen's Advantage</th>
+                            <th class="px-6 py-4 text-left text-sm font-bold text-stone-800">VMC's Aggressive Counter-Strategy</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-stone-200">
+                        <tr>
+                            <td class="px-6 py-4 text-stone-700"><strong>Capital & Debt Capacity</strong><br>National operators can endure pricing wars, absorb losses, and finance thousands of expensive new Micro Market kiosks much easier than VMC. Their ability to outspend VMC on hardware is your biggest threat.</td>
+                            <td class="px-6 py-4 text-stone-700">Focus on winning the 25-100 employee B2B segment that Canteen neglects due to their high service fee requirements. This segment is your short-term bread and butter.</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 text-stone-700"><strong>National Supply Chain Leverage</strong><br>Canteen's reliance on bottlers is a weakness, but their sheer volume allows for massive discounts on core inventory (Coke, Pepsi, major candy brands). This allows them to maintain profitability on high-volume, low-margin accounts.</td>
+                            <td class="px-6 py-4 text-stone-700">Emphasize VMC's unrestricted variety and local service speed to counter their supply chain advantages.</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 text-stone-700"><strong>Unstoppable Tech Adoption</strong><br>Canteen is already deploying advanced cashless and telemetry systems nationwide. VMC's technology must be at parity—it is not an option. If VMC tech lags, it gives Canteen a direct, measurable advantage in efficiency and reporting.</td>
+                            <td class="px-6 py-4 text-stone-700">Mandate data-driven decisions and ensure every machine reports usage data. Prove VMC is the smartest vendor, not just the local one.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bg-stone-800 p-8 rounded-2xl text-white">
+            <h3 class="text-3xl font-bold mb-6">3. The Cold, Hard Facts for VMC (2026 Action Items)</h3>
+            <p class="text-stone-300 mb-6">To avoid becoming irrelevant, VMC must execute these actions without hesitation:</p>
+            <ul class="space-y-4 text-stone-200">
+                <li><strong>Stop Complaining About Canteen; Out-Execute Them:</strong> Focus on winning the 25-100 employee B2B segment that Canteen neglects due to their high service fee requirements. This segment is your short-term bread and butter.</li>
+                <li><strong>Define and Own Your Geographic Boundary:</strong> You cannot win nationally. You must achieve absolute market dominance in your current service area (e.g., Toronto/GTA). This includes 100% local PPC saturation, aggressive competitor conquest campaigns, and visible branding.</li>
+                <li><strong>Mandate Data-Driven Decisions:</strong> Every machine must report usage data. If a product fails to sell in a specific location for 30 days, it must be removed. Use this data to prove to clients that VMC is the smartest vendor, not just the local one.</li>
+                <li><strong>Sales Must Sell Micro Markets First:</strong> If your sales team is still leading with "vending machines," they are selling obsolete technology. The primary pitch is: "We are VMC, the Micro Market and Corporate Break Room Solution."</li>
+            </ul>
+            <div class="mt-6 p-4 bg-amber-600 rounded-lg">
+                <p class="text-amber-100 italic">The vending market is becoming a high-tech logistics industry. VMC's agility is its only core advantage; if it fails to be faster, smarter, and more tailored than Canteen, it will be crushed.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SOURCES SECTION -->
+    <section class="bg-stone-100 py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold text-stone-800 mb-8 text-center">Sources and References</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-stone-600">
+                <ol class="space-y-2">
+                    <li>1. Canada Retail Vending Machine Market Size & Outlook, 2033 - Grand View Research <a href="https://www.grandviewresearch.com/horizon/outlook/retail-vending-machine-market/canada" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>2. North America Industrial Vending Machine Market Size, Growth 2025-2030 <a href="https://www.mordorintelligence.com/industry-reports/north-america-industrial-vending-machine-market" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>3. AI Smart Vending Machine System Insightful Analysis: Trends, Competitor Dynamics, and Opportunities 2025-2033 <a href="https://www.archivemarketresearch.com/reports/ai-smart-vending-machine-system-215275" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>4. Vending Machine Market Report 2025: Automation Trends & Forecasts 2024-2033 <a href="https://www.businesswire.com/news/home/20250918424691/en/Vending-Machine-Market-Report-2025-Automation-Trends-Forecasts-2024-2033---Ready-to-Eat-Demand-Cashless-Payments-and-AI-Powered-Technologies-Propel-Global-Growth---ResearchAndMarkets.com" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>5. News - Aramark <a href="https://www.aramark.ca/newsroom/news" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>6. Climate Impact - Aramark <a href="https://www.aramark.com/about-us/environmental-social-governance/climate-impact" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>7. What is Competitive Landscape of Aramark Company? - Matrix BCG <a href="https://matrixbcg.com/blogs/competitors/aramark" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>8. What is Growth Strategy and Future Prospects of Aramark Company? - Matrix BCG <a href="https://matrixbcg.com/blogs/growth-strategy/aramark" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>9. Full Year and Q4 Fiscal 2025 Earnings Results - Aramark Investor Relations <a href="https://aramark.gcs-web.com/static-files/0ec7ebfa-cb46-4a9c-9269-eaadb2d1c2d8" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>10. Aramark Competitors: 5 Companies Similar to Aramark - P3 Cost Analysts <a href="https://www.costanalysts.com/aramark-competitors/" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>11. Is Aramark as bad as its reputation? : r/KitchenConfidential - Reddit <a href="https://www.reddit.com/r/KitchenConfidential/comments/197ijcw/is_aramark_as_bad_as_its_reputation/" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>12. Aramark? Has anyone had any positive, negative or experiences otherwise - Reddit <a href="https://www.reddit.com/r/KitchenConfidential/comments/108cexo/aramark_has_anyone_had_any_positive_negative_or/" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>13. Top 15 Aramark Competitors and Alternatives in 2025 - Consainsights <a href="https://www.consainsights.com/company-profile/aramark/competitors" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>14. Aramark Competitors and Alternatives - Owler <a href="https://www.owler.com/company/aramark/competitors" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>15. North America Micro Industry Analysis Report 2023 Featuring - GlobeNewswire <a href="https://www.globenewswire.com/news-release/2023/08/21/2728742/28124/en/North-America-Micro-Industry-Analysis-Report-2023-Featuring-Major-Players-Compass-Aramark-Sodexo-365-Retail-Markets-Five-Star-Food-Service-Canteen-24-Seven-Avanti-Markets-and-USCon.html" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>16. Vending - Canteen - Food Service Solutions <a href="https://www.canteen.com/vending/" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>17. Adaria | Vending Machines and Micromarkets throughout Canada <a href="https://www.adaria.ca/" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>18. Top 100 Smart Vending Machine Manufacturers in Canada (2025) - ensun <a href="https://ensun.io/search/smart-vending-machine/canada" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>19. Top 100 Vending Machine Companies in Canada (2025) - ensun <a href="https://ensun.io/search/vending-machine/canada" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>20. Daily Blends raises $2.7 million CAD, signs Metrolinx deal - BetaKit <a href="https://betakit.com/daily-blends-raises-2-7-million-cad-signs-metrolinx-deal-to-deploy-smart-vending-machines/" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>21. Daily Blends Launches AI-Powered Fresh Food Vending Machines - GlobeNewswire <a href="https://www.globenewswire.com/news-release/2023/03/07/2621774/0/en/Daily-Blends-Launches-AI-Powered-Fresh-Food-Vending-Machines-Announces-2-Million-Funding-and-Multi-Year-Partnership-with-Metrolinx.html" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>22. Daily Blends Launches AI-Powered Fresh Food Vending Machines - AiThority <a href="https://aithority.com/machine-learning/daily-blends-launches-ai-powered-fresh-food-vending-machines-announces-2-million-funding-and-multi-year-partnership-with-metrolinx/" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>23. AI food machine maker secures $2M, will deploy in Canada rail stations - Kiosk Marketplace <a href="https://www.kioskmarketplace.com/news/ai-food-machine-maker-secures-2m-will-deploy-in-canada-rail-stations/" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>24. dailyblends - Chef-prepared meals and curated snacks <a href="https://www.dailyblends.com/" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>25. About Us - Deli Snack Vending <a href="https://www.montrealvending.com/about-us/" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>26. Deli Snack Vending - Montreal Full Service Vending Machines <a href="https://www.montrealvending.com/" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>27. Canvend: Office Coffee Services | Montreal Coffee Supplies <a href="https://www.canvend.ca/" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>28. Convenient Capybara Vending Machine Services - Edmonton, Alberta <a href="https://www.convenient-capybara.com/" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>29. What Is a Modern Vending Machine Capable Of in 2025? - Feel Good Snacks <a href="https://www.feelgoodsnacks.ca/post/what-is-a-modern-vending-machine-capable-of-in-2025-from-smart-payments-to-real-time-monitoring" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>30. The Future of Smart Vending: Trends to Watch in 2025 - OgmentO <a href="https://ogmento.io/blog/the-future-of-smart-vending-trends-to-watch-in-2025/" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>31. Sustainable Food and Beverage Trends 2025 in the US & Canada - Innova Market Insights <a href="https://www.innovamarketinsights.com/trends/sustainable-food-and-beverage-in-the-us-and-canada-2025/" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>32. What Makes Canteen Canada the Best Vending Service - Canteen Canada <a href="https://www.canteencanada.com/en/what-makes-canteen-canada-best-vending-service-team/" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>33. 5 Trends to Know About Vending in 2025 - Vendon <a href="https://vendon.net/blog/5-trends-to-know-about-vending-in-2025/" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>34. Vending Products - Canteen - Food Service Solutions <a href="https://www.canteen.com/vending/vending-products/" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>35. Office Coffee Trends in 2025 [Infographic] - Crafty Delivers <a href="https://www.craftydelivers.com/insights/office-coffee-trends-2025" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>36. Selecta: Leading Food Tech & Distribution Across Europe <a href="https://www.selecta.com/int/en" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>37. Is the Vending Market Oversaturated? A 2025 Industry Analysis - Wider Matrix <a href="https://widermatrix.com/is-the-vending-market-oversaturated-a-2025-industry-analysis/" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>38. Local SEO Guide 2025 | First Rank Local Search Strategies <a href="https://firstrank.ca/local-seo-guide/" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>39. Ahrefs vs Semrush: Which SEO Tool is Better for Canadian Businesses in 2025? <a href="https://seovoyage.ca/resources/ahrefs-vs-semrush-canadian-businesses-2025" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>40. Best Keyword Research Tools for 2025: Ahrefs, SEMrush, and SE Ranking - SMA Marketing <a href="https://www.smamarketing.net/blog/best-keyword-research-tools-2025" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>41. is keyword difficulty will still matter (a important factor) in 2026? : r/DigitalMarketing - Reddit <a href="https://www.reddit.com/r/DigitalMarketing/comments/1ptprvy/is_keyword_difficulty_will_still_matter_a/" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>42. How To Do Keyword Research And Boost SEO (2025) - Shopify Canada <a href="https://www.shopify.com/ca/blog/how-to-do-keyword-research" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>43. Average Cost per Click by Country [DATA] - WordStream <a href="https://www.wordstream.com/blog/average-cost-per-click" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>44. Pay Per Click Pricing - How Much Does PPC Cost in 2025? - Asset Digital Communications <a href="https://assetdigitalcom.com/pay-per-click-ppc-packages-pricing/" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>45. Average Google Ads Cost per Click by Industry | 2025 Report - Focus Digital <a href="https://focus-digital.co/average-google-ads-cost-per-click-by-industry/" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>46. Pay-per-click (PPC) Advertising Market Size and Trends Research [2034] <a href="https://www.industryresearch.biz/market-reports/pay-per-click-ppc-advertising-market-115226" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>47. Facebook Ads CPM Benchmarks for Marketplaces in Canada (2025) - SuperAds AI <a href="https://www.superads.ai/facebook-ads-costs/cpm-cost-per-mille/marketplaces/canada" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                    <li>48. 2025 Advertising Shifts and Creative Intelligence PowerPoint Presentation - SlideServe <a href="https://www.slideserve.com/martechcube3/2025-advertising-shifts-and-creative-intelligence" class="text-amber-600 hover:text-amber-800">(link)</a></li>
+                </ol>
+            </div>
+        </div>
+    </section>
+
     <!-- FOOTER -->
     <footer class="bg-stone-900 text-stone-400 py-8 border-t border-stone-800">
         <div class="max-w-7xl mx-auto px-4 text-center">
@@ -332,7 +589,7 @@
     <script>
         // --- DATA STORAGE & CONFIGURATION ---
 
-        const apiKey = "AIzaSyCj4NKq2C_kXLfH27vfq_l_Iu8XMtlaXkc"; // Note: Replace with your actual API key for production
+        const apiKey = "AIzaSyBmuoW-cJBYaGpFYkDMtkQ4UzMHFLPLmS8"; 
         const modelName = "gemini-2.5-flash-preview-09-2025";
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
@@ -416,6 +673,23 @@
                     { term: "facility management", score: 75 },
                     { term: "employee wellness programs", score: 70 }
                 ]
+            },
+            generic: {
+                title: "Generic Service Terms",
+                desc: "Broad, non-branded search terms that Canteen targets for market capture and lead generation.",
+                color: 'rgba(217, 119, 6, 0.8)',
+                items: [
+                    { term: "Micro Market Solutions", score: 95 },
+                    { term: "Break Room Solutions", score: 90 },
+                    { term: "Corporate Vending", score: 88 },
+                    { term: "Commercial Vending Solutions", score: 85 },
+                    { term: "Healthy Vending Machines", score: 82 },
+                    { term: "Vending Machine Services", score: 80 },
+                    { term: "Vending Service near me", score: 78 },
+                    { term: "Vending services in Toronto", score: 75 },
+                    { term: "Toronto Snack Vending", score: 72 },
+                    { term: "Toronto Drink Vending", score: 70 }
+                ]
             }
         };
 
@@ -450,6 +724,27 @@
                 group: "Warehouse/Factory Vending",
                 keywords: ["PPE vending machine", "Factory snack service", "Industrial tool vending"],
                 desc: "Goal: Target high-growth manufacturing sectors. Strategy: Highlight 40% waste reduction claims and specialized industrial solutions."
+            }
+        };
+
+        const nonBrandedStrategies = {
+            commercial_intent: {
+                title: "Commercial & Corporate Solutions",
+                group: "High-Intent Solutions",
+                keywords: ["Micro Market Solutions", "Break Room Solutions", "Corporate Vending", "Commercial Vending Solutions"],
+                desc: "Goal: Capture businesses searching for comprehensive break room solutions. Strategy: Position VMC as the modern, flexible provider for high-end corporate and office needs, offering Micro Markets and custom break rooms."
+            },
+            local_geo_target: {
+                title: "Local Service Geo-Targeting",
+                group: "City & Local Services",
+                keywords: ["Vending Service near me", "Vending services in (City)", "(City) Snack Vending", "(City) Drink vending"],
+                desc: "Goal: Dominate local search results. Strategy: Emphasize VMC's local ownership, rapid service response (Guaranteed 4-Hour Fix), and regional knowledge to win against slow national chains."
+            },
+            product_niche: {
+                title: "Healthy & Specialty Niche",
+                group: "Product-Specific Demand",
+                keywords: ["Healthy Vending Machines", "Vending machine Services", "Snack Vending", "Drink vending"],
+                desc: "Goal: Capture product-specific and wellness demand. Strategy: Promote VMC's superior, unrestricted variety, especially healthy/specialty items, exploiting the 'Bottler Trap' weakness of competitors."
             }
         };
 
@@ -759,7 +1054,7 @@
             currentPPCStrategy = strategyKey;
             document.querySelectorAll('.ppc-btn').forEach(btn => {
                 btn.classList.remove('bg-stone-900', 'text-white', 'shadow-xl', 'scale-105');
-                btn.classList.add('bg-white', 'text-stone-600');
+                btn.classList.add('bg-white', 'text-stone-800');
                 if(btn.dataset.key === strategyKey) btn.classList.add('bg-stone-900', 'text-white', 'shadow-xl', 'scale-105');
             });
 
@@ -780,7 +1075,43 @@
                         <div class='flex flex-wrap gap-2 mb-6'>
                             ${s.keywords.map(k => `<span class='bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-medium'>${k}</span>`).join('')}
                         </div>
-                        <button onclick='generateAdCopy()' class='w-full py-4 bg-amber-600 text-white font-bold rounded-xl shadow-lg hover:bg-amber-700 transition-all'>
+                        <button onclick="generateAdCopy()" class="w-full py-4 btn-enhanced font-bold rounded-xl">
+                            Generate Ad Copy
+                        </button>
+                    </div>
+                    <div id='adCopyResult' class='mt-6 min-h-[150px] flex items-center justify-center border-2 border-dashed border-stone-200 rounded-xl'>
+                        <p class='text-stone-400 text-sm'>Click "Generate Ad Copy" to create AI-powered ads</p>
+                    </div>
+                `;
+                container.style.opacity = '1';
+            }, 300);
+        }
+
+        function renderNonBranded(strategyKey) {
+            document.querySelectorAll('.nonbranded-btn').forEach(btn => {
+                btn.classList.remove('bg-stone-900', 'text-white', 'shadow-xl', 'scale-105');
+                btn.classList.add('bg-white', 'text-stone-800');
+                if(btn.dataset.key === strategyKey) btn.classList.add('bg-stone-900', 'text-white', 'shadow-xl', 'scale-105');
+            });
+
+            const s = nonBrandedStrategies[strategyKey];
+            const container = document.getElementById('nonBrandedContent');
+            
+            container.style.opacity = '0';
+            
+            setTimeout(() => {
+                container.innerHTML = `
+                    <div class='mb-6'>
+                        <span class='text-xs font-bold text-amber-600 uppercase tracking-widest'>VMC's Ad Group Strategy</span>
+                        <h4 class='text-2xl font-bold text-stone-900 mt-1'>${s.title}</h4>
+                        <p class='text-stone-500 mt-2 text-sm italic'>${s.desc}</p>
+                    </div>
+                    <div class='bg-stone-50 p-6 rounded-xl border border-stone-200'>
+                        <h5 class='text-sm font-bold text-stone-700 mb-3'>Target Non-Branded Keywords</h5>
+                        <div class='flex flex-wrap gap-2 mb-6'>
+                            ${s.keywords.map(k => `<span class='bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-medium'>${k}</span>`).join('')}
+                        </div>
+                        <button onclick="generateAdCopy()" class="w-full py-4 btn-enhanced font-bold rounded-xl">
                             Generate Ad Copy
                         </button>
                     </div>
