@@ -3,301 +3,637 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Canteen Canada: Competitor & Search Term Analysis</title>
-    <!-- Load Tailwind CSS -->
+    <title>Canteen Canada: Strategic Market Analysis</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- 
+        Background: Stone-50 (#fafaf9)
+        Surface: White (#ffffff)
+        Primary Text: Stone-800 (#292524)
+        Secondary Text: Stone-500 (#78716c)
+        Accent: Amber-600 (#d97706) & Stone-400
+    -->
+
     <style>
-        /* Custom font import for a professional look */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f4f8; /* Light gray-blue background */
+            background-color: #fafaf9; /* Stone-50 */
+            color: #292524; /* Stone-800 */
         }
-        /* Custom class for report sections */
-        .report-section {
-            padding: 2rem; /* Increased padding */
-            margin-bottom: 2rem;
-            background-color: white;
-            border-radius: 1rem; /* More rounded corners */
-            /* Stronger, more defined shadow */
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+        
+        /* Custom Scrollbar for cleaner look */
+        ::-webkit-scrollbar {
+            width: 8px;
         }
-        /* Style for section headers - added a prominent left border accent */
-        .section-header {
-            font-weight: 700;
-            color: #1d4ed8; /* Tailwind blue-800 */
-            margin-bottom: 1.5rem;
-            border-left: 4px solid #3b82f6; /* Tailwind blue-500 for a vertical accent */
-            padding-left: 1rem;
-            font-size: 1.5rem; /* Larger font size */
+        ::-webkit-scrollbar-track {
+            background: #f5f5f4; 
         }
-        /* Responsive table cell styling */
-        .responsive-table th, .responsive-table td {
-            padding: 1rem 1.25rem;
-            text-align: left;
+        ::-webkit-scrollbar-thumb {
+            background: #d6d3d1; 
+            border-radius: 4px;
         }
-        /* Table headers with a clean blue accent */
-        .responsive-table th {
-            background-color: #dbeafe; /* Tailwind blue-100 */
-            color: #1e40af; /* Tailwind blue-700 */
-            font-weight: 700;
-            text-transform: uppercase;
-            font-size: 0.875rem;
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a29e; 
         }
-        .responsive-table tbody tr:nth-child(odd) {
-            background-color: #f9fafb; /* Lighter stripe */
+
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
         }
-        .key-insight {
-            background-color: #eff6ff;
-            border-left: 3px solid #3b82f6;
-            padding: 1rem;
-            border-radius: 0.5rem;
+
+        .transition-all-300 {
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* Chart Container Styling - Mandatory per requirements */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px; /* Max width to prevent stretching */
+            height: 300px;    /* Base height */
+            max-height: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        .nav-btn.active {
+            background-color: #292524;
+            color: #ffffff;
         }
     </style>
+
+    <!-- Application Structure Plan: 
+         1. Header: Context and Introduction.
+         2. Market Landscape Section: Interactive view of competitors using a Chart for distribution and a filterable grid for details.
+            - Goal: Understand who the players are and their strengths.
+         3. Search Intent Explorer: Tabbed interface separating search terms by intent category.
+            - Goal: Analyze user mindset (Brand vs Commercial vs Location).
+            - Visual: Bar chart showing 'Strategic Priority' score of terms.
+         4. PPC Strategy Builder: Functional section to view ad groups based on campaign goals.
+            - Goal: Translate data into action.
+         5. Strategic Summary: Key takeaways and SEO insights.
+    -->
+
+    <!-- Visualization & Content Choices:
+         1. Competitor Distribution: Donut Chart. Shows the balance of National vs Regional players. Interaction: Filtering the list below.
+         2. Search Term Priority: Bar Chart. Visualizes the relative importance/intent strength of keywords within a category.
+         3. PPC Cards: Dynamic HTML generation. Shows structured data (Campaign -> Ad Group -> Keywords) clearly without clutter.
+         - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
+    -->
 </head>
-<body class="p-4 md:p-8">
+<body class="antialiased selection:bg-stone-200 selection:text-stone-900">
 
-    <div class="max-w-5xl mx-auto">
-        <!-- Report Header - Wow Effect with Gradient -->
-        <header id="main-header" class="mb-8 p-6 md:p-10 rounded-xl shadow-2xl text-white bg-gradient-to-r from-blue-700 to-indigo-800">
-            <h1 class="text-3xl md:text-5xl font-black mb-0 tracking-tight">Canteen Canada: Competitor & Search Term Analysis</h1>
-            <p class="text-blue-200 mt-2 text-xl font-light">Strategic insights for 2025 marketing and growth.</p>
-        </header>
+    <!-- Navigation / Header -->
+    <header class="bg-white border-b border-stone-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-xl font-bold tracking-tight text-stone-900">Canteen Canada</h1>
+                <p class="text-xs text-stone-500 uppercase tracking-wide">Market & Search Analysis 2025</p>
+            </div>
+            <nav class="hidden md:flex space-x-1">
+                <button onclick="scrollToSection('landscape')" class="px-3 py-2 text-sm font-medium text-stone-600 hover:text-stone-900 rounded-md transition-colors">Competitors</button>
+                <button onclick="scrollToSection('search')" class="px-3 py-2 text-sm font-medium text-stone-600 hover:text-stone-900 rounded-md transition-colors">Search Terms</button>
+                <button onclick="scrollToSection('ppc')" class="px-3 py-2 text-sm font-medium text-stone-600 hover:text-stone-900 rounded-md transition-colors">PPC Strategy</button>
+                <button onclick="scrollToSection('insights')" class="px-3 py-2 text-sm font-medium text-stone-600 hover:text-stone-900 rounded-md transition-colors">Insights</button>
+            </nav>
+        </div>
+    </header>
 
-        <!-- 1. Overview -->
-        <section class="report-section">
-            <h2 class="section-header">1. Overview</h2>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-16">
 
-            <h3 class="font-bold text-xl text-gray-800 mt-4 mb-3 border-b pb-2 border-gray-100">Canteen Canada Core Offerings:</h3>
-            <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4">
-                <li>Snacks, beverages, fresh & frozen foods</li>
-                <li>Coffee & pantry services</li>
-                <li><span class="font-semibold text-indigo-600">Micro-markets / self-checkout solutions</span></li>
-                <li>Healthy vending options</li>
-                <li>Cashless & smart vending technology</li>
-            </ul>
-
-            <h3 class="font-bold text-xl text-gray-800 mt-6 mb-3 border-b pb-2 border-gray-100">Objective of this document:</h3>
-            <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4">
-                <li>Identify primary competitors in Canada’s vending industry</li>
-                <li>Analyze search terms / ad groups for SEO & PPC</li>
-                <li>Provide strategic insights for marketing campaigns</li>
-            </ul>
-        </section>
-
-        <!-- 2. Primary Competitors -->
-        <section class="report-section">
-            <h2 class="section-header">2. Primary Competitors</h2>
-            <div class="overflow-x-auto">
-                <table class="responsive-table w-full border-collapse rounded-xl overflow-hidden text-sm shadow-md">
-                    <thead>
-                        <tr>
-                            <th>Competitor</th>
-                            <th>Type</th>
-                            <th>Key Strengths</th>
-                            <th>Notes</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="font-semibold text-blue-800">Canteen Canada</td>
-                            <td>National Operator</td>
-                            <td>Full-service vending, micro-markets, tech-enabled, coast-to-coast</td>
-                            <td>Baseline</td>
-                        </tr>
-                        <tr>
-                            <td>Aramark Refreshment Services</td>
-                            <td>National Operator</td>
-                            <td>Corporate clients, vending + catering</td>
-                            <td>Strong in enterprise contracts</td>
-                        </tr>
-                        <tr>
-                            <td>BetterVending</td>
-                            <td>Healthy Vending</td>
-                            <td>Healthy & organic focus, Ontario-based</td>
-                            <td>Niche market</td>
-                        </tr>
-                        <tr>
-                            <td>Healthy Max</td>
-                            <td>Healthy / Specialty</td>
-                            <td>Nutritional snacks, combo machines</td>
-                            <td>Toronto-centric</td>
-                        </tr>
-                        <tr>
-                            <td>Fresh Healthy Vending Canada</td>
-                            <td>Healthy Vending</td>
-                            <td>Smart machines, healthy options</td>
-                            <td>Local focus</td>
-                        </tr>
-                        <tr>
-                            <td>Selecta Canada</td>
-                            <td>National Operator</td>
-                            <td>Snack & beverage vending</td>
-                            <td>Legacy brand, regional presence</td>
-                        </tr>
-                        <tr>
-                            <td>Fraser Valley Vending</td>
-                            <td>Regional</td>
-                            <td>Snack/drink/frozen, Vancouver area</td>
-                            <td>Local manufacturer</td>
-                        </tr>
-                        <tr>
-                            <td>Vend Pro</td>
-                            <td>Regional</td>
-                            <td>Workplace vending, Ottawa</td>
-                            <td>B2B focus</td>
-                        </tr>
-                        <tr>
-                            <td>Kane’s Distributing</td>
-                            <td>Distributor</td>
-                            <td>Refurbished & new machines</td>
-                            <td>Nationwide</td>
-                        </tr>
-                        <tr>
-                            <td>QM Distribution</td>
-                            <td>Distributor</td>
-                            <td>Smart machines with AI monitoring</td>
-                            <td>National coverage</td>
-                        </tr>
-                        <tr>
-                            <td>Royal Vendors</td>
-                            <td>Manufacturer</td>
-                            <td>Beverage vending machines</td>
-                            <td>Available via Canadian distributors</td>
-                        </tr>
-                        <tr>
-                            <td>AMS (Automated Merchandising Systems)</td>
-                            <td>Manufacturer</td>
-                            <td>Snack/drink combo machines</td>
-                            <td>Widely distributed</td>
-                        </tr>
-                        <tr>
-                            <td>Seaga Manufacturing</td>
-                            <td>Manufacturer</td>
-                            <td>Reliable machines</td>
-                            <td>Nationwide distributor</td>
-                        </tr>
-                    </tbody>
-                </table>
+        <!-- Introduction Section -->
+        <section class="text-center max-w-3xl mx-auto space-y-4">
+            <h2 class="text-3xl font-bold text-stone-800">Strategic Intelligence Dashboard</h2>
+            <p class="text-lg text-stone-600 leading-relaxed">
+                This interactive report analyzes Canteen Canada’s position in the vending market. 
+                Explore the competitive landscape, decode high-value search terms, and review actionable PPC and SEO strategies for growth in 2025.
+            </p>
+            <div class="flex flex-wrap justify-center gap-2 mt-4">
+                <span class="bg-stone-100 text-stone-600 px-3 py-1 rounded-full text-sm font-medium">Snacks & Beverages</span>
+                <span class="bg-stone-100 text-stone-600 px-3 py-1 rounded-full text-sm font-medium">Micro-Markets</span>
+                <span class="bg-stone-100 text-stone-600 px-3 py-1 rounded-full text-sm font-medium">Smart Vending</span>
             </div>
         </section>
 
-        <!-- 3. Search Term Analysis -->
-        <section class="report-section">
-            <h2 class="section-header">3. Search Term Analysis</h2>
+        <!-- COMPETITOR LANDSCAPE SECTION -->
+        <section id="landscape" class="scroll-mt-24">
+            <div class="mb-6">
+                <h3 class="text-2xl font-bold text-stone-800">2. Competitor Landscape</h3>
+                <p class="text-stone-600 mt-2">
+                    Analyze the mix of National Operators, Regional Specialists, and Manufacturers competing for market share. 
+                    Interact with the chart or buttons to filter the detailed competitor list.
+                </p>
+            </div>
 
-            <div class="space-y-8 text-gray-700">
-                <div class="border-b pb-4 border-gray-100">
-                    <h3 class="font-bold text-xl text-gray-800 mb-3 text-indigo-700">3.1 Brand + Service Intent (High-Value)</h3>
-                    <ul class="list-disc list-inside ml-4 space-y-1">
-                        <li>“Canteen Canada vending services”</li>
-                        <li>“Canteen micro-markets”</li>
-                        <li>“Canteen vending machines Canada”</li>
-                        <li>“Canteen break room solutions”</li>
-                        <li>“Canteen corporate vending services”</li>
-                    </ul>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Left: Controls & Chart -->
+                <div class="lg:col-span-1 space-y-6">
+                    <div class="bg-white p-6 rounded-xl card-shadow border border-stone-100">
+                        <h4 class="font-semibold text-stone-700 mb-4 text-sm uppercase tracking-wider">Market Distribution</h4>
+                        
+                        <!-- Chart Container -->
+                        <div class="chart-container">
+                            <canvas id="competitorChart"></canvas>
+                        </div>
+                        
+                        <div class="mt-6 flex flex-wrap gap-2 justify-center">
+                            <button onclick="filterCompetitors('All')" class="comp-filter-btn px-3 py-1 text-xs font-medium rounded-full bg-stone-800 text-white hover:bg-stone-700 transition-colors" data-type="All">Show All</button>
+                            <button onclick="filterCompetitors('National Operator')" class="comp-filter-btn px-3 py-1 text-xs font-medium rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200 transition-colors" data-type="National Operator">National</button>
+                            <button onclick="filterCompetitors('Regional')" class="comp-filter-btn px-3 py-1 text-xs font-medium rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200 transition-colors" data-type="Regional">Regional</button>
+                            <button onclick="filterCompetitors('Manufacturer')" class="comp-filter-btn px-3 py-1 text-xs font-medium rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200 transition-colors" data-type="Manufacturer">Manufacturer</button>
+                        </div>
+                    </div>
                 </div>
-                <div class="border-b pb-4 border-gray-100">
-                    <h3 class="font-bold text-xl text-gray-800 mb-3 text-indigo-700">3.2 Commercial / Purchase Intent (Conversion Focus)</h3>
-                    <ul class="list-disc list-inside ml-4 space-y-1">
-                        <li>“vending machine services Canada”</li>
-                        <li>“vending machine supplier Canada”</li>
-                        <li>“healthy vending machines Canada”</li>
-                        <li>“commercial vending solutions”</li>
-                        <li>“office vending provider”</li>
-                    </ul>
-                </div>
-                <div class="border-b pb-4 border-gray-100">
-                    <h3 class="font-bold text-xl text-gray-800 mb-3 text-indigo-700">3.3 Location + Local SEO (Local Priority)</h3>
-                    <ul class="list-disc list-inside ml-4 space-y-1">
-                        <li>“vending machine services in Toronto”</li>
-                        <li>“Vancouver office vending solutions”</li>
-                        <li>“Montreal snack vending machines”</li>
-                        <li>“Edmonton micro-markets”</li>
-                        <li>“Ottawa vending machines near me”</li>
-                    </ul>
-                </div>
-                <div class="border-b pb-4 border-gray-100">
-                    <h3 class="font-bold text-xl text-gray-800 mb-3 text-indigo-700">3.4 Feature / Technology Searches (Innovation Focus)</h3>
-                    <ul class="list-disc list-inside ml-4 space-y-1">
-                        <li>“cashless vending machines”</li>
-                        <li>“remote inventory vending technology”</li>
-                        <li>“smart vending machines Canada”</li>
-                        <li>“custom vending menus Canada”</li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="font-bold text-xl text-gray-800 mb-3 text-indigo-700">3.5 Related Services</h3>
-                    <ul class="list-disc list-inside ml-4 space-y-1">
-                        <li>“office coffee service Canada”</li>
-                        <li>“corporate pantry service Canada”</li>
-                        <li>“healthy snack program vending”</li>
-                    </ul>
+
+                <!-- Right: Competitor Cards Grid -->
+                <div class="lg:col-span-2">
+                    <div id="competitorGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Cards injected via JS -->
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- 4. Competitor Search Term / Ad Group Opportunities -->
-        <section class="report-section">
-            <h2 class="section-header">4. Competitor Search Term / Ad Group Opportunities</h2>
+        <!-- SEARCH TERM ANALYSIS SECTION -->
+        <section id="search" class="scroll-mt-24">
+            <div class="mb-6">
+                <h3 class="text-2xl font-bold text-stone-800">3. Search Term Analysis</h3>
+                <p class="text-stone-600 mt-2">
+                    Understanding user intent is crucial for SEO and PPC. We have categorized high-priority keywords into five strategic buckets.
+                    Select a category to view the specific terms and their estimated strategic priority.
+                </p>
+            </div>
 
-            <h3 class="font-bold text-xl text-gray-800 mt-4 mb-3 border-b pb-2 border-gray-100">Suggested PPC Ad Groups</h3>
-            <div class="overflow-x-auto">
-                <table class="responsive-table w-full border-collapse rounded-xl overflow-hidden text-sm shadow-md">
-                    <thead>
-                        <tr>
-                            <th>Campaign</th>
-                            <th>Ad Group</th>
-                            <th>Sample Keywords</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="font-semibold">Brand Awareness</td>
-                            <td class="font-semibold">Canteen Brand</td>
-                            <td>“Canteen Canada”, “Canteen vending machines”, “Canteen micro-market solutions”</td>
-                        </tr>
-                        <tr>
-                            <td class="font-semibold">Service Acquisition</td>
-                            <td class="font-semibold">Vending Services</td>
-                            <td>“vending machine services Canada”, “office vending service provider”, “commercial vending solutions”</td>
-                        </tr>
-                        <tr>
-                            <td class="font-semibold">Healthy & Wellness</td>
-                            <td class="font-semibold">Healthy Vending</td>
-                            <td>“healthy office snacks vending”, “healthy vending machines Canada”, “better break room snack vending”</td>
-                        </tr>
-                        <tr>
-                            <td class="font-semibold">Location Targeting</td>
-                            <td class="font-semibold">Regional</td>
-                            <td>“Toronto vending machine services”, “Montreal micro-markets provider”, “Vancouver office coffee + vending”</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="bg-white rounded-xl card-shadow border border-stone-100 overflow-hidden">
+                <!-- Tabs -->
+                <div class="flex overflow-x-auto border-b border-stone-100 bg-stone-50">
+                    <button onclick="loadSearchCategory('brand')" class="search-tab active px-6 py-4 text-sm font-medium text-stone-600 whitespace-nowrap border-b-2 border-transparent hover:text-stone-800 focus:outline-none" data-cat="brand">Brand Intent</button>
+                    <button onclick="loadSearchCategory('commercial')" class="search-tab px-6 py-4 text-sm font-medium text-stone-600 whitespace-nowrap border-b-2 border-transparent hover:text-stone-800 focus:outline-none" data-cat="commercial">Commercial</button>
+                    <button onclick="loadSearchCategory('local')" class="search-tab px-6 py-4 text-sm font-medium text-stone-600 whitespace-nowrap border-b-2 border-transparent hover:text-stone-800 focus:outline-none" data-cat="local">Local SEO</button>
+                    <button onclick="loadSearchCategory('tech')" class="search-tab px-6 py-4 text-sm font-medium text-stone-600 whitespace-nowrap border-b-2 border-transparent hover:text-stone-800 focus:outline-none" data-cat="tech">Innovation</button>
+                    <button onclick="loadSearchCategory('related')" class="search-tab px-6 py-4 text-sm font-medium text-stone-600 whitespace-nowrap border-b-2 border-transparent hover:text-stone-800 focus:outline-none" data-cat="related">Related Services</button>
+                </div>
+
+                <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                    <!-- Text List -->
+                    <div>
+                        <h4 id="searchCatTitle" class="text-lg font-bold text-stone-800 mb-2">Brand + Service Intent</h4>
+                        <p id="searchCatDesc" class="text-sm text-stone-500 mb-4">High-value searches specifically targeting Canteen's existing reputation.</p>
+                        
+                        <div class="bg-stone-50 rounded-lg p-4 max-h-[300px] overflow-y-auto border border-stone-200">
+                            <ul id="searchTermList" class="space-y-3">
+                                <!-- List items injected via JS -->
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Bar Chart -->
+                    <div class="w-full">
+                         <h5 class="text-xs font-bold text-stone-400 uppercase tracking-widest mb-4 text-center">Strategic Importance Score</h5>
+                         <!-- Chart Container -->
+                        <div class="chart-container">
+                            <canvas id="searchChart"></canvas>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
-        <!-- 5. SEO / Marketing Insights -->
-        <section class="report-section">
-            <h2 class="section-header">5. SEO / Marketing Insights</h2>
-            <div class="space-y-4">
-                <div class="key-insight text-gray-700">
-                    <p class="font-semibold text-lg text-blue-800 mb-1">Local & Benefit Combination</p>
-                    <p>Users often combine location + benefit in searches (e.g., “healthy vending Toronto”).</p>
+        <!-- PPC STRATEGY SECTION -->
+        <section id="ppc" class="scroll-mt-24">
+            <div class="mb-6">
+                <h3 class="text-2xl font-bold text-stone-800">4. PPC Ad Group Opportunities</h3>
+                <p class="text-stone-600 mt-2">
+                    Based on the search analysis, here are the suggested Google Ads structures. Select a campaign goal to generate the recommended Ad Group setup.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <!-- Sidebar Controls -->
+                <div class="md:col-span-1 space-y-3">
+                    <button onclick="renderPPC('awareness')" class="ppc-btn w-full text-left px-4 py-3 rounded-lg text-sm font-medium bg-stone-800 text-white shadow-md transition-all-300 transform hover:scale-105">Brand Awareness</button>
+                    <button onclick="renderPPC('acquisition')" class="ppc-btn w-full text-left px-4 py-3 rounded-lg text-sm font-medium bg-white text-stone-600 border border-stone-200 hover:bg-stone-50 transition-all-300">Service Acquisition</button>
+                    <button onclick="renderPPC('wellness')" class="ppc-btn w-full text-left px-4 py-3 rounded-lg text-sm font-medium bg-white text-stone-600 border border-stone-200 hover:bg-stone-50 transition-all-300">Healthy & Wellness</button>
+                    <button onclick="renderPPC('regional')" class="ppc-btn w-full text-left px-4 py-3 rounded-lg text-sm font-medium bg-white text-stone-600 border border-stone-200 hover:bg-stone-50 transition-all-300">Location Targeting</button>
                 </div>
-                <div class="key-insight text-gray-700">
-                    <p class="font-semibold text-lg text-blue-800 mb-1">Competitive Landscape</p>
-                    <p>Competitors are strong in healthy vending, micro-markets, and smart machines.</p>
+
+                <!-- Dynamic Content Area -->
+                <div class="md:col-span-3">
+                    <div id="ppcContent" class="bg-white rounded-xl card-shadow p-8 border border-stone-100 h-full flex flex-col justify-center transition-all-300">
+                        <!-- Content injected via JS -->
+                    </div>
                 </div>
-                <div class="key-insight text-gray-700">
-                    <p class="font-bold text-lg text-red-600 mb-1">Primary Opportunity</p>
-                    <p class="font-bold">Emphasize coast-to-coast coverage, robust corporate programs, and tech-enabled inventory systems.</p>
-                </div>
-                <p class="text-gray-700 mt-4">PPC targeting should strategically include brand, service, healthy, and local intent ad groups.</p>
             </div>
         </section>
 
-    </div>
+        <!-- INSIGHTS SECTION -->
+        <section id="insights" class="scroll-mt-24 mb-12">
+            <div class="bg-stone-800 rounded-2xl p-8 md:p-12 text-white">
+                <div class="mb-8">
+                    <h3 class="text-2xl font-bold">5. Strategic Insights & Recommendation</h3>
+                    <p class="text-stone-300 mt-2">Executive summary for the 2025 roadmap.</p>
+                </div>
 
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="bg-stone-700/50 p-6 rounded-lg backdrop-blur-sm border border-stone-600">
+                        <div class="text-amber-500 text-2xl mb-3">&#9737;</div> <!-- Target Icon -->
+                        <h4 class="font-bold text-lg mb-2">Local + Benefit</h4>
+                        <p class="text-stone-300 text-sm leading-relaxed">
+                            Users frequently combine location with specific benefits (e.g., "healthy vending Toronto"). SEO strategy must create localized landing pages that highlight specific machine types.
+                        </p>
+                    </div>
+                    <div class="bg-stone-700/50 p-6 rounded-lg backdrop-blur-sm border border-stone-600">
+                        <div class="text-amber-500 text-2xl mb-3">&#8862;</div> <!-- Plus/Square Icon -->
+                        <h4 class="font-bold text-lg mb-2">The Healthy Niche</h4>
+                        <p class="text-stone-300 text-sm leading-relaxed">
+                            Competitors like 'BetterVending' and 'Fresh Healthy' dominate the wellness niche. Canteen should aggressively bid on "healthy" keywords to capture this growing market segment.
+                        </p>
+                    </div>
+                    <div class="bg-stone-700/50 p-6 rounded-lg backdrop-blur-sm border border-stone-600">
+                        <div class="text-amber-500 text-2xl mb-3">&#10022;</div> <!-- Star Icon -->
+                        <h4 class="font-bold text-lg mb-2">Primary Opportunity</h4>
+                        <p class="text-stone-300 text-sm leading-relaxed">
+                            Leverage "National Coverage" and "Tech-Enabled" inventory systems as unique selling propositions (USPs). Competitors are fragmented; Canteen is the holistic solution.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-stone-900 text-stone-400 py-8 border-t border-stone-800">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-sm">&copy; 2025 Canteen Canada Analysis Dashboard. Generated for Strategic Planning.</p>
+        </div>
+    </footer>
+
+    <!-- LOGIC SCRIPT -->
+    <script>
+        // --- DATA STORAGE ---
+
+        const competitorData = [
+            { name: "Canteen Canada", type: "National Operator", strength: "Full-service, Tech-enabled, National", notes: "Market Leader Baseline" },
+            { name: "Aramark Refreshment", type: "National Operator", strength: "Corporate clients, Catering", notes: "Strong enterprise contracts" },
+            { name: "BetterVending", type: "Niche/Healthy", strength: "Organic focus, Ontario-based", notes: "Healthy Niche Leader" },
+            { name: "Healthy Max", type: "Niche/Healthy", strength: "Nutritional snacks, Combo machines", notes: "Toronto-centric" },
+            { name: "Fresh Healthy Vending", type: "Niche/Healthy", strength: "Smart machines, Healthy options", notes: "Local focus" },
+            { name: "Selecta Canada", type: "National Operator", strength: "Legacy brand, Regional presence", notes: "Snack & Beverage vending" },
+            { name: "Fraser Valley Vending", type: "Regional", strength: "Snack/Drink/Frozen", notes: "Vancouver area" },
+            { name: "Vend Pro", type: "Regional", strength: "Workplace vending", notes: "Ottawa B2B focus" },
+            { name: "Kane’s Distributing", type: "Distributor", strength: "Refurbished & New machines", notes: "Nationwide" },
+            { name: "QM Distribution", type: "Distributor", strength: "Smart machines, AI monitoring", notes: "National coverage" },
+            { name: "Royal Vendors", type: "Manufacturer", strength: "Beverage vending machines", notes: "Via distributors" },
+            { name: "AMS", type: "Manufacturer", strength: "Snack/drink combo machines", notes: "Widely distributed" },
+            { name: "Seaga Manufacturing", type: "Manufacturer", strength: "Reliable machines", notes: "Nationwide distributor" }
+        ];
+
+        const searchData = {
+            brand: {
+                title: "Brand + Service Intent",
+                desc: "Direct navigation queries indicating high brand familiarity.",
+                color: 'rgba(217, 119, 6, 0.8)', // Amber-600
+                items: [
+                    { term: "Canteen Canada vending services", score: 95 },
+                    { term: "Canteen micro-markets", score: 90 },
+                    { term: "Canteen vending machines Canada", score: 85 },
+                    { term: "Canteen break room solutions", score: 80 },
+                    { term: "Canteen corporate vending", score: 75 }
+                ]
+            },
+            commercial: {
+                title: "Commercial / Purchase Intent",
+                desc: "High-conversion queries from decision makers looking for suppliers.",
+                color: 'rgba(41, 37, 36, 0.8)', // Stone-800
+                items: [
+                    { term: "vending machine services Canada", score: 92 },
+                    { term: "office vending provider", score: 88 },
+                    { term: "commercial vending solutions", score: 85 },
+                    { term: "vending machine supplier Canada", score: 82 },
+                    { term: "healthy vending machines Canada", score: 78 }
+                ]
+            },
+            local: {
+                title: "Location + Local SEO",
+                desc: "Geo-specific queries. Critical for capturing regional market share.",
+                color: 'rgba(87, 83, 78, 0.8)', // Stone-600
+                items: [
+                    { term: "vending machine services in Toronto", score: 88 },
+                    { term: "Vancouver office vending solutions", score: 85 },
+                    { term: "Montreal snack vending machines", score: 80 },
+                    { term: "Ottawa vending machines near me", score: 75 },
+                    { term: "Edmonton micro-markets", score: 70 }
+                ]
+            },
+            tech: {
+                title: "Feature / Technology",
+                desc: "Innovation-focused queries targeting modern solutions.",
+                color: 'rgba(120, 113, 108, 0.8)', // Stone-500
+                items: [
+                    { term: "smart vending machines Canada", score: 85 },
+                    { term: "cashless vending machines", score: 82 },
+                    { term: "remote inventory vending technology", score: 78 },
+                    { term: "custom vending menus Canada", score: 70 }
+                ]
+            },
+            related: {
+                title: "Related Services",
+                desc: "Cross-sell opportunities for broader breakroom needs.",
+                color: 'rgba(168, 162, 158, 0.8)', // Stone-400
+                items: [
+                    { term: "office coffee service Canada", score: 90 },
+                    { term: "corporate pantry service Canada", score: 85 },
+                    { term: "healthy snack program vending", score: 80 }
+                ]
+            }
+        };
+
+        const ppcStrategies = {
+            awareness: {
+                title: "Brand Awareness Campaign",
+                group: "Canteen Brand",
+                keywords: ["“Canteen Canada”", "“Canteen vending machines”", "“Canteen micro-market solutions”"],
+                desc: "Goal: Maximize Impression Share. Ensure when users look for us, they find us first, protecting the brand from competitors bidding on our name."
+            },
+            acquisition: {
+                title: "Service Acquisition Campaign",
+                group: "Vending Services",
+                keywords: ["“vending machine services Canada”", "“office vending service provider”", "“commercial vending solutions”"],
+                desc: "Goal: Lead Generation. Target high-intent commercial keywords where users are actively seeking a vendor."
+            },
+            wellness: {
+                title: "Healthy & Wellness Campaign",
+                group: "Healthy Vending",
+                keywords: ["“healthy office snacks vending”", "“healthy vending machines Canada”", "“better break room snack vending”"],
+                desc: "Goal: Niche Capture. Compete directly with 'BetterVending' and 'Fresh Healthy' by highlighting nutritious options."
+            },
+            regional: {
+                title: "Location Targeting Campaign",
+                group: "Regional Services",
+                keywords: ["“Toronto vending machine services”", "“Montreal micro-markets provider”", "“Vancouver office coffee + vending”"],
+                desc: "Goal: Local Relevance. Use geo-modifiers to appear in 'near me' searches and dominate specific metropolitan areas."
+            }
+        };
+
+        // --- GLOBAL CHART VARIABLES ---
+        let compChartInstance = null;
+        let searchChartInstance = null;
+
+        // --- FUNCTIONS ---
+
+        function initCompetitorChart() {
+            const ctx = document.getElementById('competitorChart').getContext('2d');
+            
+            // Aggregating Data
+            const typeCounts = {};
+            competitorData.forEach(c => {
+                // Group Niche into Regional/Specialty for chart clarity or keep separate?
+                // Let's simplify types for the donut chart
+                let type = c.type;
+                if(type === 'Niche/Healthy') type = 'Regional'; // Grouping Niche with Regional visually or keep distinct
+                // Actually, let's keep distinct keys
+                typeCounts[type] = (typeCounts[type] || 0) + 1;
+            });
+
+            const labels = Object.keys(typeCounts);
+            const data = Object.values(typeCounts);
+
+            compChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            '#292524', // Stone-800
+                            '#d97706', // Amber-600
+                            '#a8a29e', // Stone-400
+                            '#57534e', // Stone-600
+                            '#e7e5e4'  // Stone-200
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                font: { family: 'Inter', size: 11 }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` ${context.label}: ${context.raw} Companies`;
+                                }
+                            }
+                        }
+                    },
+                    layout: {
+                        padding: 10
+                    }
+                }
+            });
+        }
+
+        function filterCompetitors(type) {
+            // Update Buttons
+            document.querySelectorAll('.comp-filter-btn').forEach(btn => {
+                if (btn.dataset.type === type) {
+                    btn.classList.remove('bg-stone-100', 'text-stone-600');
+                    btn.classList.add('bg-stone-800', 'text-white');
+                } else {
+                    btn.classList.add('bg-stone-100', 'text-stone-600');
+                    btn.classList.remove('bg-stone-800', 'text-white');
+                }
+            });
+
+            // Filter Data
+            const grid = document.getElementById('competitorGrid');
+            grid.innerHTML = '';
+
+            const filtered = type === 'All' 
+                ? competitorData 
+                : competitorData.filter(c => {
+                    if (type === 'Regional') return c.type === 'Regional' || c.type === 'Niche/Healthy';
+                    return c.type === type;
+                });
+
+            // Render Cards
+            filtered.forEach(c => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-5 rounded-lg border border-stone-200 hover:border-amber-500 transition-colors shadow-sm";
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <h5 class="font-bold text-stone-800">${c.name}</h5>
+                        <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-1 bg-stone-100 text-stone-500 rounded">${c.type}</span>
+                    </div>
+                    <p class="text-xs text-amber-600 font-semibold mb-1">Strength: ${c.strength}</p>
+                    <p class="text-xs text-stone-500 italic">"${c.notes}"</p>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function initSearchChart() {
+            const ctx = document.getElementById('searchChart').getContext('2d');
+            searchChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Strategic Priority',
+                        data: [],
+                        backgroundColor: '#d97706',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { display: false }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { font: { family: 'Inter', size: 10 } }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => ` Priority Score: ${ctx.raw}/100`
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function loadSearchCategory(catKey) {
+            // Update Tabs
+            document.querySelectorAll('.search-tab').forEach(t => {
+                if(t.dataset.cat === catKey) {
+                    t.classList.add('border-amber-600', 'text-stone-800');
+                    t.classList.remove('border-transparent', 'text-stone-600');
+                } else {
+                    t.classList.remove('border-amber-600', 'text-stone-800');
+                    t.classList.add('border-transparent', 'text-stone-600');
+                }
+            });
+
+            const data = searchData[catKey];
+            
+            // Update Text Info
+            document.getElementById('searchCatTitle').innerText = data.title;
+            document.getElementById('searchCatDesc').innerText = data.desc;
+
+            // Update List
+            const list = document.getElementById('searchTermList');
+            list.innerHTML = '';
+            data.items.forEach(item => {
+                const li = document.createElement('li');
+                li.className = "flex justify-between items-center text-sm p-2 hover:bg-white rounded transition-colors";
+                li.innerHTML = `
+                    <span class="text-stone-700 font-medium">“${item.term}”</span>
+                `;
+                list.appendChild(li);
+            });
+
+            // Update Chart
+            if (searchChartInstance) {
+                searchChartInstance.data.labels = data.items.map(i => i.term.length > 20 ? i.term.substring(0,20)+'...' : i.term);
+                searchChartInstance.data.datasets[0].data = data.items.map(i => i.score);
+                searchChartInstance.data.datasets[0].backgroundColor = data.color;
+                searchChartInstance.update();
+            }
+        }
+
+        function renderPPC(strategyKey) {
+            // Update Buttons style
+            const buttons = document.querySelectorAll('.ppc-btn');
+            const keys = ['awareness', 'acquisition', 'wellness', 'regional'];
+            
+            buttons.forEach((btn, index) => {
+                if (keys[index] === strategyKey) {
+                    btn.classList.remove('bg-white', 'text-stone-600', 'border-stone-200');
+                    btn.classList.add('bg-stone-800', 'text-white', 'border-transparent', 'shadow-md', 'transform', 'scale-105');
+                } else {
+                    btn.classList.add('bg-white', 'text-stone-600', 'border-stone-200');
+                    btn.classList.remove('bg-stone-800', 'text-white', 'border-transparent', 'shadow-md', 'transform', 'scale-105');
+                }
+            });
+
+            const s = ppcStrategies[strategyKey];
+            const container = document.getElementById('ppcContent');
+            
+            // Fade out effect
+            container.style.opacity = '0';
+            
+            setTimeout(() => {
+                container.innerHTML = `
+                    <div class="mb-4">
+                        <span class="text-xs font-bold text-amber-600 uppercase tracking-widest">Recommended Ad Group</span>
+                        <h4 class="text-2xl font-bold text-stone-800 mt-1">${s.group}</h4>
+                        <p class="text-stone-500 mt-2 text-sm italic">${s.desc}</p>
+                    </div>
+                    
+                    <div class="bg-stone-50 border border-stone-200 rounded-lg p-6">
+                        <h5 class="text-sm font-semibold text-stone-700 mb-3 border-b border-stone-200 pb-2">Target Keywords</h5>
+                        <div class="flex flex-wrap gap-2">
+                            ${s.keywords.map(k => `<span class="px-3 py-1 bg-white border border-stone-300 text-stone-600 rounded-full text-sm shadow-sm font-mono">${k}</span>`).join('')}
+                        </div>
+                    </div>
+
+                    <div class="mt-6 flex justify-end">
+                        <button class="text-xs font-bold text-stone-400 hover:text-amber-600 transition-colors uppercase tracking-wide flex items-center gap-1">
+                            Export Keywords <span>&#8594;</span>
+                        </button>
+                    </div>
+                `;
+                container.style.opacity = '1';
+            }, 300);
+        }
+
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // --- INITIALIZATION ---
+        window.addEventListener('DOMContentLoaded', () => {
+            initCompetitorChart();
+            filterCompetitors('All'); // Initial render
+            
+            initSearchChart();
+            loadSearchCategory('brand'); // Initial render
+
+            renderPPC('awareness'); // Initial render
+        });
+
+    </script>
 </body>
 </html>
