@@ -83,15 +83,15 @@
          3. Search Intent Explorer: Tabbed interface separating search terms by intent category.
             - Goal: Analyze user mindset (Brand vs Commercial vs Location).
             - Visual: Bar chart showing 'Strategic Priority' score of terms.
-         4. PPC Strategy Builder: Functional section to view ad groups based on campaign goals.
-            - Goal: Translate data into action.
+         4. PPC Strategy Builder: Functional section to view ad groups based on campaign goals, enhanced with Gemini LLM integration to generate dynamic ad copy.
+            - Goal: Translate data into action and creative execution.
          5. Strategic Summary: Key takeaways and SEO insights.
     -->
 
     <!-- Visualization & Content Choices:
          1. Competitor Distribution: Donut Chart. Shows the balance of National vs Regional players. Interaction: Filtering the list below.
          2. Search Term Priority: Bar Chart. Visualizes the relative importance/intent strength of keywords within a category.
-         3. PPC Cards: Dynamic HTML generation. Shows structured data (Campaign -> Ad Group -> Keywords) clearly without clutter.
+         3. PPC Cards: Dynamic HTML generation. Shows structured data (Campaign -> Ad Group -> Keywords) clearly. Interaction: Gemini API call to generate ad copy based on the selected group's context.
          - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
     -->
 </head>
@@ -225,10 +225,10 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <!-- Sidebar Controls -->
                 <div class="md:col-span-1 space-y-3">
-                    <button onclick="renderPPC('awareness')" class="ppc-btn w-full text-left px-4 py-3 rounded-lg text-sm font-medium bg-stone-800 text-white shadow-md transition-all-300 transform hover:scale-105">Brand Awareness</button>
-                    <button onclick="renderPPC('acquisition')" class="ppc-btn w-full text-left px-4 py-3 rounded-lg text-sm font-medium bg-white text-stone-600 border border-stone-200 hover:bg-stone-50 transition-all-300">Service Acquisition</button>
-                    <button onclick="renderPPC('wellness')" class="ppc-btn w-full text-left px-4 py-3 rounded-lg text-sm font-medium bg-white text-stone-600 border border-stone-200 hover:bg-stone-50 transition-all-300">Healthy & Wellness</button>
-                    <button onclick="renderPPC('regional')" class="ppc-btn w-full text-left px-4 py-3 rounded-lg text-sm font-medium bg-white text-stone-600 border border-stone-200 hover:bg-stone-50 transition-all-300">Location Targeting</button>
+                    <button onclick="renderPPC('awareness')" class="ppc-btn w-full text-left px-4 py-3 rounded-lg text-sm font-medium bg-stone-800 text-white shadow-md transition-all-300 transform hover:scale-105" data-key="awareness">Brand Awareness</button>
+                    <button onclick="renderPPC('acquisition')" class="ppc-btn w-full text-left px-4 py-3 rounded-lg text-sm font-medium bg-white text-stone-600 border border-stone-200 hover:bg-stone-50 transition-all-300" data-key="acquisition">Service Acquisition</button>
+                    <button onclick="renderPPC('wellness')" class="ppc-btn w-full text-left px-4 py-3 rounded-lg text-sm font-medium bg-white text-stone-600 border border-stone-200 hover:bg-stone-50 transition-all-300" data-key="wellness">Healthy & Wellness</button>
+                    <button onclick="renderPPC('regional')" class="ppc-btn w-full text-left px-4 py-3 rounded-lg text-sm font-medium bg-white text-stone-600 border border-stone-200 hover:bg-stone-50 transition-all-300" data-key="regional">Location Targeting</button>
                 </div>
 
                 <!-- Dynamic Content Area -->
@@ -284,7 +284,11 @@
 
     <!-- LOGIC SCRIPT -->
     <script>
-        // --- DATA STORAGE ---
+        // --- DATA STORAGE & CONFIGURATION ---
+
+        const apiKey = ""; 
+        const modelName = "gemini-2.5-flash-preview-09-2025";
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
         const competitorData = [
             { name: "Canteen Canada", type: "National Operator", strength: "Full-service, Tech-enabled, National", notes: "Market Leader Baseline" },
@@ -389,11 +393,112 @@
             }
         };
 
-        // --- GLOBAL CHART VARIABLES ---
+        // --- GLOBAL CHART VARIABLES & STATE ---
         let compChartInstance = null;
         let searchChartInstance = null;
+        let currentPPCStrategy = 'awareness'; 
 
-        // --- FUNCTIONS ---
+        // --- HELPER FUNCTIONS ---
+
+        function showLoading(elementId) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = `
+                <div class="flex flex-col items-center justify-center p-8 text-stone-500">
+                    <svg class="animate-spin h-6 w-6 text-amber-600 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p class="text-sm">Generating ad copy with Gemini...</p>
+                </div>
+            `;
+        }
+
+        async function fetchWithExponentialBackoff(fetcher, maxRetries = 5) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    return await fetcher();
+                } catch (error) {
+                    if (i === maxRetries - 1) throw error;
+                    const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+        }
+        
+        // --- GEMINI INTEGRATION FUNCTIONS ---
+
+        async function generateAdCopy() {
+            const strategyKey = currentPPCStrategy;
+            const strategy = ppcStrategies[strategyKey];
+            const adCopyContainer = document.getElementById('adCopyResult');
+
+            showLoading('adCopyResult');
+
+            const systemPrompt = "You are an expert digital marketing copywriter specializing in B2B vending and micro-market services. Your tone is professional, results-oriented, and focused on Canteen Canada's nationwide capabilities. You MUST format your response with a clear 'Headline 1:' and 'Description 1:' label on separate lines.";
+            const userQuery = `Generate a compelling Google Ads copy suggestion for the strategy goal: "${strategy.desc}" The primary ad group keywords are: ${strategy.keywords.join(', ')}. Provide one Headline (max 30 characters) and one Description (max 90 characters).`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+            };
+
+            try {
+                const response = await fetchWithExponentialBackoff(() => fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                }));
+                
+                const result = await response.json();
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text || "Error: Could not generate content.";
+                
+                displayAdCopy(text);
+
+            } catch (error) {
+                console.error("Gemini API call failed:", error);
+                adCopyContainer.innerHTML = `
+                    <div class="text-red-600 text-sm p-4 bg-red-50 rounded-lg">
+                        Error generating ad copy: API call failed or response was invalid.
+                    </div>
+                `;
+            }
+        }
+
+        function displayAdCopy(text) {
+            const adCopyContainer = document.getElementById('adCopyResult');
+            // Simple parsing assuming the model followed instructions:
+            const lines = text.split('\n').filter(line => line.trim() !== '');
+            
+            let headline = "N/A";
+            let description = "N/A";
+
+            lines.forEach(line => {
+                if (line.startsWith('Headline 1:')) {
+                    headline = line.substring('Headline 1:'.length).trim();
+                } else if (line.startsWith('Description 1:')) {
+                    description = line.substring('Description 1:'.length).trim();
+                }
+            });
+
+            adCopyContainer.innerHTML = `
+                <div class="space-y-4">
+                    <h5 class="text-sm font-semibold text-stone-700 mb-1 border-b border-stone-200 pb-2">Generated Ad Copy:</h5>
+                    
+                    <!-- Ad Preview Card -->
+                    <div class="p-4 rounded-lg border-2 border-amber-600/50 bg-amber-50 shadow-inner">
+                        <p class="text-sm font-bold text-blue-700 mb-1 leading-tight">${headline}</p>
+                        <p class="text-xs text-stone-700 leading-snug">${description}</p>
+                        <p class="text-xs text-green-700 mt-2 font-mono">canteen.ca/vending-solutions</p>
+                    </div>
+
+                    <div class="text-xs text-stone-500 italic mt-4">
+                        Note: Copy is generated based on strategy. Always verify character limits (Headline: 30, Description: 90) before deployment.
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- CORE FUNCTIONS ---
 
         function initCompetitorChart() {
             const ctx = document.getElementById('competitorChart').getContext('2d');
@@ -401,11 +506,7 @@
             // Aggregating Data
             const typeCounts = {};
             competitorData.forEach(c => {
-                // Group Niche into Regional/Specialty for chart clarity or keep separate?
-                // Let's simplify types for the donut chart
                 let type = c.type;
-                if(type === 'Niche/Healthy') type = 'Regional'; // Grouping Niche with Regional visually or keep distinct
-                // Actually, let's keep distinct keys
                 typeCounts[type] = (typeCounts[type] || 0) + 1;
             });
 
@@ -574,12 +675,12 @@
         }
 
         function renderPPC(strategyKey) {
+            currentPPCStrategy = strategyKey; // Update state tracking
             // Update Buttons style
             const buttons = document.querySelectorAll('.ppc-btn');
-            const keys = ['awareness', 'acquisition', 'wellness', 'regional'];
             
-            buttons.forEach((btn, index) => {
-                if (keys[index] === strategyKey) {
+            buttons.forEach(btn => {
+                if (btn.dataset.key === strategyKey) {
                     btn.classList.remove('bg-white', 'text-stone-600', 'border-stone-200');
                     btn.classList.add('bg-stone-800', 'text-white', 'border-transparent', 'shadow-md', 'transform', 'scale-105');
                 } else {
@@ -604,16 +705,24 @@
                     
                     <div class="bg-stone-50 border border-stone-200 rounded-lg p-6">
                         <h5 class="text-sm font-semibold text-stone-700 mb-3 border-b border-stone-200 pb-2">Target Keywords</h5>
-                        <div class="flex flex-wrap gap-2">
+                        <div class="flex flex-wrap gap-2 mb-4">
                             ${s.keywords.map(k => `<span class="px-3 py-1 bg-white border border-stone-300 text-stone-600 rounded-full text-sm shadow-sm font-mono">${k}</span>`).join('')}
                         </div>
+                        
+                        <!-- GEMINI FEATURE BUTTON -->
+                        <div class="text-center mt-6">
+                            <button onclick="generateAdCopy()" class="px-5 py-2 bg-amber-600 text-white font-semibold rounded-full shadow-lg hover:bg-amber-700 transition-colors flex items-center justify-center mx-auto">
+                                Generate Ad Copy ✨
+                            </button>
+                        </div>
+
+                    </div>
+                    
+                    <!-- Ad Copy Generation Result Area -->
+                    <div id="adCopyResult" class="mt-6 p-4 border border-stone-200 rounded-lg min-h-[120px] flex items-center justify-center">
+                        <p class="text-sm text-stone-400">Click 'Generate Ad Copy ✨' to create suggested ad text.</p>
                     </div>
 
-                    <div class="mt-6 flex justify-end">
-                        <button class="text-xs font-bold text-stone-400 hover:text-amber-600 transition-colors uppercase tracking-wide flex items-center gap-1">
-                            Export Keywords <span>&#8594;</span>
-                        </button>
-                    </div>
                 `;
                 container.style.opacity = '1';
             }, 300);
@@ -626,12 +735,12 @@
         // --- INITIALIZATION ---
         window.addEventListener('DOMContentLoaded', () => {
             initCompetitorChart();
-            filterCompetitors('All'); // Initial render
+            filterCompetitors('All'); 
             
             initSearchChart();
-            loadSearchCategory('brand'); // Initial render
+            loadSearchCategory('brand'); 
 
-            renderPPC('awareness'); // Initial render
+            renderPPC('awareness'); 
         });
 
     </script>
