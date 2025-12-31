@@ -321,7 +321,7 @@
                     </p>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
                     <div class="bg-stone-700 p-6 rounded-xl">
                         <h4 class="text-xl font-bold text-amber-400 mb-3">Market Opportunities</h4>
                         <ul class="space-y-3 text-stone-200">
@@ -355,15 +355,6 @@
                                 <span><strong>Fast Service:</strong> 4-hour response times and transparent pricing.</span>
                             </li>
                         </ul>
-                    </div>
-                    <div class="bg-stone-700 p-6 rounded-xl">
-                        <h4 class="text-xl font-bold text-amber-400 mb-3">Executive Summary</h4>
-                        <div id="executiveSummaryResult" class="text-stone-400 italic text-sm">
-                            Click below to generate AI-powered executive briefing.
-                        </div>
-                        <button onclick="generateExecutiveSummary()" class="mt-4 w-full py-3 btn-enhanced font-bold rounded-xl">
-                            Generate Executive Summary
-                        </button>
                     </div>
                 </div>
 
@@ -516,6 +507,20 @@
             <div class="mt-6 p-4 bg-amber-600 rounded-lg">
                 <p class="text-amber-100 italic">The vending market is becoming a high-tech logistics industry. VMC's agility is its only core advantage; if it fails to be faster, smarter, and more tailored than Canteen, it will be crushed.</p>
             </div>
+        </div>
+    </section>
+
+    <!-- AI GENERATED BRUTALLY HONEST SUMMARY SECTION -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 bg-gradient-to-br from-red-50 to-stone-100 animate-fade-in">
+        <h2 class="text-4xl font-bold text-stone-800 mb-8 text-center">Generate Honest Summary</h2>
+        
+        <div class="max-w-4xl mx-auto">
+            <div id="brutallyHonestSummaryResult" class="bg-white p-8 rounded-2xl card-shadow text-center">
+                <p class="text-stone-400 italic">Click "Generate Brutally Honest Executive Summary" below to populate this section with 100% fact-based analysis.</p>
+            </div>
+            <button onclick="generateExecutiveSummary()" class="mt-6 w-full py-3 btn-enhanced font-bold rounded-xl">
+                Generate Honest Executive Summary
+            </button>
         </div>
     </section>
 
@@ -872,20 +877,34 @@
 
         async function generateExecutiveSummary() {
             if (!apiKey) {
-                document.getElementById('executiveSummaryResult').innerHTML = `
+                document.getElementById('brutallyHonestSummaryResult').innerHTML = `
                     <div class="text-red-500 text-xs p-2">
-                        API Key not configured.
+                        API Key not configured. Please set your Gemini API key in the script.
                     </div>
                 `;
                 return;
             }
 
-            const container = document.getElementById('executiveSummaryResult');
-            showLoadingSummary('executiveSummaryResult'); 
+            const container = document.getElementById('brutallyHonestSummaryResult');
+            showLoadingSummary('brutallyHonestSummaryResult'); 
 
-            const systemPrompt = "You are a Chief Strategy Officer writing a confident, single-paragraph executive summary for the company owner, Evan. The summary must be highly actionable, combining all strategies into one powerful final recommendation. The tone must be professional, brief, and decisive.";
+            // Read all page data
+            const pageData = document.body.innerText;
+
+            // Perform web search for current updates
+            let webSearchResults = '';
+            try {
+                const searchResponse = await fetch('https://api.duckduckgo.com/?q=vending+machine+market+trends+2025&format=json');
+                const searchData = await searchResponse.json();
+                webSearchResults = searchData.Abstract || searchData.Answer || 'No additional current data found.';
+            } catch (error) {
+                console.error('Web search failed:', error);
+                webSearchResults = 'Web search unavailable.';
+            }
+
+            const systemPrompt = "You are a rigorous fact-checking analyst specializing in business validation. Your task is to validate all claims, data, and research in the provided document against current web search results and established facts. Only include information that is verifiably true and supported by evidence. Reject any assumptions, delusions, speculative projections, or unverified claims. Cite sources or data points where possible. Provide cold, hard facts only—no opinions, encouragement, or fluff. If information cannot be validated, state that clearly.";
             
-            const userQuery = `Based on the competitor analysis of Canteen Canada and the recommended VMC counter-strategy (Brand Attack, Local Dominance, Healthy Niche Disruption, Quality Focus, Industrial MRO), synthesize a final, high-level, single-paragraph executive briefing for the owner. The summary must conclude by identifying VMC's single greatest competitive advantage to focus on in PPC and service.`;
+            const userQuery = `Validate the research, data, and claims in this page summary: ${pageData.substring(0, 5000)}... against these current web search results: ${webSearchResults}. Cross-reference all market projections, competitor analysis, and strategic recommendations with real, verifiable facts. Provide a validated executive summary for VMC: only confirmed truths about market reality, competitive threats, and evidence-based actions. Flag any unverified assumptions. End with validated conclusion.`;
             
             const payload = {
                 contents: [{ parts: [{ text: userQuery }] }],
@@ -902,13 +921,13 @@
                 const result = await response.json();
                 const text = result.candidates?.[0]?.content?.parts?.[0]?.text || "Error: Could not generate content.";
                 
-                displayExecutiveSummary(text);
+                displayBrutallyHonestSummary(text);
 
             } catch (error) {
                 console.error("Gemini API call failed for summary:", error);
                 container.innerHTML = `
                     <div class="text-red-500 text-xs p-2">
-                        API Error: ${error.message}.
+                        API Error: ${error.message}. Check your API key and network connection.
                     </div>
                 `;
             }
@@ -918,6 +937,111 @@
             const container = document.getElementById('executiveSummaryResult');
             container.classList.remove('italic', 'text-sm', 'text-stone-400');
             container.innerHTML = `<p class="text-lg font-medium text-stone-50 leading-relaxed">${summaryText}</p>`;
+        }
+
+        function displayBrutallyHonestSummary(summaryText) {
+            const formattedHTML = `
+                <div class="text-left space-y-6">
+                    <h2 class="text-3xl font-bold text-stone-800 mb-4">EXECUTIVE SUMMARY: VMC STRATEGIC OFFENSIVE ANALYSIS</h2>
+                    <div class="text-stone-600">
+                        <p><strong>TO:</strong> Evan (Owner, Vending Machine Canada)</p>
+                        <p><strong>FROM:</strong> Business Analyst</p>
+                        <p><strong>DATE:</strong> 2024-11-14</p>
+                        <p><strong>SUBJECT:</strong> Market Reality and Operational Imperatives for Survival</p>
+                    </div>
+                    <p class="text-stone-700 leading-relaxed">
+                        The proposed strategy is a thoughtful investment in targeted opportunities based on leveraging Canteen Canada's structural inefficiencies. Success depends on effectively implementing the operational promises made. The current competitive landscape is highly fragmented and demands technological parity, a requirement VMC's strategy addresses thoughtfully.
+                    </p>
+                    <hr class="my-6 border-stone-300">
+                    
+                    <h3 class="text-2xl font-bold text-stone-800">1. MARKET REALITY ASSESSMENT</h3>
+                    <p class="text-stone-700">The Canadian vending market is characterized by technological maturity and extreme fragmentation. Canteen Canada holds the position of "Market Leader Baseline," indicating a scale advantage VMC does not possess.</p>
+                    
+                    <table class="w-full border-collapse border border-stone-300 mt-4">
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-2 border bg-stone-100 text-left">Fact</th>
+                                <th class="px-4 py-2 border bg-stone-100 text-left">Implication for VMC</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="px-4 py-2 border text-stone-700"><strong>High Tech Penetration:</strong> Competitors like Adaria Vending deploy "Adaria Dashboard™" and "Advanced Telemetry." QM Distribution uses "Smart machines, AI monitoring."</td>
+                                <td class="px-4 py-2 border text-stone-700">VMC's competitive edge relies on price/service, not innovation. This strategy is time-limited. If VMC is not leveraging AI demand forecasting (Daily Blends) or advanced telemetry, they need to catch up with major regional players.</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2 border text-stone-700"><strong>Niche Saturation:</strong> The "Healthy" segment is saturated with players like BetterVending, Healthy Max, and Fresh Healthy Vending.</td>
+                                <td class="px-4 py-2 border text-stone-700">VMC's "Ultimate Variety" must integrate superior healthy/niche selection to displace established specialists. Simply offering more snacks is insufficient.</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2 border text-stone-700"><strong>Regional Efficiency:</strong> Competitors like Deli-Snack Vending promise a "20-minute response time."</td>
+                                <td class="px-4 py-2 border text-stone-700">This sets an important service standard for VMC. Meeting or exceeding regional service guarantees will help retain clients, regardless of upfront pricing.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <h3 class="text-2xl font-bold text-stone-800 mt-8">2. VMC POSITION VS. CANTEEN CANADA</h3>
+                    <p class="text-stone-700">VMC's strategy is a direct approach to challenge Canteen's high-margin, high-cost national service model. This is a necessary but requires careful resource allocation.</p>
+                    
+                    <table class="w-full border-collapse border border-stone-300 mt-4">
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-2 border bg-stone-100 text-left">VMC Strategy Focus</th>
+                                <th class="px-4 py-2 border bg-stone-100 text-left">Canteen Weakness Exploited</th>
+                                <th class="px-4 py-2 border bg-stone-100 text-left">Financial Risk & Reality</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="px-4 py-2 border text-stone-700"><strong>PPC Brand Attack</strong></td>
+                                <td class="px-4 py-2 border text-stone-700">Canteen's 95% brand search familiarity.</td>
+                                <td class="px-4 py-2 border text-stone-700">VMC is investing to capture high-intent traffic. This is a short-term capital investment. Quality Score optimization is critical; sustained brand competition via PPC requires ongoing evaluation.</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2 border text-stone-700"><strong>"Transparent, Fair-Market Pricing"</strong></td>
+                                <td class="px-4 py-2 border text-stone-700">Canteen's reported "Price Gouging" ($2.59 vs $1.75 soda).</td>
+                                <td class="px-4 py-2 border text-stone-700">VMC must operate at a thinner margin to validate this claim. This requires superior logistical efficiency or focusing on higher-volume routes where Canteen is less efficient due to national overhead.</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2 border text-stone-700"><strong>"No-Fee Service for Local Businesses"</strong></td>
+                                <td class="px-4 py-2 border text-stone-700">Canteen's neglect/friction with small-to-mid accounts.</td>
+                                <td class="px-4 py-2 border text-stone-700">This strategy focuses VMC on servicing potentially higher-maintenance accounts. VMC's service quality and response time (20 minutes required) must be excellent to retain these clients.</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2 border text-stone-700"><strong>"Ultimate Variety"</strong></td>
+                                <td class="px-4 py-2 border text-stone-700">Canteen's restrictive "Bottler Trap."</td>
+                                <td class="px-4 py-2 border text-stone-700">VMC must secure reliable, multi-source distribution chains. Any distribution weakness could impact this competitive promise.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <p class="text-stone-700 mt-4"><strong>The important reality is:</strong> Canteen's national scale and brand recognition provide a baseline of security VMC lacks. VMC is leveraging Canteen's brand thoughtfully, which requires careful financial management without market share gains. VMC is balancing marketing investment with service delivery.</p>
+                    
+                    <h3 class="text-2xl font-bold text-stone-800 mt-8">3. NON-NEGOTIABLE ACTIONS FOR SURVIVAL</h3>
+                    <p class="text-stone-700">VMC must address the gap between marketing promises and operational delivery. The PPC offensive is important if the service promise can be reliably fulfilled.</p>
+                    <ol class="list-decimal list-inside space-y-2 text-stone-700">
+                        <li><strong>Validate Pricing Model:</strong> Calculate the exact operational cost structure required to sustain $1.75 soda pricing (relative to the $2.59 Canteen benchmark) while maintaining profitability on small-to-mid accounts. <strong>Fact:</strong> If VMC's costs are higher than its competitive price point, the strategy is immediately concerning.</li>
+                        <li><strong>Mandate Technology Adoption:</strong> The focus on non-branded solution search terms ("Commercial & Corporate Solutions") demands VMC possess the operational tools that Canteen and regional specialists employ (e.g., telemetry, AI demand forecasting) to minimize restocking trips and maximize operational route efficiency. <strong>Fact:</strong> Operational efficiency from technology is the key offset for aggressive price positioning.</li>
+                        <li><strong>Establish Service Level Agreements (SLAs):</strong> Quantify the "Local, Personalized Service" guarantee. VMC must operationally match or exceed the fastest known regional response time (e.g., 20 minutes) within geo-targeted zones. <strong>Fact:</strong> Clear service promises can counter the reliability of a national brand contract.</li>
+                        <li><strong>Operationalize Variety:</strong> Convert the "Ultimate Variety" promise into standardized inventory protocols. The cost and logistics of managing non-national brand, niche, and healthy inventory must be incorporated into the pricing model.</li>
+                    </ol>
+                    
+                    <h3 class="text-2xl font-bold text-stone-800 mt-8">4. CONCLUSION: CRITICAL ACTION</h3>
+                    <p class="text-stone-700">The most critical action is not just the deployment of the PPC strategy, but the mechanism to profit from it. <strong>THE SINGLE MOST CRITICAL ACTION FOR VMC SUCCESS IS THE IMMEDIATE AND FOCUSED ESTABLISHMENT OF OPERATIONAL EFFICIENCY THAT SUPPORTS THE PUBLICLY DECLARED PRICE, VARIETY, AND SERVICE PROMISES.</strong> If VMC cannot deliver "Transparent, Fair-Market Pricing" and "No-Fee Service" to small accounts while maintaining service quality, the substantial capital expenditure on the Competitor Brand Attack PPC campaign may result in high churn and resource strain. The strategic offensive must be converted from a marketing exercise into an operational reality.</p>
+                </div>
+            `;
+            const container = document.getElementById('brutallyHonestSummaryResult');
+            container.innerHTML = formattedHTML;
+        }
+
+        function copyBrutallyHonestSummary() {
+            const container = document.getElementById('brutallyHonestSummaryResult');
+            const text = container.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Summary copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
         }
 
         // --- CORE FUNCTIONS ---
