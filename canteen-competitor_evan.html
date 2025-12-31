@@ -260,6 +260,25 @@
                         </p>
                     </div>
                 </div>
+
+                <!-- NEW GEMINI FEATURE: EXECUTIVE SUMMARY -->
+                <div class="mt-10 pt-6 border-t border-stone-600">
+                    <h3 class="text-2xl font-bold mb-4">6. Final Executive Briefing (LLM Generated)</h3>
+                    <p class="text-stone-300 mb-6">
+                        Generate a concise, high-impact one-paragraph briefing for Evan, synthesizing the competitive analysis and recommending the single most critical action VMC must take.
+                    </p>
+                    
+                    <div class="text-center mb-6">
+                        <button onclick="generateExecutiveSummary()" class="px-6 py-3 bg-white text-stone-800 font-bold rounded-full shadow-xl hover:bg-stone-200 transition-colors flex items-center justify-center mx-auto text-lg">
+                            Generate Evan's Executive Summary ✨
+                        </button>
+                    </div>
+
+                    <div id="executiveSummaryResult" class="min-h-[100px] flex items-center justify-center bg-stone-700/50 p-6 rounded-lg text-stone-200 italic text-sm">
+                        <p>Click the button above to synthesize the final recommendation.</p>
+                    </div>
+                </div>
+                
             </div>
         </section>
 
@@ -399,7 +418,21 @@
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <p class="text-sm">Generating competitive ad copy with Gemini...</p>
+                    <p class="text-sm text-stone-400">Generating competitive ad copy with Gemini...</p>
+                </div>
+            `;
+        }
+        
+        function showLoadingSummary(elementId) {
+            const container = document.getElementById(elementId);
+            container.classList.remove('text-stone-200', 'italic', 'text-sm'); // Remove default text styling
+             container.innerHTML = `
+                <div class="flex flex-col items-center justify-center p-4 text-stone-500">
+                    <svg class="animate-spin h-6 w-6 text-amber-500 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p class="text-sm text-stone-300">Synthesizing final executive briefing...</p>
                 </div>
             `;
         }
@@ -416,7 +449,7 @@
             }
         }
         
-        // --- GEMINI INTEGRATION FUNCTIONS (Updated for VMC competitive copy) ---
+        // --- GEMINI INTEGRATION 1: AD COPY GENERATOR ---
 
         async function generateAdCopy() {
             // Check for API key presence
@@ -508,6 +541,60 @@
             `;
         }
 
+        // --- GEMINI INTEGRATION 2: EXECUTIVE SUMMARY GENERATOR ---
+
+        async function generateExecutiveSummary() {
+            if (!apiKey) {
+                document.getElementById('executiveSummaryResult').innerHTML = `
+                    <div class="text-red-300 text-sm p-2 bg-red-800/50 rounded-lg">
+                        Error: API Key is missing.
+                    </div>
+                `;
+                return;
+            }
+
+            const container = document.getElementById('executiveSummaryResult');
+            showLoadingSummary('executiveSummaryResult'); 
+
+            // Comprehensive prompt for the CEO summary
+            const systemPrompt = "You are a Chief Strategy Officer writing a confident, single-paragraph executive summary for the company owner, Evan. The summary must be highly actionable, combining all three strategies (Brand Attack, Local Dominance, Healthy Niche Disruption) into one powerful final recommendation. The tone must be professional, brief, and decisive.";
+            
+            const userQuery = `Based on the competitor analysis of Canteen Canada and the recommended VMC counter-strategy (Brand Attack, Local Dominance, Healthy Niche Disruption), synthesize a final, high-level, single-paragraph executive briefing for the owner. The summary must conclude by identifying VMC's single greatest competitive advantage (Local Owner involvement, Freshness, or Fast Service) to focus on in PPC and service.`;
+            
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+            };
+
+            try {
+                const response = await fetchWithExponentialBackoff(() => fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                }));
+                
+                const result = await response.json();
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text || "Error: Could not generate content.";
+                
+                displayExecutiveSummary(text);
+
+            } catch (error) {
+                console.error("Gemini API call failed for summary:", error);
+                container.innerHTML = `
+                    <div class="text-red-300 text-sm p-2 bg-red-800/50 rounded-lg">
+                        Error generating summary: API call failed.
+                    </div>
+                `;
+            }
+        }
+
+        function displayExecutiveSummary(summaryText) {
+            const container = document.getElementById('executiveSummaryResult');
+            container.classList.remove('italic', 'text-sm', 'text-stone-400');
+            container.innerHTML = `<p class="text-lg font-medium text-stone-50 leading-relaxed">${summaryText}</p>`;
+        }
+
+
         // --- CORE FUNCTIONS (Unchanged from previous versions) ---
 
         function initCompetitorChart() {
@@ -557,6 +644,9 @@
                                     return ` ${context.label}: ${context.raw} Companies`;
                                 }
                             }
+                        },
+                         datalabels: { // Removed datalabels as it requires an external library and violates the single file mandate
+                            display: false
                         }
                     },
                     layout: {
