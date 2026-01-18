@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>716 Corporate Housing | Digital Strategy Command</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Chart Container Styling - Mandatory Compliance */
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 600px; /* Max width constraint */
+            height: 300px;    /* Base height */
+            max-height: 400px;
+            margin: 0 auto;   /* Horizontal centering */
+        }
+        
+        @media (min-width: 768px) {
+            .chart-wrapper {
+                height: 350px;
+            }
+        }
+
+        .nav-item.active {
+            background-color: #e2e8f0;
+            color: #1e3a8a;
+            border-right: 4px solid #1e3a8a;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        
+        .ad-preview-card {
+            font-family: Arial, sans-serif;
+            border: 1px solid #dfe1e5;
+            border-radius: 8px;
+            padding: 16px;
+            background: white;
+            box-shadow: 0 1px 6px rgba(32,33,36,.28);
+        }
+    </style>
+    <!-- Chosen Palette: Warm Professional - Stone (#f5f5f4), Slate (#1e293b), Corporate Blue (#1e3a8a), Alert Amber (#d97706) -->
+    <!-- Application Structure Plan: 
+         The app uses a 'Command Center' dashboard layout. A fixed sidebar (responsive) provides navigation to distinct strategic modules.
+         1. Strategy Overview: High-level KPIs and Mission Statement.
+         2. Market Intelligence: Visualizes market gaps and competitor weaknesses.
+         3. Target Profiles: Interactive cards detailing the "Who" (Nurses vs. Tourists).
+         4. Ad Campaign Engine: The core functional area. Interactive Google Ad previews, budget split visualization, and campaign structure details.
+         5. Keyword Tactical: A searchable/filterable data table for the "Green" (Target) and "Red" (Negative) keywords.
+         This structure moves from "Why" (Market) to "Who" (Audience) to "How" (Ads/Keywords).
+    -->
+    <!-- Visualization & Content Choices:
+         1. Market Segments (Bar Chart): Comparison of niche strength. Goal: Compare.
+         2. Budget Split (Doughnut Chart): Search vs PMax allocation. Goal: Inform.
+         3. Ad Previews (HTML/JS): Interactive simulation of search results. Goal: Inform/Engage.
+         4. Keyword Table (JS Grid): Searchable/Sortable list. Goal: Organize.
+         CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
+    -->
+</head>
+<body class="bg-stone-50 text-slate-800 h-screen flex overflow-hidden">
+
+    <!-- Mobile Header -->
+    <div class="md:hidden fixed w-full bg-white border-b border-stone-200 z-50 px-4 py-3 flex justify-between items-center">
+        <div class="font-bold text-lg text-blue-900">716 Strategy Hub</div>
+        <button id="mobileMenuBtn" class="text-slate-600 focus:outline-none text-2xl">☰</button>
+    </div>
+
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="bg-white w-64 border-r border-stone-200 flex-col fixed md:relative z-40 h-full hidden md:flex transform transition-transform duration-300">
+        <div class="p-6 border-b border-stone-100">
+            <h1 class="font-bold text-2xl text-blue-900 tracking-tight">716 Corp<br>Housing</h1>
+            <p class="text-xs text-stone-500 mt-2 font-medium">Digital Dominance Map</p>
+        </div>
+        
+        <nav class="flex-1 overflow-y-auto py-4 space-y-1">
+            <button onclick="navTo('overview')" class="nav-item w-full text-left px-6 py-3 text-sm font-medium text-slate-600 hover:bg-stone-50 transition-colors active" id="nav-overview">
+                📊 Strategy Overview
+            </button>
+            <button onclick="navTo('market')" class="nav-item w-full text-left px-6 py-3 text-sm font-medium text-slate-600 hover:bg-stone-50 transition-colors" id="nav-market">
+                🏙️ Market Intelligence
+            </button>
+            <button onclick="navTo('audience')" class="nav-item w-full text-left px-6 py-3 text-sm font-medium text-slate-600 hover:bg-stone-50 transition-colors" id="nav-audience">
+                👥 Target Profiles
+            </button>
+            <button onclick="navTo('ads')" class="nav-item w-full text-left px-6 py-3 text-sm font-medium text-slate-600 hover:bg-stone-50 transition-colors" id="nav-ads">
+                🎯 Ad Campaign Engine
+            </button>
+            <button onclick="navTo('keywords')" class="nav-item w-full text-left px-6 py-3 text-sm font-medium text-slate-600 hover:bg-stone-50 transition-colors" id="nav-keywords">
+                🔑 Keyword Tactical
+            </button>
+        </nav>
+
+        <div class="p-4 bg-stone-100 border-t border-stone-200">
+            <div class="text-xs font-semibold text-stone-500 uppercase">Monthly Budget</div>
+            <div class="text-xl font-bold text-green-700">$800.00</div>
+            <div class="text-xs text-stone-400 mt-1">Daily Cap: ~$26.30</div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 h-full overflow-y-auto pt-16 md:pt-0 bg-stone-50 relative scroll-smooth">
+        
+        <!-- SECTION: OVERVIEW -->
+        <section id="overview" class="p-6 md:p-10 max-w-6xl mx-auto animate-fade-in">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900">Strategic Overview</h2>
+                <p class="text-slate-500 mt-2 max-w-2xl">
+                    Executive summary of the digital marketing roadmap designed to dominate the "Mid-Term" rental market in Buffalo, NY.
+                </p>
+            </div>
+
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-blue-600">
+                    <div class="text-xs text-stone-400 uppercase font-bold tracking-wide">Target leads</div>
+                    <div class="text-3xl font-bold text-slate-800 mt-1">20+</div>
+                    <div class="text-xs text-green-600 mt-1 font-medium">Per Month</div>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-amber-500">
+                    <div class="text-xs text-stone-400 uppercase font-bold tracking-wide">Target CPA</div>
+                    <div class="text-3xl font-bold text-slate-800 mt-1">&lt;$45</div>
+                    <div class="text-xs text-stone-500 mt-1 font-medium">Cost Per Acquisition</div>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-green-600">
+                    <div class="text-xs text-stone-400 uppercase font-bold tracking-wide">Focus Geo</div>
+                    <div class="text-2xl font-bold text-slate-800 mt-1 truncate">Buffalo Metro</div>
+                    <div class="text-xs text-stone-500 mt-1 font-medium">Cheektowaga, Williamsville</div>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-indigo-600">
+                    <div class="text-xs text-stone-400 uppercase font-bold tracking-wide">USP</div>
+                    <div class="text-xl font-bold text-slate-800 mt-2">30+ Day Stays</div>
+                    <div class="text-xs text-stone-500 mt-1 font-medium">Mid-Term Specialist</div>
+                </div>
+            </div>
+
+            <!-- Intro Text -->
+            <div class="bg-white rounded-xl shadow-sm p-8">
+                <h3 class="text-xl font-bold text-slate-800 mb-4">The "Blue Ocean" Strategy</h3>
+                <p class="text-slate-600 leading-relaxed mb-4">
+                    The competitive analysis reveals a saturated market for short-term "vacation" rentals (Airbnb/VRBO) and unfurnished long-term leases. However, there is a significant gap in the <strong>Mid-Term (30-180 days)</strong> market.
+                </p>
+                <p class="text-slate-600 leading-relaxed">
+                    <strong>716 Corporate Housing</strong> is positioned to win by targeting High-LTV (Lifetime Value) tenants like <strong>Traveling Nurses</strong> and <strong>Insurance Displacements</strong>. These groups require furnished homes but despise the hotel experience and high fees of Airbnb. Our Google Ads strategy will ignore "vacation" intent to focus strictly on professional displacement needs.
+                </p>
+            </div>
+        </section>
+
+        <!-- SECTION: MARKET INTELLIGENCE -->
+        <section id="market" class="p-6 md:p-10 max-w-6xl mx-auto hidden animate-fade-in">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900">Market Intelligence</h2>
+                <p class="text-slate-500 mt-2">
+                    Visualizing the competitive landscape to identify where 716 Corporate Housing can win.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <!-- Market Chart -->
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <h3 class="font-bold text-slate-800 mb-4">Market Segment Dominance</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="marketChart"></canvas>
+                    </div>
+                    <p class="text-xs text-center text-slate-400 mt-4">716 excels in "Mid-Term" while competitors fight for "Short-Term".</p>
+                </div>
+
+                <!-- Competitor Analysis -->
+                <div class="bg-white p-6 rounded-xl shadow-sm flex flex-col">
+                    <h3 class="font-bold text-slate-800 mb-4">Competitor Weakness Matrix</h3>
+                    <div class="space-y-4 flex-1 overflow-y-auto">
+                        <!-- Competitor 1 -->
+                        <div class="p-4 border border-stone-200 rounded-lg bg-stone-50">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-bold text-red-600">Airbnb / VRBO</span>
+                                <span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">Direct Competitor</span>
+                            </div>
+                            <ul class="text-sm text-slate-600 list-disc pl-4 space-y-1">
+                                <li>High service fees (14%+) for guest.</li>
+                                <li>Inconsistent quality standards.</li>
+                                <li><strong>Our Advantage:</strong> Professional management, no hidden fees.</li>
+                            </ul>
+                        </div>
+                        <!-- Competitor 2 -->
+                        <div class="p-4 border border-stone-200 rounded-lg bg-stone-50">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-bold text-orange-600">Extended Stay Hotels</span>
+                                <span class="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded">Alternative</span>
+                            </div>
+                            <ul class="text-sm text-slate-600 list-disc pl-4 space-y-1">
+                                <li>Small square footage ("Living in a box").</li>
+                                <li>Lack of full kitchens/laundry.</li>
+                                <li><strong>Our Advantage:</strong> Full home experience, privacy.</li>
+                            </ul>
+                        </div>
+                        <!-- Competitor 3 -->
+                        <div class="p-4 border border-stone-200 rounded-lg bg-stone-50">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-bold text-slate-600">Unfurnished Rentals</span>
+                                <span class="text-xs bg-slate-200 text-slate-700 px-2 py-1 rounded">Indirect</span>
+                            </div>
+                            <ul class="text-sm text-slate-600 list-disc pl-4 space-y-1">
+                                <li>Requires 12-month commitment.</li>
+                                <li>Tenant must buy furniture/utilities.</li>
+                                <li><strong>Our Advantage:</strong> Turnkey solution, flexible terms.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: TARGET PROFILES -->
+        <section id="audience" class="p-6 md:p-10 max-w-6xl mx-auto hidden animate-fade-in">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900">Target Audience Profiles</h2>
+                <p class="text-slate-500 mt-2">
+                    Prioritizing high-margin, low-maintenance tenants over high-turnover tourists.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Profile 1 -->
+                <div class="bg-white rounded-xl shadow-sm border-t-4 border-blue-600 p-6 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="text-4xl">🩺</div>
+                        <div class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">PRIORITY #1</div>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800">Traveling Professionals</h3>
+                    <p class="text-sm text-slate-500 font-medium mb-4">Nurses, Consultants, Engineers</p>
+                    <div class="space-y-2 text-sm text-slate-600">
+                        <div class="flex justify-between"><span class="text-stone-400">Volume:</span> <span class="font-semibold">High</span></div>
+                        <div class="flex justify-between"><span class="text-stone-400">Stay:</span> <span class="font-semibold">3-6 Months</span></div>
+                        <div class="flex justify-between"><span class="text-stone-400">Pain Point:</span> <span class="font-semibold">Hate hotels</span></div>
+                    </div>
+                </div>
+
+                <!-- Profile 2 -->
+                <div class="bg-white rounded-xl shadow-sm border-t-4 border-amber-500 p-6 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="text-4xl">🔥</div>
+                        <div class="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded">HIGHEST MARGIN</div>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800">Insurance Displacements</h3>
+                    <p class="text-sm text-slate-500 font-medium mb-4">Fire/Flood Victims (ALE)</p>
+                    <div class="space-y-2 text-sm text-slate-600">
+                        <div class="flex justify-between"><span class="text-stone-400">Volume:</span> <span class="font-semibold">Low-Med</span></div>
+                        <div class="flex justify-between"><span class="text-stone-400">Stay:</span> <span class="font-semibold">6+ Months</span></div>
+                        <div class="flex justify-between"><span class="text-stone-400">Payer:</span> <span class="font-semibold">Insurance Co.</span></div>
+                    </div>
+                </div>
+
+                <!-- Profile 3 (Negative) -->
+                <div class="bg-stone-100 rounded-xl border border-stone-200 p-6 opacity-75">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="text-4xl">📸</div>
+                        <div class="text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded">AVOID</div>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-600">Tourists / Weekenders</h3>
+                    <p class="text-sm text-slate-500 font-medium mb-4">Concert goers, Bills fans</p>
+                    <div class="space-y-2 text-sm text-slate-600">
+                        <div class="flex justify-between"><span class="text-stone-400">Volume:</span> <span class="font-semibold">High</span></div>
+                        <div class="flex justify-between"><span class="text-stone-400">Stay:</span> <span class="font-semibold">2-3 Days</span></div>
+                        <div class="flex justify-between"><span class="text-stone-400">Risk:</span> <span class="font-semibold">Parties/Damage</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: ADS STRATEGY -->
+        <section id="ads" class="p-6 md:p-10 max-w-6xl mx-auto hidden animate-fade-in">
+            <div class="mb-8 flex flex-col md:flex-row justify-between items-end">
+                <div>
+                    <h2 class="text-3xl font-bold text-slate-900">Google Ads Blueprint</h2>
+                    <p class="text-slate-500 mt-2">
+                        Maximizing the $800 budget with a Search + PMax split structure.
+                    </p>
+                </div>
+                <div class="mt-4 md:mt-0">
+                    <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-bold">Budget: $26.30 / Day</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                <!-- Budget Chart -->
+                <div class="bg-white p-6 rounded-xl shadow-sm lg:col-span-1">
+                    <h3 class="font-bold text-slate-800 mb-4 text-center">Budget Allocation</h3>
+                    <div class="chart-wrapper" style="height: 250px;">
+                        <canvas id="budgetChart"></canvas>
+                    </div>
+                    <div class="mt-4 text-sm text-slate-600 space-y-2">
+                        <div class="flex justify-between border-b border-stone-100 pb-1">
+                            <span>🔵 Search (High Intent)</span>
+                            <span class="font-bold">$20.00/day</span>
+                        </div>
+                        <div class="flex justify-between border-b border-stone-100 pb-1">
+                            <span>🟠 PMax (Retargeting)</span>
+                            <span class="font-bold">$6.30/day</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ad Preview Tool -->
+                <div class="bg-white p-6 rounded-xl shadow-sm lg:col-span-2">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-bold text-slate-800">Ad Preview Simulator</h3>
+                        <select id="adSelector" class="bg-stone-50 border border-stone-300 text-slate-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2">
+                            <option value="medical">Target: Medical/Corp</option>
+                            <option value="insurance">Target: Insurance/Fire</option>
+                        </select>
+                    </div>
+
+                    <!-- Google Search Preview -->
+                    <div class="ad-preview-card" id="searchAdPreview">
+                        <div class="text-sm mb-1 text-slate-800 font-bold">Ad <span class="font-normal text-green-700">· www.716corporatehousing.com/buffalo</span></div>
+                        <div class="text-xl text-blue-800 hover:underline cursor-pointer font-medium mb-1" id="adHeadline">
+                            Furnished 30+ Day Housing | #1 Buffalo Corporate Rentals
+                        </div>
+                        <div class="text-sm text-stone-600 leading-snug" id="adDescription">
+                            Fully furnished, high-end homes in Buffalo's best neighborhoods. Perfect for medical & corporate pros. All utilities included. Book your 30+ day stay today.
+                        </div>
+                        <!-- Extensions -->
+                        <div class="mt-3 flex gap-2 text-xs text-blue-800">
+                            <span class="hover:underline cursor-pointer">View Properties</span> · 
+                            <span class="hover:underline cursor-pointer">Travel Nurse Specials</span> · 
+                            <span class="hover:underline cursor-pointer">Corporate Accounts</span>
+                        </div>
+                        <div class="mt-2 flex gap-2 text-xs text-stone-500">
+                            <span>✓ Full Kitchens</span>
+                            <span>✓ Fast WiFi</span>
+                            <span>✓ In-Unit Laundry</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Campaign Requirements -->
+            <div class="bg-white p-6 rounded-xl shadow-sm">
+                <h3 class="font-bold text-slate-800 mb-4">Operational Requirements</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="text-sm font-bold text-blue-700 uppercase mb-2">Technical Setup</h4>
+                        <ul class="text-sm text-slate-600 space-y-2">
+                            <li>✅ <strong>Conversion Tracking:</strong> GTM must track form fills & phone clicks.</li>
+                            <li>✅ <strong>Location Radius:</strong> Buffalo + 15 miles. "Presence" OR "Interest".</li>
+                            <li>✅ <strong>Negatives:</strong> Apply negative list BEFORE launch to save budget.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-bold text-blue-700 uppercase mb-2">Ad Extensions</h4>
+                        <ul class="text-sm text-slate-600 space-y-2">
+                            <li>✅ <strong>Sitelinks:</strong> Deep link to "Properties" and "About Us".</li>
+                            <li>✅ <strong>Callout:</strong> "Move-In Ready", "All Bills Paid".</li>
+                            <li>✅ <strong>Call Extension:</strong> Critical for mobile users (>60s calls).</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: KEYWORD TACTICAL -->
+        <section id="keywords" class="p-6 md:p-10 max-w-6xl mx-auto hidden animate-fade-in">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900">Keyword Armory</h2>
+                <p class="text-slate-500 mt-2">
+                    The specific terms to bid on (Green) and the terms to block (Red).
+                </p>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div class="p-4 bg-stone-50 border-b border-stone-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div class="flex gap-2">
+                        <button onclick="filterKeywords('all')" class="px-4 py-2 text-sm rounded-lg bg-white border border-stone-200 text-slate-600 hover:bg-stone-100 font-medium transition-colors ring-2 ring-transparent focus:ring-blue-500 filter-btn active-filter" id="filter-all">All</button>
+                        <button onclick="filterKeywords('target')" class="px-4 py-2 text-sm rounded-lg bg-green-50 border border-green-200 text-green-700 hover:bg-green-100 font-medium transition-colors filter-btn" id="filter-target">Target ✅</button>
+                        <button onclick="filterKeywords('negative')" class="px-4 py-2 text-sm rounded-lg bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 font-medium transition-colors filter-btn" id="filter-negative">Negative ⛔</button>
+                    </div>
+                    <input type="text" id="keywordSearch" placeholder="Search terms..." class="w-full sm:w-64 px-4 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-stone-100 text-stone-500 font-bold border-b border-stone-200">
+                            <tr>
+                                <th class="px-6 py-4">Keyword</th>
+                                <th class="px-6 py-4">Match Type</th>
+                                <th class="px-6 py-4">Intent/Reason</th>
+                                <th class="px-6 py-4">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="keywordTableBody" class="divide-y divide-stone-100">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // --- DATA STORE ---
+        
+        // Audience Data for Visualization
+        const marketData = {
+            labels: ['Mid-Term (30+)', 'Corp Housing', 'Luxury Rentals', 'Short-Term (Vacation)', 'Unfurnished (Long)'],
+            datasets: [{
+                label: '716 Competitive Strength',
+                data: [5, 4, 3, 1, 0], // 0-5 Scale
+                backgroundColor: [
+                    '#1e3a8a', // Blue 900 (Dominant)
+                    '#2563eb', // Blue 600
+                    '#60a5fa', // Blue 400
+                    '#d97706', // Amber (Weak/Avoid)
+                    '#cbd5e1'  // Slate (Irrelevant)
+                ],
+                borderRadius: 4
+            }]
+        };
+
+        const budgetData = {
+            labels: ['Search Campaign (High Intent)', 'PMax (Retargeting/Visual)'],
+            datasets: [{
+                data: [75, 25],
+                backgroundColor: ['#2563eb', '#f59e0b'],
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        };
+
+        // Keyword Data
+        const keywords = [
+            { term: "corporate housing buffalo", match: "Phrase", reason: "High Intent / Core", type: "target" },
+            { term: "travel nurse housing buffalo", match: "Phrase", reason: "Niche High Value", type: "target" },
+            { term: "furnished apartments 30 days", match: "Phrase", reason: "Filters out overnight", type: "target" },
+            { term: "insurance housing placement", match: "Broad Mod", reason: "High Margin", type: "target" },
+            { term: "short term rental williamsville", match: "Phrase", reason: "Geo Specific", type: "target" },
+            { term: "emergency housing buffalo", match: "Phrase", reason: "Displacement", type: "target" },
+            { term: "cheap", match: "Broad", reason: "Low Budget / Low Quality", type: "negative" },
+            { term: "vacation", match: "Phrase", reason: "Wrong Intent (Tourist)", type: "negative" },
+            { term: "airbnb", match: "Phrase", reason: "Competitor/Platform Seeker", type: "negative" },
+            { term: "unfurnished", match: "Broad", reason: "Wrong Product", type: "negative" },
+            { term: "1 night", match: "Exact", reason: "Too Short", type: "negative" },
+            { term: "rooms for rent", match: "Phrase", reason: "Shared/Low Budget", type: "negative" },
+            { term: "section 8", match: "Phrase", reason: "Not accepted", type: "negative" },
+            { term: "weekend", match: "Broad", reason: "Tourist", type: "negative" }
+        ];
+
+        // Ad Variations
+        const adVariations = {
+            medical: {
+                headline: "Furnished 30+ Day Housing | #1 Buffalo Corporate Rentals",
+                desc: "Fully furnished, high-end homes in Buffalo's best neighborhoods. Perfect for medical & corporate pros. All utilities included. Book your 30+ day stay today."
+            },
+            insurance: {
+                headline: "Buffalo Displacement Housing | Insurance Accepted | Move-In Ready",
+                desc: "Immediate placement for fire/flood displacement. We work directly with ALE insurance adjusters. Full kitchens, pet friendly options, and flexible terms."
+            }
+        };
+
+        // --- CHART JS CONFIG ---
+        
+        // Common chart options for responsiveness within container
+        const commonChartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            }
+        };
+
+        function initCharts() {
+            // Market Chart
+            const ctxMarket = document.getElementById('marketChart').getContext('2d');
+            new Chart(ctxMarket, {
+                type: 'bar',
+                data: marketData,
+                options: {
+                    ...commonChartOptions,
+                    indexAxis: 'y', // Horizontal bar
+                    scales: {
+                        x: { 
+                            min: 0, 
+                            max: 5,
+                            ticks: { stepSize: 1, callback: (val) => ['None','Low','Med','High','Strong','Dominant'][val] }
+                        }
+                    }
+                }
+            });
+
+            // Budget Chart
+            const ctxBudget = document.getElementById('budgetChart').getContext('2d');
+            new Chart(ctxBudget, {
+                type: 'doughnut',
+                data: budgetData,
+                options: {
+                    ...commonChartOptions,
+                    cutout: '60%',
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+        // --- NAVIGATION LOGIC ---
+
+        function navTo(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('section').forEach(sec => {
+                sec.classList.add('hidden');
+            });
+            
+            // Show target
+            document.getElementById(sectionId).classList.remove('hidden');
+
+            // Update Nav State
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                btn.classList.remove('active', 'bg-stone-100', 'text-blue-900', 'border-r-4', 'border-blue-900');
+                btn.classList.add('text-slate-600');
+            });
+            
+            const activeBtn = document.getElementById(`nav-${sectionId}`);
+            activeBtn.classList.add('active');
+            activeBtn.classList.remove('text-slate-600');
+
+            // Trigger Charts if necessary (Chart.js resize fix)
+            if (sectionId === 'market' || sectionId === 'ads') {
+                window.dispatchEvent(new Event('resize'));
+            }
+            
+            // Mobile menu close
+            const sidebar = document.getElementById('sidebar');
+            if(window.innerWidth < 768) {
+                sidebar.classList.add('hidden');
+            }
+        }
+
+        // --- KEYWORD LOGIC ---
+
+        let currentFilter = 'all';
+
+        function renderKeywords() {
+            const tbody = document.getElementById('keywordTableBody');
+            const search = document.getElementById('keywordSearch').value.toLowerCase();
+            tbody.innerHTML = '';
+
+            const filtered = keywords.filter(k => {
+                const matchSearch = k.term.toLowerCase().includes(search);
+                const matchFilter = currentFilter === 'all' || k.type === currentFilter;
+                return matchSearch && matchFilter;
+            });
+
+            if(filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-stone-400">No keywords found.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(k => {
+                const isTarget = k.type === 'target';
+                const statusBadge = isTarget 
+                    ? `<span class="px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs font-bold">Target</span>`
+                    : `<span class="px-2 py-1 rounded-full bg-red-100 text-red-800 text-xs font-bold">Negative</span>`;
+                
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-stone-50 transition-colors";
+                tr.innerHTML = `
+                    <td class="px-6 py-4 font-medium text-slate-800">${k.term}</td>
+                    <td class="px-6 py-4 text-slate-600">${k.match}</td>
+                    <td class="px-6 py-4 text-slate-500 text-xs">${k.reason}</td>
+                    <td class="px-6 py-4">${statusBadge}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function filterKeywords(type) {
+            currentFilter = type;
+            document.querySelectorAll('.filter-btn').forEach(b => {
+                b.classList.remove('ring-2', 'ring-blue-500', 'bg-stone-200');
+            });
+            
+            // Re-style active button based on type
+            const activeBtn = document.getElementById(`filter-${type}`);
+            activeBtn.classList.add('ring-2', 'ring-blue-500');
+            
+            renderKeywords();
+        }
+
+        // --- AD PREVIEW LOGIC ---
+        document.getElementById('adSelector').addEventListener('change', (e) => {
+            const variant = adVariations[e.target.value];
+            document.getElementById('adHeadline').innerText = variant.headline;
+            document.getElementById('adDescription').innerText = variant.desc;
+        });
+
+        // --- MOBILE MENU ---
+        document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+            sidebar.classList.toggle('flex');
+            sidebar.classList.toggle('fixed');
+            sidebar.classList.toggle('inset-0');
+            sidebar.classList.toggle('bg-white');
+            sidebar.classList.toggle('z-40');
+        });
+
+
+        // --- INIT ---
+        window.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            renderKeywords();
+            // Default filter styling
+            document.getElementById('filter-all').classList.add('ring-2', 'ring-blue-500');
+        });
+
+    </script>
+</body>
+</html>
