@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GTM Dashboard | VendingCanada.ca Attribution</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+        
+        :root {
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.5);
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-dark);
+            color: #f1f5f9;
+            scroll-behavior: smooth;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #2563eb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link.active {
+            color: var(--accent);
+        }
+
+        .nav-link.active::before {
+            content: '';
+            position: absolute;
+            left: -1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 16px;
+            background: var(--accent);
+            border-radius: 0 4px 4px 0;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(0, 0, 0, 0.4);
+            color: #93c5fd;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+
+        .feature-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            border-color: var(--accent);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+<body class="flex flex-col lg:flex-row min-h-screen">
+
+    <!-- Sticky Navigation Sidebar -->
+    <aside class="hidden lg:flex w-80 glass-panel flex-col h-screen sticky top-0 z-40 p-8 border-r border-slate-800">
+        <div class="mb-10">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-900/50">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </div>
+                <div>
+                    <h2 class="font-extrabold text-xl tracking-tight uppercase">VC-GTM</h2>
+                    <p class="text-[10px] font-bold text-blue-400 uppercase tracking-[0.2em]">Deployment 2026</p>
+                </div>
+            </div>
+            
+            <nav class="space-y-6">
+                <div>
+                    <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Architecture</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#overview" class="nav-link text-sm font-medium text-slate-400 hover:text-white flex items-center gap-2">VendingCanada Overview</a></li>
+                        <li><a href="#persistence" class="nav-link text-sm font-medium text-slate-400 hover:text-white flex items-center gap-2">Data Persistence Logic</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Core Scripting</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#tag-1" class="nav-link text-sm font-medium text-slate-400 hover:text-white">1. DataPush (The Engine)</a></li>
+                        <li><a href="#tag-4" class="nav-link text-sm font-medium text-slate-400 hover:text-white">4. Configuration Tag</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Ads & Conversions</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#tag-2" class="nav-link text-sm font-medium text-slate-400 hover:text-white">2. EC User Data</a></li>
+                        <li><a href="#tag-6" class="nav-link text-sm font-medium text-slate-400 hover:text-white">6. GAds Dynamic Conv</a></li>
+                        <li><a href="#tag-7" class="nav-link text-sm font-medium text-slate-400 hover:text-white">7. GA4 Master Event</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+
+        <div class="mt-auto p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
+            <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Target Client</p>
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                <span class="text-xs font-semibold text-blue-400 underline">vendingmachine.ca</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Viewport -->
+    <main class="flex-1 lg:ml-4">
+        
+        <!-- Hero Header -->
+        <div class="relative overflow-hidden px-6 pt-16 pb-12 lg:px-16 lg:pt-24">
+            <div class="absolute top-0 right-0 -z-10 opacity-20">
+                <svg width="600" height="600" viewBox="0 0 600 600" fill="none">
+                    <circle cx="300" cy="300" r="300" fill="url(#paint0_radial)"/>
+                    <defs><radialGradient id="paint0_radial" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(300 300) rotate(90) scale(300)"><stop stop-color="#3b82f6"/><stop offset="1" stop-color="#0f172a" stop-opacity="0"/></radialGradient></defs>
+                </svg>
+            </div>
+
+            <div class="max-w-4xl">
+                <span class="inline-block px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full text-blue-400 text-xs font-bold uppercase tracking-wider mb-6">Internal Technical Reference v2.1</span>
+                <h1 id="overview" class="text-5xl lg:text-7xl font-extrabold mb-6 tracking-tight leading-tight">
+                    Vending Canada <br><span class="gradient-text">Attribution Stack</span>
+                </h1>
+                <p class="text-lg text-slate-400 leading-relaxed max-w-2xl">
+                    A centralized implementation designed to solve attribution decay for high-intent vending service leads. This stack ensures GCLIDs and UTMs are preserved even if a user browses for days before inquiring.
+                </p>
+            </div>
+        </div>
+
+        <!-- System Highlights -->
+        <section id="persistence" class="px-6 lg:px-16 py-12">
+            <h2 class="text-2xl font-bold mb-8 flex items-center gap-3">
+                <span class="w-8 h-1 bg-blue-600 rounded-full"></span>
+                Integration Goals
+            </h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="feature-card glass-panel p-6 rounded-3xl">
+                    <div class="text-blue-400 mb-4 font-bold">Persistence</div>
+                    <p class="text-sm text-slate-400">Uses dual LocalStorage + Cookies. UTMs survive ITP restrictions and multi-day consideration cycles.</p>
+                </div>
+                <div class="feature-card glass-panel p-6 rounded-3xl">
+                    <div class="text-emerald-400 mb-4 font-bold">Auto-Inject</div>
+                    <p class="text-sm text-slate-400">Automatically populates Fluent Form hidden fields (gclid, utm_service) for WP Entry exports.</p>
+                </div>
+                <div class="feature-card glass-panel p-6 rounded-3xl">
+                    <div class="text-amber-400 mb-4 font-bold">EC Privacy</div>
+                    <p class="text-sm text-slate-400">SHA-256 Hashing for Email addresses allows privacy-safe Google Ads matching (Enhanced Conversions).</p>
+                </div>
+                <div class="feature-card glass-panel p-6 rounded-3xl">
+                    <div class="text-purple-400 mb-4 font-bold">Dynamic</div>
+                    <p class="text-sm text-slate-400">MutationObservers track forms in AJAX modals, Divi Overlays, and dynamic page loads.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tag Documentation -->
+        <section class="px-6 lg:px-16 py-12 space-y-12">
+            
+            <!-- TAG 1: The Backbone -->
+            <div id="tag-1" class="glass-panel rounded-[2rem] p-8 lg:p-12 border-l-4 border-l-blue-600 shadow-2xl">
+                <div class="flex flex-wrap justify-between items-start gap-4 mb-10">
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="px-2 py-0.5 bg-slate-800 rounded text-[10px] font-bold text-slate-400 uppercase tracking-widest">TAG: 01</span>
+                            <span class="px-2 py-0.5 bg-blue-900/50 rounded text-[10px] font-bold text-blue-400 uppercase tracking-widest">Core Engine</span>
+                        </div>
+                        <h3 class="text-3xl font-bold">FluentFormsDataPush (Jose)</h3>
+                    </div>
+                </div>
+
+                <div class="grid lg:grid-cols-3 gap-12">
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="p-6 bg-slate-900/50 rounded-2xl border border-slate-800">
+                            <h4 class="text-sm font-bold text-blue-400 uppercase mb-3">Mechanism: Persistent Storage</h4>
+                            <p class="text-slate-400 text-sm leading-relaxed">
+                                The script runs sitewide to grab URL parameters. It prioritizes <code>gclid</code> and <code>utm_service</code>.
+                            </p>
+                            <div class="mt-4 grid grid-cols-2 gap-4">
+                                <div class="bg-black/30 p-3 rounded-lg border border-slate-800">
+                                    <p class="text-[10px] text-slate-500 font-bold mb-1">COOKIE DURATION</p>
+                                    <p class="text-xs text-white">90 Days</p>
+                                </div>
+                                <div class="bg-black/30 p-3 rounded-lg border border-slate-800">
+                                    <p class="text-[10px] text-slate-500 font-bold mb-1">FALLBACK</p>
+                                    <p class="text-xs text-white">localStorage</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <h4 class="text-sm font-bold text-slate-300 uppercase">Automated Form Population</h4>
+                            <p class="text-slate-400 text-sm">
+                                Every time a Fluent Form renders, the script finds hidden inputs named <code>utm_source</code>, <code>utm_service</code>, or <code>gclid</code> and fills them with stored data. This ensures your **WordPress Entries** always show where the lead came from.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="bg-slate-900 rounded-3xl p-6 border border-slate-800">
+                        <h4 class="text-xs font-bold text-slate-500 uppercase mb-4">Payload Details</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <span class="text-[10px] text-blue-400 font-bold block uppercase">Event Action</span>
+                                <code class="text-xs">FormSubmitted</code>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-blue-400 font-bold block uppercase">Vending Service</span>
+                                <code class="text-xs">utm_service</code>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-blue-400 font-bold block uppercase">Ads Identifier</span>
+                                <code class="text-xs">gclid</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAG 6: GAds Dynamic Labels -->
+            <div id="tag-6" class="glass-panel rounded-[2rem] p-8 lg:p-12 border-l-4 border-l-emerald-600">
+                <div class="flex flex-wrap justify-between items-start gap-4 mb-8">
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="px-2 py-0.5 bg-emerald-900/50 rounded text-[10px] font-bold text-emerald-400 uppercase tracking-widest">TAG: 06</span>
+                        </div>
+                        <h3 class="text-3xl font-bold">Google Ads Dynamic Conversion</h3>
+                    </div>
+                </div>
+
+                <div class="grid lg:grid-cols-2 gap-12">
+                    <div class="space-y-6">
+                        <p class="text-slate-400 text-sm leading-relaxed">
+                            Instead of creating 10 different tags for Coffee Service vs. Snack Machines, we use a single <strong>Google Ads Conversion Tracking Tag</strong> with a dynamic label.
+                        </p>
+                        <div class="p-6 bg-emerald-950/20 border border-emerald-900/30 rounded-2xl">
+                            <h4 class="text-xs font-bold text-emerald-400 uppercase mb-4 tracking-wider">The Lookup Table (GTM Variable)</h4>
+                            <div class="space-y-2 text-xs font-mono">
+                                <div class="flex justify-between border-b border-emerald-900/30 pb-1">
+                                    <span class="text-slate-500">utm_service contains:</span>
+                                    <span class="text-white">Output Label:</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-emerald-300">"managed"</span>
+                                    <span class="text-slate-300">KZ-kCID... (Label A)</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-emerald-300">"rental"</span>
+                                    <span class="text-slate-300">XY-9abc... (Label B)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-slate-900/50 p-6 rounded-3xl border border-slate-800">
+                        <h4 class="text-sm font-bold text-slate-300 mb-4">Offline Conversion Capability</h4>
+                        <p class="text-sm text-slate-400 mb-4">
+                            Since Script A saves the <code>gclid</code> into the WP database, you can export your leads monthly and upload the "Closed Deals" back to Google Ads to train the AI on actual revenue.
+                        </p>
+                        <div class="flex items-center gap-2 text-xs font-bold text-emerald-400">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path></svg>
+                            GCLID Captured in WP Entries
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAG 7: GA4 Master -->
+            <div id="tag-7" class="glass-panel rounded-[2rem] p-8 lg:p-12 border-l-4 border-l-amber-600">
+                <h3 class="text-3xl font-bold mb-4">GA4 Lead Event: generate_lead</h3>
+                <p class="text-slate-400 text-sm mb-6 max-w-2xl">Fires on the exact same authoritative submit moment as GAds. Ensures platform parity—if GAds shows 5 leads, GA4 should show 5 leads.</p>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
+                        <span class="text-[10px] text-amber-500 font-bold block mb-1">PARAM</span>
+                        <span class="text-xs font-mono">utm_service</span>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
+                        <span class="text-[10px] text-amber-500 font-bold block mb-1">PARAM</span>
+                        <span class="text-xs font-mono">utm_funnel</span>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
+                        <span class="text-[10px] text-amber-500 font-bold block mb-1">PARAM</span>
+                        <span class="text-xs font-mono">gclid</span>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
+                        <span class="text-[10px] text-amber-500 font-bold block mb-1">PARAM</span>
+                        <span class="text-xs font-mono">form_id</span>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Implementation Protocol -->
+        <section class="px-6 lg:px-16 py-12 mb-24">
+            <div class="glass-panel rounded-[2rem] p-8 lg:p-12">
+                <h3 class="text-2xl font-bold mb-8">VendingCanada Implementation Protocol</h3>
+                <div class="space-y-12">
+                    <div class="flex gap-6">
+                        <div class="w-12 h-12 bg-blue-600/20 rounded-2xl flex-shrink-0 flex items-center justify-center font-bold text-blue-400">01</div>
+                        <div>
+                            <h4 class="font-bold mb-2">One Master Trigger</h4>
+                            <p class="text-sm text-slate-400">Do NOT use the "All Forms" trigger. Use a <strong>Custom Event</strong> trigger named <code>FluentFormActivities</code> with the condition <code>{{FluentFormEventAction}}</code> equals <code>FormSubmitted</code>.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-6">
+                        <div class="w-12 h-12 bg-emerald-600/20 rounded-2xl flex-shrink-0 flex items-center justify-center font-bold text-emerald-400">02</div>
+                        <div>
+                            <h4 class="font-bold mb-2">WP Hidden Field Mapping</h4>
+                            <p class="text-sm text-slate-400">In the Fluent Form editor, add hidden fields. Set the <strong>Name Attribute</strong> (found in Advanced options) to exactly: <code>gclid</code>, <code>utm_service</code>, and <code>utm_source</code>.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-6">
+                        <div class="w-12 h-12 bg-amber-600/20 rounded-2xl flex-shrink-0 flex items-center justify-center font-bold text-amber-400">03</div>
+                        <div>
+                            <h4 class="font-bold mb-2">Enhanced Conversions Setup</h4>
+                            <p class="text-sm text-slate-400">The <code>Google Ads User-Provided Data Event</code> tag must use the <code>sha256_email_address</code> variable. The script handles the hashing automatically via the browser's crypto API.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Site Footer -->
+        <footer class="p-12 text-center text-slate-600 text-[10px] font-bold uppercase tracking-[0.4em] border-t border-slate-800">
+            System Configured for VendingMachine.ca • 2026 Tracking Standard
+        </footer>
+    </main>
+
+    <script>
+        // Highlighting active nav link based on scroll position
+        const sections = document.querySelectorAll('section, div[id^="tag-"]');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        window.addEventListener('scroll', () => {
+            let current = "";
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 150) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').includes(current)) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
