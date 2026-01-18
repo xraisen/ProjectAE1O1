@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>716 Corporate Housing: Strategic Market Dominance</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <!-- Chosen Palette: Electric Insight -->
+    <!-- Colors: Royal Blue (#2563eb), Vivid Orange (#f97316), Teal (#14b8a6), Slate (#1e293b) -->
+    
+    <style>
+        body { font-family: 'Outfit', sans-serif; background-color: #f1f5f9; color: #1e293b; }
+        
+        /* Chart Container Styling - MANDATORY */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px; /* Constraint for large screens */
+            height: 350px;    /* Base height */
+            max-height: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        @media (max-width: 640px) {
+            .chart-container {
+                height: 300px;
+            }
+        }
+
+        /* Custom Scrollbar for style */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #e2e8f0; }
+        ::-webkit-scrollbar-thumb { background: #2563eb; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #1d4ed8; }
+
+        .card {
+            background-color: white;
+            border-radius: 1rem; /* rounded-xl */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #2563eb 0%, #f97316 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .step-connector {
+            position: absolute;
+            left: 50%;
+            top: 100%;
+            width: 2px;
+            height: 2rem;
+            background-color: #cbd5e1;
+            transform: translateX(-50%);
+            z-index: 0;
+        }
+    </style>
+    <!-- Application Structure Plan:
+        1. Hero Section: Hook the user with the core "Mid-Term" proposition and the budget constraint.
+        2. Market Landscape: Use comparisons to show why Hotels/Airbnb are weak and 716 is strong.
+        3. Audience & Conversion: Define WHO to target and WHAT counts as success.
+        4. Ads Blueprint: Show HOW the money is spent (Budget & Keywords).
+        5. Geography: Visual list of target zones.
+    -->
+</head>
+<body class="bg-slate-100 min-h-screen">
+
+    <!-- Navbar / Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <span class="text-3xl">🏙️</span>
+                <h1 class="text-xl md:text-2xl font-extrabold tracking-tight text-slate-900">
+                    716 <span class="text-blue-600">Strategy</span><span class="text-orange-500">Hub</span>
+                </h1>
+            </div>
+            <div class="hidden md:flex space-x-6 text-sm font-medium text-slate-500">
+                <span>Monthly Budget: <b class="text-slate-800">$800</b></span>
+                <span>Focus: <b class="text-slate-800">Buffalo, NY</b></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+
+        <!-- INTRO SECTION -->
+        <section class="text-center max-w-4xl mx-auto">
+            <h2 class="text-4xl md:text-5xl font-extrabold mb-4">
+                Dominating the <span class="gradient-text">Mid-Term Rental</span> Market
+            </h2>
+            <p class="text-lg text-slate-600 leading-relaxed">
+                The strategic analysis for <strong>716 Corporate Housing</strong> reveals a clear path to victory: bypassing the saturated vacation market (Airbnb) and the sterile hotel industry to own the <strong>"30+ Day Furnished Stay"</strong> niche. This roadmap details how to deploy an <strong>$800/month Google Ads budget</strong> to capture high-value Traveling Professionals and Insurance Displacements.
+            </p>
+        </section>
+
+        <!-- KPI BENCHMARKS ROW -->
+        <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="card bg-blue-600 text-white text-center">
+                <h3 class="text-blue-100 text-sm uppercase font-bold tracking-wider">Target CPA</h3>
+                <div class="text-3xl md:text-4xl font-bold mt-2">$42</div>
+                <p class="text-xs text-blue-200 mt-1">Cost Per Acquisition</p>
+            </div>
+            <div class="card bg-white text-center border-t-4 border-orange-500">
+                <h3 class="text-slate-400 text-sm uppercase font-bold tracking-wider">Target CPC</h3>
+                <div class="text-3xl md:text-4xl font-bold mt-2 text-slate-800">$3.25</div>
+                <p class="text-xs text-slate-400 mt-1">Avg. Cost Per Click</p>
+            </div>
+            <div class="card bg-white text-center border-t-4 border-teal-500">
+                <h3 class="text-slate-400 text-sm uppercase font-bold tracking-wider">Target CTR</h3>
+                <div class="text-3xl md:text-4xl font-bold mt-2 text-slate-800">4.1%</div>
+                <p class="text-xs text-slate-400 mt-1">Click Through Rate</p>
+            </div>
+            <div class="card bg-white text-center border-t-4 border-slate-500">
+                <h3 class="text-slate-400 text-sm uppercase font-bold tracking-wider">Est. Leads</h3>
+                <div class="text-3xl md:text-4xl font-bold mt-2 text-slate-800">19-24</div>
+                <p class="text-xs text-slate-400 mt-1">Monthly Volume</p>
+            </div>
+        </section>
+
+        <!-- SECTION 1: MARKET LANDSCAPE -->
+        <section>
+            <div class="flex items-center gap-3 mb-6">
+                <span class="bg-blue-100 text-blue-700 p-2 rounded-lg text-xl">📊</span>
+                <h2 class="text-2xl font-bold text-slate-800">Market Positioning & Analysis</h2>
+            </div>
+            <p class="text-slate-600 mb-6 max-w-3xl">
+                The competitive landscape shows a massive saturation in short-term "vacation" rentals (Airbnb) and long-term unfurnished leases. <strong>716's "Blue Ocean"</strong> is the clear dominance in the "Furnished Extended Stay" and "Corporate Housing" segments, where competition is lower and margins are higher.
+            </p>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Market Chart -->
+                <div class="card flex flex-col justify-center">
+                    <h3 class="text-lg font-semibold mb-4 text-center">Market Segment Dominance</h3>
+                    <div class="chart-container">
+                        <canvas id="marketChart"></canvas>
+                    </div>
+                    <p class="text-sm text-center text-slate-400 mt-2 italic">Relative Strength Analysis (0-5 Scale)</p>
+                </div>
+                
+                <!-- Competitor Weakness Grid -->
+                <div class="grid grid-cols-1 gap-4">
+                    <div class="card border-l-4 border-red-500">
+                        <h4 class="font-bold text-slate-800 flex justify-between">
+                            <span>🚫 Traditional Hotels</span>
+                            <span class="text-xs bg-red-100 text-red-600 px-2 py-1 rounded">Weakness</span>
+                        </h4>
+                        <p class="text-sm text-slate-600 mt-2">Limited space, no kitchens, impersonal. Expensive for >30 day stays. "Living in a box."</p>
+                    </div>
+                    <div class="card border-l-4 border-orange-500">
+                        <h4 class="font-bold text-slate-800 flex justify-between">
+                            <span>🚫 Vacation Airbnbs</span>
+                            <span class="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded">Weakness</span>
+                        </h4>
+                        <p class="text-sm text-slate-600 mt-2">Inconsistent quality, high service fees, strict "no business" amenities, focused on tourists.</p>
+                    </div>
+                    <div class="card border-l-4 border-green-500 bg-green-50">
+                        <h4 class="font-bold text-green-900 flex justify-between">
+                            <span>✅ 716 Corporate Housing</span>
+                            <span class="text-xs bg-green-200 text-green-800 px-2 py-1 rounded">Opportunity</span>
+                        </h4>
+                        <p class="text-sm text-green-800 mt-2"><strong>USP:</strong> "Home-like stability." Full kitchens, consistent quality, billing set up for corporate/insurance expense accounts.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: AUDIENCE & ACTIONS -->
+        <section>
+            <div class="flex items-center gap-3 mb-6">
+                <span class="bg-orange-100 text-orange-700 p-2 rounded-lg text-xl">👥</span>
+                <h2 class="text-2xl font-bold text-slate-800">Target Audience & Conversion</h2>
+            </div>
+            <p class="text-slate-600 mb-6 max-w-3xl">
+                Not all leads are created equal. We prioritize <strong>Traveling Professionals</strong> and <strong>Corporate Relocations</strong> for their consistency and budget. Tourists are explicitly excluded to protect property integrity and maximize revenue per booking.
+            </p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Audience Ranking Chart -->
+                <div class="card flex flex-col">
+                    <h3 class="text-lg font-semibold mb-4 text-center">Audience Strategic Value</h3>
+                    <div class="chart-container">
+                        <canvas id="audienceChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Conversion Matrix -->
+                <div class="card">
+                    <h3 class="text-lg font-semibold mb-4">Conversion Action Valuation</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left text-slate-500">
+                            <thead class="text-xs text-slate-700 uppercase bg-slate-50">
+                                <tr>
+                                    <th class="px-4 py-3">Action</th>
+                                    <th class="px-4 py-3">Value?</th>
+                                    <th class="px-4 py-3">Strategy</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                <tr class="bg-green-50">
+                                    <td class="px-4 py-3 font-medium text-slate-900">Availability Form</td>
+                                    <td class="px-4 py-3 text-green-600 font-bold">✅ High</td>
+                                    <td class="px-4 py-3">Primary Conversion Goal</td>
+                                </tr>
+                                <tr class="bg-green-50">
+                                    <td class="px-4 py-3 font-medium text-slate-900">Corp Housing Form</td>
+                                    <td class="px-4 py-3 text-green-600 font-bold">✅ High</td>
+                                    <td class="px-4 py-3">Primary Conversion Goal</td>
+                                </tr>
+                                <tr class="bg-blue-50">
+                                    <td class="px-4 py-3 font-medium text-slate-900">Call (Over 60s)</td>
+                                    <td class="px-4 py-3 text-blue-600 font-bold">✅ Med</td>
+                                    <td class="px-4 py-3">Track as secondary</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-3 font-medium text-slate-900">Homepage View</td>
+                                    <td class="px-4 py-3 text-slate-400">❌ None</td>
+                                    <td class="px-4 py-3">Do not optimize for</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-3 font-medium text-slate-900">Short Call (<60s)</td>
+                                    <td class="px-4 py-3 text-slate-400">❌ None</td>
+                                    <td class="px-4 py-3">Likely spam/wrong number</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: ADS BLUEPRINT -->
+        <section>
+            <div class="flex items-center gap-3 mb-6">
+                <span class="bg-teal-100 text-teal-700 p-2 rounded-lg text-xl">🎯</span>
+                <h2 class="text-2xl font-bold text-slate-800">Google Ads Blueprint ($800/mo)</h2>
+            </div>
+            <p class="text-slate-600 mb-6 max-w-3xl">
+                With a targeted budget of $800, efficiency is paramount. We focus 75% of spend on "Bottom of Funnel" (High Intent) searches. We ignore broad generic terms to avoid waste.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Budget Chart -->
+                <div class="card flex flex-col justify-center items-center md:col-span-1">
+                    <h3 class="text-lg font-semibold mb-4">Monthly Budget Allocation</h3>
+                    <div class="chart-container" style="height: 250px;">
+                        <canvas id="budgetChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Strategy Steps -->
+                <div class="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="card bg-slate-800 text-white">
+                        <div class="text-orange-400 text-2xl mb-2">01</div>
+                        <h4 class="font-bold text-lg">Phrase Match Precision</h4>
+                        <p class="text-sm text-slate-300 mt-2">Use <code>"Furnished Apartment Buffalo"</code> instead of <code>Apartment Buffalo</code>. This ensures we only pay for users specifically looking for our product type.</p>
+                    </div>
+                    <div class="card bg-slate-800 text-white">
+                        <div class="text-orange-400 text-2xl mb-2">02</div>
+                        <h4 class="font-bold text-lg">Negative Firewall</h4>
+                        <p class="text-sm text-slate-300 mt-2">Aggressively block terms like "cheap", "studio", "unfurnished", and "1 night". This protects the budget from low-quality seekers.</p>
+                    </div>
+                    <div class="card bg-slate-800 text-white">
+                        <div class="text-orange-400 text-2xl mb-2">03</div>
+                        <h4 class="font-bold text-lg">Location Radius</h4>
+                        <p class="text-sm text-slate-300 mt-2">Target people physically IN Buffalo + people searching FOR Buffalo from key feeder cities (NYC, Toronto).</p>
+                    </div>
+                    <div class="card bg-slate-800 text-white">
+                        <div class="text-orange-400 text-2xl mb-2">04</div>
+                        <h4 class="font-bold text-lg">Call Extensions</h4>
+                        <p class="text-sm text-slate-300 mt-2">Enable "Click to Call" on mobile ads. Corporate bookers often prefer to call directly to verify availability immediately.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: TACTICAL EXECUTION -->
+        <section>
+             <div class="flex items-center gap-3 mb-6">
+                <span class="bg-purple-100 text-purple-700 p-2 rounded-lg text-xl">🚀</span>
+                <h2 class="text-2xl font-bold text-slate-800">Tactical Execution: Keywords & Zones</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Keyword Engine -->
+                <div class="card">
+                    <h3 class="text-lg font-semibold mb-4 text-center border-b pb-2">The Keyword Engine</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <h4 class="text-green-600 font-bold mb-3 flex items-center gap-2">✅ TARGET (Bid)</h4>
+                            <ul class="space-y-2 text-sm text-slate-600">
+                                <li class="bg-green-50 p-2 rounded">"Corporate housing Buffalo"</li>
+                                <li class="bg-green-50 p-2 rounded">"Travel nurse housing NY"</li>
+                                <li class="bg-green-50 p-2 rounded">"Furnished rental Williamsville"</li>
+                                <li class="bg-green-50 p-2 rounded">"Short term lease Cheektowaga"</li>
+                                <li class="bg-green-50 p-2 rounded">"Insurance displacement housing"</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-red-600 font-bold mb-3 flex items-center gap-2">⛔ NEGATIVE (Block)</h4>
+                            <ul class="space-y-2 text-sm text-slate-600">
+                                <li class="bg-red-50 p-2 rounded">"Cheap" / "Budget"</li>
+                                <li class="bg-red-50 p-2 rounded">"Vacation" / "Airbnb"</li>
+                                <li class="bg-red-50 p-2 rounded">"Unfurnished"</li>
+                                <li class="bg-red-50 p-2 rounded">"1 Night" / "Weekend"</li>
+                                <li class="bg-red-50 p-2 rounded">"Rooms for rent"</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Geographic Focus -->
+                <div class="card relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 text-9xl">📍</div>
+                    <h3 class="text-lg font-semibold mb-4">Priority Zones</h3>
+                    <p class="text-sm text-slate-500 mb-4">Focus ad spend on these high-density medical and business corridors.</p>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <span class="text-xs font-bold text-blue-600 uppercase tracking-wide">Primary Cities</span>
+                            <div class="flex flex-wrap gap-2 mt-2">
+                                <span class="bg-slate-100 text-slate-800 px-3 py-1 rounded-full text-sm font-medium border border-slate-200">Buffalo</span>
+                                <span class="bg-slate-100 text-slate-800 px-3 py-1 rounded-full text-sm font-medium border border-slate-200">Cheektowaga</span>
+                                <span class="bg-slate-100 text-slate-800 px-3 py-1 rounded-full text-sm font-medium border border-slate-200">Tonawanda Town</span>
+                                <span class="bg-slate-100 text-slate-800 px-3 py-1 rounded-full text-sm font-medium border border-slate-200">Williamsville</span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <span class="text-xs font-bold text-orange-600 uppercase tracking-wide">Hot Streets (Bid Adjustment +10%)</span>
+                            <ul class="grid grid-cols-2 gap-2 mt-2 text-sm">
+                                <li class="flex items-center gap-2"><span class="text-orange-500">🛣️</span> East Utica Street</li>
+                                <li class="flex items-center gap-2"><span class="text-orange-500">🛣️</span> Bird Avenue</li>
+                                <li class="flex items-center gap-2"><span class="text-orange-500">🛣️</span> Abbott Road</li>
+                                <li class="flex items-center gap-2"><span class="text-orange-500">🛣️</span> Prospect Avenue</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOOTER -->
+        <footer class="text-center text-slate-400 text-sm py-8 border-t border-slate-200">
+            <p>&copy; 2024 Strategic Report generated for 716 Corporate Housing.</p>
+        </footer>
+
+    </main>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- UTILITY FUNCTIONS ---
+        
+        // Label wrapping logic (>16 chars)
+        function wrapLabel(str) {
+            if (str.length <= 16) return str;
+            const words = str.split(' ');
+            const lines = [];
+            let currentLine = words[0];
+
+            for (let i = 1; i < words.length; i++) {
+                if (currentLine.length + 1 + words[i].length <= 16) {
+                    currentLine += ' ' + words[i];
+                } else {
+                    lines.push(currentLine);
+                    currentLine = words[i];
+                }
+            }
+            lines.push(currentLine);
+            return lines;
+        }
+
+        // Common Chart Options
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        title: function(tooltipItems) {
+                            const item = tooltipItems[0];
+                            let label = item.chart.data.labels[item.dataIndex];
+                            if (Array.isArray(label)) {
+                                return label.join(' ');
+                            } else {
+                                return label;
+                            }
+                        }
+                    },
+                    backgroundColor: 'rgba(30, 41, 59, 0.9)',
+                    padding: 12,
+                    cornerRadius: 8,
+                },
+                legend: {
+                    labels: {
+                        font: { family: 'Outfit', size: 12 },
+                        color: '#475569'
+                    }
+                }
+            }
+        };
+
+        // --- CHART INITIALIZATION ---
+
+        window.addEventListener('load', () => {
+            
+            // 1. Market Segment Chart (Horizontal Bar)
+            const marketCtx = document.getElementById('marketChart').getContext('2d');
+            new Chart(marketCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Furnished Extended Stay', 'Corporate Housing', 'Luxury Furnished', 'Traditional Short-Term', 'Unfurnished Long-Term'].map(wrapLabel),
+                    datasets: [{
+                        label: 'Market Presence Strength (0-5)',
+                        data: [5, 4, 3, 1, 0.5],
+                        backgroundColor: [
+                            '#2563eb', // Dominant - Blue
+                            '#3b82f6', // Strong - Light Blue
+                            '#14b8a6', // Moderate - Teal
+                            '#f97316', // Low - Orange
+                            '#ef4444'  // None - Red
+                        ],
+                        borderRadius: 6,
+                        barPercentage: 0.6
+                    }]
+                },
+                options: {
+                    ...commonOptions,
+                    indexAxis: 'y',
+                    scales: {
+                        x: {
+                            min: 0,
+                            max: 5,
+                            grid: { color: '#f1f5f9' },
+                            ticks: { font: { family: 'Outfit' } }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { font: { family: 'Outfit' } }
+                        }
+                    },
+                    plugins: {
+                        ...commonOptions.plugins,
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            // 2. Audience Ranking Chart (Vertical Bar)
+            const audienceCtx = document.getElementById('audienceChart').getContext('2d');
+            new Chart(audienceCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Traveling Professionals', 'Corporate Housing', 'Insurance Displacements', 'Relocating Families', 'Digital Nomads', 'Tourists'].map(wrapLabel),
+                    datasets: [{
+                        label: 'Strategic Priority',
+                        data: [100, 85, 80, 60, 30, 5],
+                        backgroundColor: [
+                            '#2563eb', // Top
+                            '#2563eb',
+                            '#2563eb',
+                            '#3b82f6',
+                            '#cbd5e1', // Low priority
+                            '#ef4444'  // Negative
+                        ],
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    ...commonOptions,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#f1f5f9' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        ...commonOptions.plugins,
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            // 3. Budget Allocation Chart (Doughnut)
+            const budgetCtx = document.getElementById('budgetChart').getContext('2d');
+            new Chart(budgetCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['High Intent (Exact/Phrase)', 'Mid-Funnel (Broad Mod)', 'Brand/Retargeting'].map(wrapLabel),
+                    datasets: [{
+                        data: [600, 120, 80], // $800 split roughly
+                        backgroundColor: [
+                            '#2563eb', // Core - Blue
+                            '#f97316', // Orange
+                            '#14b8a6'  // Teal
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    ...commonOptions,
+                    cutout: '65%',
+                    plugins: {
+                        ...commonOptions.plugins,
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        });
+    </script>
+    
+    <!-- Visualization & Content Choices:
+         1. Market Chart (Bar): Comparison of property types. Justification: Shows clear dominance of one category over others.
+         2. Audience Chart (Bar): Ranking segments. Justification: Clearly distinguishes top-tier targets from low-value ones.
+         3. Budget Chart (Doughnut): Part-to-whole relationship of the $800 budget.
+         4. Tables/Lists: Used for keyword and boolean (conversion) logic where charts are less effective.
+         Confirming NO SVG graphics used. NO Mermaid JS used.
+    -->
+</body>
+</html>
