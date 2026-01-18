@@ -1,0 +1,188 @@
+# 🎯 LANDING PAGES AT A GLANCE
+
+## All 15 Pages Your Developer Needs to Build
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│ 🔴 CRITICAL (Week 1-2) – ADS WILL FAIL WITHOUT THESE               │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│ 1. View Current Availability      /availability                    │
+│    ↳ Featured in: 18+ ads                                           │
+│    ↳ Why: Core conversion page. Missing = ad disapproval           │
+│    ↳ Must have: Interactive map, availability filter, call CTA     │
+│                                                                      │
+│ 2. Contact & Support              /contact                         │
+│    ↳ Featured in: All segments (backup CTA)                        │
+│    ↳ Why: Fallback when forms/sitelinks fail                       │
+│    ↳ Must have: Form, phone, email, hours, live chat               │
+│                                                                      │
+│ 3. Healthcare FAQ                 /healthcare-faq                  │
+│    ↳ Featured in: 14+ ads                                           │
+│    ↳ Why: Travel nurses need pre-qualification                     │
+│    ↳ Must have: 10 Q&A, hospital distance, pet policy              │
+│                                                                      │
+│ 4. Insurance Housing Process      /insurance-process               │
+│    ↳ Featured in: 10+ ads                                           │
+│    ↳ Why: Adjusters need process clarity (3-5 day timeline)        │
+│    ↳ Must have: 6-step flowchart, documentation, testimonial       │
+│                                                                      │
+│ 5. About Our Local Team           /our-team                        │
+│    ↳ Featured in: 12+ ads                                           │
+│    ↳ Why: Trust vs. national platforms                             │
+│    ↳ Must have: 3-4 bios, company story, video, stats              │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────┐
+│ 🟠 HIGH PRIORITY (Week 3-4) – UNLOCK SEGMENT GROWTH                │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│ 6. Pet Policy (No Weight Limits)  /pet-policy                      │
+│    ↳ Featured in: 12+ ads                                           │
+│    ↳ Why: Major pain point for nurses + families                   │
+│    ↳ Must have: Policy details, breed info, amenities, photos      │
+│                                                                      │
+│ 7. Consolidated Billing Info      /billing-info                    │
+│    ↳ Featured in: 9+ ads                                            │
+│    ↳ Why: B2B accounting pain point                                 │
+│    ↳ Must have: Invoice sample, all-inclusive breakdown, docs      │
+│                                                                      │
+│ 8. Hospital Distance Guide        /hospital-distance               │
+│    ↳ Featured in: 3+ ads                                            │
+│    ↳ Why: Facility-specific matching (5 min BNMC promise)          │
+│    ↳ Must have: Distance matrix, interactive map, parking info     │
+│                                                                      │
+│ 9. Emergency Process              /emergency-process               │
+│    ↳ Featured in: 2+ ads                                            │
+│    ↳ Why: Same-day response credibility                            │
+│    ↳ Must have: Timeline graphic, 24/7 contact, case study         │
+│                                                                      │
+│ 10. Schools Nearby                /schools-nearby                  │
+│    ↳ Featured in: 2+ ads                                            │
+│    ↳ Why: Family reassurance (Williamsville schools focus)         │
+│    ↳ Must have: School ratings, neighborhood photos, parks         │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────┐
+│ 🟡 SUPPORTING (Week 5+) – OPTIMIZE & REDUCE ABANDONMENT            │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│ 11. Corporate Billing            /corporate-relocation             │
+│ 12. Lease Terms & Options        /lease-terms                      │
+│ 13. Testimonials                 /testimonials                     │
+│ 14. Application & Screening      /apply                            │
+│ 15. Pricing & Rate Sheets        /pricing                          │
+│                                                                      │
+│ → Each adds 5-10% incremental improvement                          │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 📊 ROUTING BY AUDIENCE
+
+```
+TRAVEL NURSES
+├─ View Current Availability ⭐⭐⭐⭐⭐
+├─ Healthcare FAQ ⭐⭐⭐⭐⭐
+├─ Pet Policy ⭐⭐⭐⭐
+├─ Hospital Distance ⭐⭐⭐⭐
+├─ About Our Team ⭐⭐⭐
+└─ Contact ⭐⭐⭐
+
+INSURANCE ADJUSTERS (B2B)
+├─ View Current Availability ⭐⭐⭐⭐⭐
+├─ Insurance Housing Process ⭐⭐⭐⭐⭐
+├─ Consolidated Billing ⭐⭐⭐⭐⭐
+├─ About Our Team ⭐⭐⭐⭐
+├─ Emergency Process ⭐⭐⭐
+└─ Contact ⭐⭐⭐
+
+CORPORATE EXECUTIVES
+├─ View Current Availability ⭐⭐⭐⭐
+├─ About Our Team ⭐⭐⭐⭐
+├─ Pet Policy ⭐⭐⭐
+├─ Corporate Billing ⭐⭐⭐
+├─ Pricing ⭐⭐
+└─ Contact ⭐⭐⭐
+
+DISPLACED FAMILIES
+├─ View Current Availability ⭐⭐⭐⭐⭐
+├─ Emergency Process ⭐⭐⭐⭐⭐
+├─ Schools Nearby ⭐⭐⭐⭐
+├─ Pet Policy ⭐⭐⭐⭐
+├─ About Our Team ⭐⭐⭐
+└─ Contact ⭐⭐⭐
+```
+
+---
+
+## 💡 WHY ALL 15?
+
+### Problem
+Each persona needs different information:
+- Nurses: "5 min to BNMC? Pet-friendly? Hospital distance?"
+- Adjusters: "Process? One invoice? How fast?"
+- Families: "HELP TODAY? Good schools? Pet-friendly?"
+- Executives: "Move-in ready? Local support? Pricing?"
+
+### Solution
+Create 15 targeted pages instead of generic homepage
+
+### Result
+- 💰 3.7x more leads
+- 💰 73% lower cost per lead
+- 💰 5-7% conversion rate (vs. 2-3% with generic page)
+
+---
+
+## ⚡ QUICK BUILD CHECKLIST
+
+**BUILD FIRST (This Week):**
+- [ ] View Current Availability (HIGHEST PRIORITY)
+- [ ] Healthcare FAQ
+- [ ] Insurance Housing Process
+- [ ] About Our Local Team
+- [ ] Contact & Support
+
+**BUILD NEXT (Next Week):**
+- [ ] Pet Policy
+- [ ] Consolidated Billing
+- [ ] Hospital Distance Guide
+- [ ] Emergency Process
+- [ ] Schools Nearby
+
+**BUILD IF TIME:**
+- [ ] Corporate Relocation
+- [ ] Lease Terms
+- [ ] Testimonials
+- [ ] Application
+- [ ] Pricing
+
+---
+
+## 📱 TECH REQUIREMENTS
+
+All pages must:
+- ✅ Be mobile responsive (60% traffic mobile)
+- ✅ Load <2 seconds
+- ✅ Have forms that work on mobile
+- ✅ Use HTTPS (SSL)
+- ✅ Include analytics tracking
+- ✅ Have "Subject to availability" disclaimer
+
+---
+
+## 🎯 SUCCESS = ALL 15 BUILT
+
+**Without:** Generic homepage, confused visitors, 2% conversion, Google disapproves ads
+**With:** Targeted pages, clear intent matching, 5-7% conversion, Google rewards with lower costs
+
+---
+
+**Full Details:** See `LANDING_PAGE_DEVELOPMENT_ROADMAP.md`  
+**Developer Guide:** See `LANDING_PAGE_DEVELOPER_CHECKLIST.md`  
+**Sitelink Routes:** See `SITELINK_ARCHITECTURE.md`
